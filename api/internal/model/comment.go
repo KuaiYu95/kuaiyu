@@ -63,21 +63,22 @@ type UpdateCommentRequest struct {
 
 // CommentVO 评论视图对象
 type CommentVO struct {
-	ID           uint         `json:"id"`
-	PostID       *uint        `json:"post_id,omitempty"`
-	LifeRecordID *uint        `json:"life_record_id,omitempty"`
-	ParentID     *uint        `json:"parent_id,omitempty"`
-	Nickname     string       `json:"nickname"`
-	Email        string       `json:"email,omitempty"` // 仅管理员可见
-	Avatar       string       `json:"avatar"`
-	Website      string       `json:"website"`
-	Content      string       `json:"content"`
-	IsAdmin      bool         `json:"is_admin"`
-	Status       string       `json:"status"`
-	CreatedAt    time.Time    `json:"created_at"`
-	Replies      []CommentVO  `json:"replies,omitempty"`
-	ReplyCount   int          `json:"reply_count,omitempty"` // 回复总数
-	HasMore      bool         `json:"has_more,omitempty"`    // 是否有更多回复
+	ID            uint         `json:"id"`
+	PostID        *uint        `json:"post_id,omitempty"`
+	LifeRecordID  *uint        `json:"life_record_id,omitempty"`
+	ParentID      *uint        `json:"parent_id,omitempty"`
+	ParentNickname string      `json:"parent_nickname,omitempty"` // 被回复的用户昵称
+	Nickname      string       `json:"nickname"`
+	Email         string       `json:"email,omitempty"` // 仅管理员可见
+	Avatar        string       `json:"avatar"`
+	Website       string       `json:"website"`
+	Content       string       `json:"content"`
+	IsAdmin       bool         `json:"is_admin"`
+	Status        string       `json:"status"`
+	CreatedAt     time.Time    `json:"created_at"`
+	Replies       []CommentVO  `json:"replies,omitempty"`
+	ReplyCount    int          `json:"reply_count,omitempty"` // 回复总数
+	HasMore       bool         `json:"has_more,omitempty"`    // 是否有更多回复
 }
 
 // CommentListVO 评论列表视图对象（用于管理后台）

@@ -261,6 +261,7 @@ export const publicApi = {
     create: commentApi.create,
   },
   config: configApi,
+  analytics: analyticsApi,
 };
 
 export default api;

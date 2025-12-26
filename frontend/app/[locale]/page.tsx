@@ -174,7 +174,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             {tags.map((tag) => (
               <Tag
                 key={tag.id}
-                href={`/${locale}${ROUTES.CATEGORY_TAG(tag.slug)}`}
+                href={`/${locale}/blog?tag=${tag.slug}`}
                 color={tag.color}
                 size="md"
               >

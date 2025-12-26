@@ -18,6 +18,8 @@ interface Comment {
   status: string;
   is_admin: boolean;
   created_at: string;
+  parent_id?: number;
+  parent_nickname?: string; // 被回复的用户昵称
   replies?: Comment[];
 }
 
@@ -148,6 +150,11 @@ export default function CommentSection({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-medium text-white">{comment.nickname}</span>
+            {comment.parent_nickname && (
+              <span className="text-gray-400 text-sm">
+                回复 <span className="text-primary-400">@{comment.parent_nickname}</span>
+              </span>
+            )}
             {comment.is_admin && (
               <span className="px-2 py-0.5 text-xs bg-primary-500/20 text-primary-400 rounded">
                 {t('admin')}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"kuaiyu/internal/database"
 	"kuaiyu/internal/middleware"
 	"kuaiyu/internal/model"
 	"kuaiyu/internal/repository"
@@ -91,12 +92,46 @@ func (h *PostHandler) IncrementViews(c *gin.Context) {
 		response.BadRequest(c, "无效的文章 ID")
 		return
 	}
+
+	// 防重复：同一 IP + User-Agent + Post 在 1 小时内只计数一次
+	ipAddress := c.ClientIP()
+	userAgent := c.GetHeader("User-Agent")
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
 	
+	db := database.Get()
+	var existingView model.PageView
+	checkErr := db.Where("page_type = ? AND page_id = ? AND ip_address = ? AND user_agent = ? AND created_at > ?",
+		"post", id, ipAddress, userAgent, oneHourAgo).
+		First(&existingView).Error
+	
+	// 如果 1 小时内已有相同记录，则不计数
+	if checkErr == nil {
+		response.Success(c, nil)
+		return
+	}
+	
+	// 增加阅读量
 	if err := h.repo.IncrementViewCount(id); err != nil {
 		response.InternalError(c, "")
 		return
 	}
 	
+	// 记录到 page_views 表用于统计分析
+	pv := model.PageView{
+		PageType:   "post",
+		PageID:     &id,
+		IPAddress:  ipAddress,
+		UserAgent:  userAgent,
+		Referer:    c.GetHeader("Referer"),
+		DeviceType: detectDeviceType(userAgent),
+		Browser:    detectBrowser(userAgent),
+		OS:         detectOS(userAgent),
+	}
+	if err := db.Create(&pv).Error; err != nil {
+		// 页面访问记录失败不影响主流程，仅记录日志
+		// TODO: 添加日志记录
+	}
+
 	response.Success(c, nil)
 }
 

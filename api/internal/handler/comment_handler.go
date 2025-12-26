@@ -87,6 +87,68 @@ func (h *CommentHandler) List(c *gin.Context) {
 	}
 	comments = uniqueComments
 	
+	// 批量加载所有评论的回复（避免 N+1 查询）
+	if len(comments) > 0 {
+		commentIDs := make([]uint, len(comments))
+		commentMap := make(map[uint]*model.Comment)
+		for i := range comments {
+			commentIDs[i] = comments[i].ID
+			commentMap[comments[i].ID] = &comments[i]
+		}
+		
+		// 一次性查询所有回复
+		var allReplies []model.Comment
+		db.Where("parent_id IN ? AND status = ?", commentIDs, constants.CommentStatusApproved).
+			Order("parent_id ASC, created_at ASC").
+			Find(&allReplies)
+		
+		// 将回复分组到对应的父评论
+		for i := range allReplies {
+			reply := allReplies[i]
+			if reply.ParentID != nil {
+				if parent, exists := commentMap[*reply.ParentID]; exists {
+					parent.Replies = append(parent.Replies, reply)
+				}
+			}
+		}
+	}
+	
+	// 创建所有评论ID到昵称的映射（包括回复的父评论）
+	allCommentIDs := make(map[uint]bool)
+	for _, comment := range comments {
+		allCommentIDs[comment.ID] = true
+		if len(comment.Replies) > 0 {
+			for _, reply := range comment.Replies {
+				allCommentIDs[reply.ID] = true
+				if reply.ParentID != nil {
+					allCommentIDs[*reply.ParentID] = true
+				}
+			}
+		}
+	}
+	
+	// 批量查询所有需要的评论昵称
+	commentIDList := make([]uint, 0, len(allCommentIDs))
+	for id := range allCommentIDs {
+		commentIDList = append(commentIDList, id)
+	}
+	
+	nicknameMap := make(map[uint]string)
+	if len(commentIDList) > 0 {
+		var nicknameComments []struct {
+			ID       uint
+			Nickname string
+		}
+		db.Model(&model.Comment{}).
+			Select("id, nickname").
+			Where("id IN ?", commentIDList).
+			Find(&nicknameComments)
+		
+		for _, nc := range nicknameComments {
+			nicknameMap[nc.ID] = nc.Nickname
+		}
+	}
+	
 	// 转换为视图对象
 	items := make([]model.CommentVO, len(comments))
 	for i, comment := range comments {
@@ -100,13 +162,13 @@ func (h *CommentHandler) List(c *gin.Context) {
 			if replyCount > displayLimit {
 				vo.Replies = make([]model.CommentVO, displayLimit)
 				for j := 0; j < displayLimit; j++ {
-					vo.Replies[j] = comment.Replies[j].ToVO()
+					vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
 				}
 				vo.HasMore = true
 			} else {
 				vo.Replies = make([]model.CommentVO, replyCount)
-				for j, reply := range comment.Replies {
-					vo.Replies[j] = reply.ToVO()
+				for j := range comment.Replies {
+					vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
 				}
 			}
 			vo.ReplyCount = replyCount
@@ -114,8 +176,19 @@ func (h *CommentHandler) List(c *gin.Context) {
 		
 		items[i] = vo
 	}
-	
+
 	response.Success(c, items)
+}
+
+// buildReplyVO 构建回复的视图对象并填充父评论昵称
+func buildReplyVO(reply *model.Comment, nicknameMap map[uint]string) model.CommentVO {
+	replyVO := reply.ToVO()
+	if reply.ParentID != nil {
+		if parentNickname, exists := nicknameMap[*reply.ParentID]; exists {
+			replyVO.ParentNickname = parentNickname
+		}
+	}
+	return replyVO
 }
 
 // Create 创建评论

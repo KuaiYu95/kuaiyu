@@ -78,7 +78,7 @@ export default async function BlogDetailPage({
 
   return (
     <main className="min-h-screen py-20">
-      {/* 阅读量计数器 */}
+      {/* 阅读量计数器（同时记录页面访问） */}
       <ViewCounter postId={post.id} />
       
       <article className="max-w-3xl mx-auto px-4">
