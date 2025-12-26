@@ -1,4 +1,3 @@
-// Package handler 评论处理器
 package handler
 
 import (
@@ -12,31 +11,20 @@ import (
 	"kuaiyu/pkg/response"
 )
 
-// ===========================================
-// 评论处理器
-// ===========================================
-
-// CommentHandler 评论处理器
 type CommentHandler struct {
 	repo *repository.CommentRepository
 }
 
-// NewCommentHandler 创建评论处理器
 func NewCommentHandler() *CommentHandler {
 	return &CommentHandler{
 		repo: repository.NewCommentRepository(),
 	}
 }
 
-// ===========================================
-// 公开接口
-// ===========================================
-
-// List 获取评论列表
 func (h *CommentHandler) List(c *gin.Context) {
 	postID, _ := GetIDParam(c, "post_id")
 	lifeID, _ := GetIDParam(c, "life_record_id")
-	userEmail := c.Query("email") // 用户邮箱，用于查询自己的待审核评论
+	userEmail := c.Query("email")
 	
 	var comments []model.Comment
 	var err error
@@ -45,7 +33,6 @@ func (h *CommentHandler) List(c *gin.Context) {
 	
 	if postID > 0 {
 		comments, err = h.repo.FindByPostID(postID, true)
-		// 追加用户自己的待审核评论
 		if userEmail != "" {
 			var pendingComments []model.Comment
 			db.Where("post_id = ? AND email = ? AND status = ?", postID, userEmail, "pending").
@@ -54,7 +41,6 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	} else if lifeID > 0 {
 		comments, err = h.repo.FindByLifeRecordID(lifeID, true)
-		// 追加用户自己的待审核评论
 		if userEmail != "" {
 			var pendingComments []model.Comment
 			db.Where("life_record_id = ? AND email = ? AND status = ?", lifeID, userEmail, "pending").
@@ -62,9 +48,7 @@ func (h *CommentHandler) List(c *gin.Context) {
 			comments = append(pendingComments, comments...)
 		}
 	} else {
-		// 获取最近评论（留言板）
 		comments, err = h.repo.FindRecent(20)
-		// 追加用户自己的待审核留言板评论
 		if userEmail != "" {
 			var pendingComments []model.Comment
 			db.Where("post_id IS NULL AND life_record_id IS NULL AND email = ? AND status = ?", userEmail, "pending").
@@ -78,7 +62,6 @@ func (h *CommentHandler) List(c *gin.Context) {
 		return
 	}
 	
-	// 去重（避免已批准的评论重复显示）
 	seen := make(map[uint]bool)
 	uniqueComments := make([]model.Comment, 0)
 	for _, c := range comments {
@@ -89,15 +72,13 @@ func (h *CommentHandler) List(c *gin.Context) {
 	}
 	comments = uniqueComments
 	
-	// 排序：置顶评论在前，然后按创建时间排序
 	sort.Slice(comments, func(i, j int) bool {
 		if comments[i].IsPinned != comments[j].IsPinned {
 			return comments[i].IsPinned
 		}
-		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
+		return comments[i].CreatedAt.After(comments[j].CreatedAt)
 	})
 	
-	// 批量加载所有评论的回复（避免 N+1 查询）
 	if len(comments) > 0 {
 		commentIDs := make([]uint, len(comments))
 		commentMap := make(map[uint]*model.Comment)
@@ -106,13 +87,11 @@ func (h *CommentHandler) List(c *gin.Context) {
 			commentMap[comments[i].ID] = &comments[i]
 		}
 		
-		// 一次性查询所有回复
 		var allReplies []model.Comment
 		db.Where("parent_id IN ? AND status = ?", commentIDs, constants.CommentStatusApproved).
 			Order("parent_id ASC, created_at ASC").
 			Find(&allReplies)
 		
-		// 将回复分组到对应的父评论
 		for i := range allReplies {
 			reply := allReplies[i]
 			if reply.ParentID != nil {
@@ -123,7 +102,6 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	}
 	
-	// 创建所有评论ID到昵称的映射（包括回复的父评论）
 	allCommentIDs := make(map[uint]bool)
 	for _, comment := range comments {
 		allCommentIDs[comment.ID] = true
@@ -137,7 +115,6 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	}
 	
-	// 批量查询所有需要的评论昵称
 	commentIDList := make([]uint, 0, len(allCommentIDs))
 	for id := range allCommentIDs {
 		commentIDList = append(commentIDList, id)
@@ -159,12 +136,10 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	}
 	
-	// 转换为视图对象
 	items := make([]model.CommentVO, len(comments))
 	for i, comment := range comments {
 		vo := comment.ToVO()
 		
-		// 处理回复
 		if len(comment.Replies) > 0 {
 			replyCount := len(comment.Replies)
 			displayLimit := constants.DefaultReplyLimit
@@ -190,18 +165,20 @@ func (h *CommentHandler) List(c *gin.Context) {
 	response.Success(c, items)
 }
 
-// buildReplyVO 构建回复的视图对象并填充父评论昵称
 func buildReplyVO(reply *model.Comment, nicknameMap map[uint]string) model.CommentVO {
 	replyVO := reply.ToVO()
-	if reply.ParentID != nil {
-		if parentNickname, exists := nicknameMap[*reply.ParentID]; exists {
-			replyVO.ParentNickname = parentNickname
+	replyToID := reply.ReplyToID
+	if replyToID == nil {
+		replyToID = reply.ParentID
+	}
+	if replyToID != nil {
+		if nickname, exists := nicknameMap[*replyToID]; exists {
+			replyVO.ParentNickname = nickname
 		}
 	}
 	return replyVO
 }
 
-// Create 创建评论
 func (h *CommentHandler) Create(c *gin.Context) {
 	var req model.CreateCommentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -209,13 +186,11 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		return
 	}
 	
-	// 验证必须有关联
-	if req.PostID == nil && req.LifeRecordID == nil && req.ParentID == nil {
+	if !req.IsGuestbook && req.PostID == nil && req.LifeRecordID == nil && req.ParentID == nil {
 		response.BadRequest(c, "必须指定评论对象")
 		return
 	}
 	
-	// 判断是否首次评论
 	isFirst := h.repo.IsFirstComment(req.Email)
 	status := string(constants.CommentStatusApproved)
 	if isFirst {
@@ -226,6 +201,7 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		PostID:       req.PostID,
 		LifeRecordID: req.LifeRecordID,
 		ParentID:     req.ParentID,
+		ReplyToID:    req.ReplyToID,
 		Nickname:     req.Nickname,
 		Email:        req.Email,
 		Avatar:       req.Avatar,
@@ -254,11 +230,6 @@ func (h *CommentHandler) Create(c *gin.Context) {
 	})
 }
 
-// ===========================================
-// 管理接口
-// ===========================================
-
-// AdminList 管理后台评论列表
 func (h *CommentHandler) AdminList(c *gin.Context) {
 	page, limit := GetPageParams(c)
 	status := c.Query("status")

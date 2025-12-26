@@ -1,7 +1,3 @@
-// ===========================================
-// 评论区组件
-// ===========================================
-
 'use client';
 
 import { Avatar, Button, Card, Empty, Loading } from '@/components/ui';
@@ -17,10 +13,10 @@ interface Comment {
   content: string;
   status: string;
   is_admin: boolean;
-  is_pinned?: boolean; // 是否置顶
+  is_pinned?: boolean;
   created_at: string;
   parent_id?: number;
-  parent_nickname?: string; // 被回复的用户昵称
+  parent_nickname?: string;
   replies?: Comment[];
 }
 
@@ -42,16 +38,17 @@ export default function CommentSection({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
-
-  // 表单状态 (从本地存储恢复)
+  const [replyToCommentId, setReplyToCommentId] = useState<number | null>(null);
+  const [replyToNickname, setReplyToNickname] = useState<string>('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [content, setContent] = useState('');
+  const [replyContent, setReplyContent] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [hasStoredUserInfo, setHasStoredUserInfo] = useState(false);
 
-  // 从本地存储恢复用户信息
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedUser = localStorage.getItem('kuaiyu_comment_user');
@@ -61,16 +58,15 @@ export default function CommentSection({
           setNickname(user.nickname || '');
           setEmail(user.email || '');
           setWebsite(user.website || '');
+          setHasStoredUserInfo(true);
         } catch (e) { }
       }
     }
   }, []);
 
-  // 加载评论
   const fetchComments = async () => {
     setLoading(true);
     try {
-      // 传递用户 email 以获取自己的待审核评论
       const userEmail = email || localStorage.getItem('kuaiyu_comment_email') || '';
       const res = await publicApi.comments.list({
         post_id: postId,
@@ -90,10 +86,10 @@ export default function CommentSection({
     fetchComments();
   }, [postId, lifeRecordId, isGuestbook]);
 
-  // 提交评论
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !nickname.trim() || !email.trim()) return;
+    const currentContent = replyTo ? replyContent : content;
+    if (!currentContent.trim() || !nickname.trim() || !email.trim()) return;
 
     setSubmitting(true);
     setSubmitSuccess(false);
@@ -103,25 +99,27 @@ export default function CommentSection({
         life_record_id: lifeRecordId,
         is_guestbook: isGuestbook,
         parent_id: replyTo || undefined,
+        reply_to_id: replyToCommentId || undefined,
         nickname,
         email,
         website,
-        content,
+        content: currentContent,
       });
 
-      // 保存用户信息到本地存储
       localStorage.setItem('kuaiyu_comment_user', JSON.stringify({ nickname, email, website }));
       localStorage.setItem('kuaiyu_comment_email', email);
+      setHasStoredUserInfo(true);
 
-      // 检查是否待审核
       setIsPending(res.data?.status === 'pending');
       setSubmitSuccess(true);
 
-      // 清空内容
-      setContent('');
+      if (replyTo) {
+        setReplyContent('');
+      } else {
+        setContent('');
+      }
       setReplyTo(null);
 
-      // 重新加载评论
       setTimeout(() => fetchComments(), 500);
     } catch (error) {
       console.error('Failed to submit comment:', error);
@@ -140,8 +138,7 @@ export default function CommentSection({
     });
   };
 
-  // 渲染评论
-  const renderComment = (comment: Comment, isReply = false) => (
+  const renderComment = (comment: Comment, isReply = false, parentId?: number) => (
     <div
       key={comment.id}
       className={`${isReply ? 'ml-12 mt-4' : 'mb-6'}`}
@@ -178,24 +175,65 @@ export default function CommentSection({
           </div>
           <p className="text-gray-300 mb-2">{comment.content}</p>
           <button
-            onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
+            onClick={() => {
+              if (replyTo === (isReply && parentId ? parentId : comment.id)) {
+                setReplyTo(null);
+                setReplyToCommentId(null);
+                setReplyContent('');
+                setReplyToNickname('');
+              } else {
+                setReplyTo(isReply && parentId ? parentId : comment.id);
+                setReplyToCommentId(comment.id);
+                setReplyToNickname(comment.nickname);
+              }
+            }}
             className="text-sm text-gray-500 hover:text-primary-400 transition-colors"
           >
-            {replyTo === comment.id ? t('cancelReply') : t('reply')}
+            {(replyTo === (isReply && parentId ? parentId : comment.id) && replyToCommentId === comment.id) ? t('cancelReply') : t('reply')}
           </button>
 
-          {/* 回复表单 */}
-          {replyTo === comment.id && (
-            <form onSubmit={handleSubmit} className="mt-4">
+          {((replyTo === comment.id && replyToCommentId === comment.id) || (isReply && replyTo === parentId && replyToCommentId === comment.id)) && (
+            <form onSubmit={handleSubmit} className="mt-4 p-4 bg-bg-secondary rounded-lg border border-border">
+              <div className="mb-4 p-3 bg-dark-800/50 rounded border-l-2 border-primary-500">
+                <div className="text-sm text-gray-400 mb-1">回复 @{replyToNickname}</div>
+                <p className="text-sm text-gray-300">{comment.content}</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder={t('nicknamePlaceholder')}
+                  className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
+                  disabled={hasStoredUserInfo}
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('emailPlaceholder')}
+                  className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
+                  disabled={hasStoredUserInfo}
+                />
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder={t('websitePlaceholder')}
+                  className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                />
+              </div>
               <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
                 placeholder={t('replyPlaceholder', { name: comment.nickname })}
-                className="w-full px-4 py-3 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none"
+                className="w-full px-4 py-3 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
                 rows={3}
                 required
               />
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-end">
                 <Button type="submit" size="sm" loading={submitting}>
                   {t('submitReply')}
                 </Button>
@@ -205,8 +243,7 @@ export default function CommentSection({
         </div>
       </div>
 
-      {/* 子评论 */}
-      {comment.replies?.map((reply) => renderComment(reply, true))}
+      {comment.replies?.map((reply) => renderComment(reply, true, comment.id))}
     </div>
   );
 
@@ -216,7 +253,6 @@ export default function CommentSection({
         {t('title')} ({comments.length})
       </h3>
 
-      {/* 提交成功提示 */}
       {submitSuccess && (
         <div className={`mb-4 p-4 rounded-lg ${isPending ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
           <p className={isPending ? 'text-yellow-400' : 'text-green-400'}>
@@ -225,8 +261,7 @@ export default function CommentSection({
         </div>
       )}
 
-      {/* 评论表单 */}
-      <Card className="mb-8">
+      <Card className="mb-8" hoverable={false}>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <input
@@ -234,30 +269,32 @@ export default function CommentSection({
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder={t('nicknamePlaceholder')}
-              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               required
+              disabled={hasStoredUserInfo}
             />
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('emailPlaceholder')}
-              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               required
+              disabled={hasStoredUserInfo}
             />
             <input
               type="url"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder={t('websitePlaceholder')}
-              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
             />
           </div>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('contentPlaceholder')}
-            className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
+            className="w-full px-4 py-3 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
             rows={4}
             required
           />
@@ -269,7 +306,6 @@ export default function CommentSection({
         </form>
       </Card>
 
-      {/* 评论列表 */}
       {loading ? (
         <Loading />
       ) : comments.length > 0 ? (

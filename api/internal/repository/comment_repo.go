@@ -33,7 +33,7 @@ func (r *CommentRepository) FindByPostID(postID uint, includeReplies bool) ([]mo
 	
 	query := r.db.Where("post_id = ? AND parent_id IS NULL AND status = ?",
 		postID, constants.CommentStatusApproved).
-		Order("is_pinned DESC, created_at ASC")
+		Order("is_pinned DESC, created_at DESC")
 	
 	if includeReplies {
 		query = query.Preload("Replies", func(db *gorm.DB) *gorm.DB {
@@ -52,7 +52,7 @@ func (r *CommentRepository) FindByLifeRecordID(lifeRecordID uint, includeReplies
 	
 	query := r.db.Where("life_record_id = ? AND parent_id IS NULL AND status = ?",
 		lifeRecordID, constants.CommentStatusApproved).
-		Order("is_pinned DESC, created_at ASC")
+		Order("is_pinned DESC, created_at DESC")
 	
 	if includeReplies {
 		query = query.Preload("Replies", func(db *gorm.DB) *gorm.DB {

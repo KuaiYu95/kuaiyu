@@ -211,6 +211,7 @@ export const commentApi = {
     life_record_id?: number;
     is_guestbook?: boolean;
     parent_id?: number;
+    reply_to_id?: number;
     nickname: string;
     email: string;
     avatar?: string;
@@ -231,11 +232,11 @@ export const configApi = {
 export const analyticsApi = {
   // 记录页面访问
   pageView: (data: { page_type: string; page_id?: number; referer?: string }) =>
-    api.post('/api/analytics/pageview', data).catch(() => {}), // 静默失败
+    api.post('/api/analytics/pageview', data).catch(() => { }), // 静默失败
 
   // 记录事件
   track: (data: { event_type: string; event_name: string; page_type?: string; page_id?: number; properties?: Record<string, any> }) =>
-    api.post('/api/analytics/track', data).catch(() => {}), // 静默失败
+    api.post('/api/analytics/track', data).catch(() => { }), // 静默失败
 };
 
 // ===========================================
