@@ -25,7 +25,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function formatDate(date: string | Date, locale: string = 'zh'): string {
   const d = new Date(date);
-  
+
   if (locale === 'zh') {
     return d.toLocaleDateString('zh-CN', {
       year: 'numeric',
@@ -33,7 +33,7 @@ export function formatDate(date: string | Date, locale: string = 'zh'): string {
       day: 'numeric',
     });
   }
-  
+
   return d.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -48,24 +48,35 @@ export function formatRelativeTime(date: string | Date, locale: string = 'zh'): 
   const d = new Date(date);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
-  
+
+  // 如果时间在未来，返回绝对日期
+  if (diff < 0) {
+    return formatDate(date, locale);
+  }
+
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+
   if (locale === 'zh') {
-    if (days > 30) return formatDate(date, locale);
+    if (months > 0) return formatDate(date, locale);
+    if (weeks > 0) return `${weeks} 周前`;
     if (days > 0) return `${days} 天前`;
     if (hours > 0) return `${hours} 小时前`;
     if (minutes > 0) return `${minutes} 分钟前`;
+    if (seconds > 0) return `${seconds} 秒前`;
     return '刚刚';
   }
-  
-  if (days > 30) return formatDate(date, locale);
+
+  if (months > 0) return formatDate(date, locale);
+  if (weeks > 0) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
   if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
   if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  if (seconds > 0) return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
   return 'just now';
 }
 
@@ -97,7 +108,7 @@ export function generateId(): string {
  */
 export function getStorage<T>(key: string, defaultValue: T): T {
   if (typeof window === 'undefined') return defaultValue;
-  
+
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
@@ -111,7 +122,7 @@ export function getStorage<T>(key: string, defaultValue: T): T {
  */
 export function setStorage<T>(key: string, value: T): void {
   if (typeof window === 'undefined') return;
-  
+
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
@@ -124,7 +135,7 @@ export function setStorage<T>(key: string, value: T): void {
  */
 export function removeStorage(key: string): void {
   if (typeof window === 'undefined') return;
-  
+
   try {
     localStorage.removeItem(key);
   } catch {
@@ -141,13 +152,13 @@ export function removeStorage(key: string): void {
  */
 export function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       searchParams.append(key, String(value));
     }
   });
-  
+
   const query = searchParams.toString();
   return query ? `?${query}` : '';
 }
@@ -158,11 +169,11 @@ export function buildQueryString(params: Record<string, any>): string {
 export function parseQueryString(query: string): Record<string, string> {
   const params = new URLSearchParams(query);
   const result: Record<string, string> = {};
-  
+
   params.forEach((value, key) => {
     result[key] = value;
   });
-  
+
   return result;
 }
 
@@ -219,7 +230,7 @@ export function isTouchDevice(): boolean {
  */
 export function scrollToTop(smooth: boolean = true): void {
   if (typeof window === 'undefined') return;
-  
+
   window.scrollTo({
     top: 0,
     behavior: smooth ? 'smooth' : 'auto',
@@ -231,9 +242,9 @@ export function scrollToTop(smooth: boolean = true): void {
  */
 export function scrollToElement(element: HTMLElement, offset: number = 0): void {
   if (typeof window === 'undefined') return;
-  
+
   const top = element.getBoundingClientRect().top + window.scrollY - offset;
-  
+
   window.scrollTo({
     top,
     behavior: 'smooth',

@@ -1,7 +1,6 @@
-import { Empty, Tag } from '@/components/ui';
+import { Empty, RelativeTime, Tag } from '@/components/ui';
 import { commentApi, configApi, lifeApi, postApi, tagApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { formatDate } from '@/lib/utils';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -104,7 +103,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                           {post.excerpt}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-text-secondary">
-                          <span>{formatDate(post.published_at || post.created_at, locale)}</span>
+                          <RelativeTime date={post.published_at || post.created_at} locale={locale} />
                           <span className="text-border">·</span>
                           <span>{post.view_count} {tBlog('views')}</span>
                           {post.tags && post.tags.length > 0 && (
@@ -165,7 +164,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                     {record.content}
                   </p>
                   <p className="text-xs text-text-secondary">
-                    {formatDate(record.published_at || record.created_at, locale)}
+                    <RelativeTime date={record.published_at || record.created_at} locale={locale} />
                   </p>
                 </div>
               </Link>
@@ -243,7 +242,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
                       {comment.content}
                     </p>
                     <p className="text-xs text-text-secondary">
-                      {formatDate(comment.created_at, locale)}
+                      <RelativeTime date={comment.created_at} locale={locale} />
                     </p>
                   </div>
                 </div>

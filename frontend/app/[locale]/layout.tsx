@@ -1,14 +1,15 @@
-import { ReactNode } from 'react';
+import '@/app/globals.css';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import ScrollToTop from '@/components/ui/ScrollToTop';
+import { locales } from '@/i18n';
+import { configApi } from '@/lib/api';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { locales } from '@/i18n';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { configApi } from '@/lib/api';
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants';
-import '@/app/globals.css';
+import { notFound } from 'next/navigation';
+import { ReactNode } from 'react';
 
 // ===========================================
 // 根布局
@@ -63,14 +64,15 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className="dark">
-      <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
+    <html lang={locale} className="dark" style={{ backgroundColor: '#0a0a0a' }}>
+      <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary" style={{ backgroundColor: '#0a0a0a' }}>
         <NextIntlClientProvider messages={messages}>
           <Header locale={locale} />
-          <main className="flex-1 pt-16">
+          <main className="flex-1 pt-16" style={{ backgroundColor: '#0a0a0a' }}>
             {children}
           </main>
-          <Footer config={config} locale={locale} />
+          <Footer config={config || undefined} locale={locale} />
+          <ScrollToTop />
         </NextIntlClientProvider>
       </body>
     </html>
