@@ -1,0 +1,111 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "出错了",
+    "retry": "重试",
+    "submit": "提交",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "viewMore": "查看更多",
+    "readMore": "阅读全文",
+    "back": "返回",
+    "home": "首页",
+    "noData": "暂无数据"
+  },
+  "nav": {
+    "blog": "博客",
+    "life": "生活",
+    "archive": "归档",
+    "category": "类别",
+    "guestbook": "留言"
+  },
+  "home": {
+    "recentPosts": "近期博客",
+    "recentLife": "近期生活",
+    "recentComments": "近期留言",
+    "tagCloud": "标签分类"
+  },
+  "blog": {
+    "title": "博客",
+    "description": "分享技术与思考",
+    "views": "阅读",
+    "publishedAt": "发布于",
+    "noPosts": "暂无文章",
+    "filterByTag": "当前标签",
+    "clearFilter": "清除筛选",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "backToList": "返回列表"
+  },
+  "life": {
+    "title": "生活",
+    "description": "记录生活点滴",
+    "noRecords": "暂无记录",
+    "backToList": "返回列表"
+  },
+  "archive": {
+    "title": "归档",
+    "description": "所有文章按时间归档",
+    "year": "年",
+    "totalPosts": "共 {count} 篇文章",
+    "noPosts": "暂无文章"
+  },
+  "categories": {
+    "title": "分类",
+    "description": "所有标签分类",
+    "totalTags": "共 {count} 个标签",
+    "noTags": "暂无标签",
+    "posts": "篇"
+  },
+  "guestbook": {
+    "title": "留言板",
+    "description": "欢迎留下你的足迹",
+    "noMessage": "暂无留言"
+  },
+  "comment": {
+    "title": "评论",
+    "nickname": "昵称",
+    "email": "邮箱",
+    "website": "个人网站",
+    "avatar": "头像",
+    "content": "评论内容",
+    "reply": "回复",
+    "cancelReply": "取消回复",
+    "viewMoreReplies": "查看更多回复",
+    "submit": "发表评论",
+    "submitReply": "发表回复",
+    "pendingTip": "评论提交成功，等待审核",
+    "successTip": "评论发布成功",
+    "required": "必填",
+    "optional": "选填",
+    "nicknamePlaceholder": "请输入昵称 *",
+    "emailPlaceholder": "请输入邮箱 *",
+    "websitePlaceholder": "https://example.com (选填)",
+    "contentPlaceholder": "说点什么吧...",
+    "replyPlaceholder": "回复 @{name}...",
+    "noComments": "暂无评论，快来抢沙发吧！",
+    "admin": "博主"
+  },
+  "error": {
+    "404": {
+      "title": "页面不存在",
+      "description": "抱歉，您访问的页面不存在"
+    },
+    "500": {
+      "title": "服务器错误",
+      "description": "抱歉，服务器出现了问题，请稍后再试"
+    },
+    "backHome": "返回首页",
+    "backPrev": "返回上一页"
+  },
+  "footer": {
+    "poweredBy": "Powered by",
+    "copyright": "© {year} {name}. All rights reserved."
+  },
+  "language": {
+    "zh": "中文",
+    "en": "English"
+  }
+}

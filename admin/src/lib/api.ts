@@ -1,0 +1,226 @@
+// ===========================================
+// API 请求封装
+// ===========================================
+
+import axios, { AxiosError, AxiosResponse } from 'axios';
+import { API_BASE_URL, STORAGE_KEYS } from './constants';
+
+// ===========================================
+// Axios 实例
+// ===========================================
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 请求拦截器
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 响应拦截器
+api.interceptors.response.use(
+  (response: AxiosResponse) => response.data,
+  async (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Token 过期，清除认证信息
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ===========================================
+// 类型定义
+// ===========================================
+
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+export interface PagedData<T> {
+  items: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  avatar: string;
+  last_login: string | null;
+}
+
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  cover_image: string;
+  status: string;
+  view_count: number;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+  tags: Tag[];
+}
+
+export interface LifeRecord {
+  id: number;
+  title: string;
+  content: string;
+  cover_image: string;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  color: string;
+  post_count?: number;
+}
+
+export interface Comment {
+  id: number;
+  post_id: number | null;
+  life_record_id: number | null;
+  parent_id: number | null;
+  nickname: string;
+  email: string;
+  avatar: string;
+  website: string;
+  content: string;
+  is_admin: boolean;
+  status: string;
+  ip_address: string;
+  created_at: string;
+  post_title?: string;
+  life_title?: string;
+}
+
+export interface Overview {
+  total_pv: number;
+  today_pv: number;
+  total_uv: number;
+  today_uv: number;
+  post_count: number;
+  life_count: number;
+  comment_count: number;
+  tag_count: number;
+}
+
+// ===========================================
+// API 方法
+// ===========================================
+
+// 认证
+export const authApi = {
+  login: (data: { username: string; password: string }) =>
+    api.post<any, ApiResponse<{ access_token: string; refresh_token: string; user: User }>>('/api/admin/login', data),
+  logout: () => api.post('/api/admin/logout'),
+  me: () => api.get<any, ApiResponse<User>>('/api/admin/me'),
+  changePassword: (data: { old_password: string; new_password: string }) =>
+    api.post('/api/admin/change-password', data),
+};
+
+// 文章
+export const postApi = {
+  list: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get<any, ApiResponse<PagedData<Post>>>('/api/admin/posts', { params }),
+  get: (id: number) => api.get<any, ApiResponse<Post>>(`/api/admin/posts/${id}`),
+  create: (data: Partial<Post> & { tag_ids?: number[] }) =>
+    api.post<any, ApiResponse<Post>>('/api/admin/posts', data),
+  update: (id: number, data: Partial<Post> & { tag_ids?: number[] }) =>
+    api.put<any, ApiResponse<Post>>(`/api/admin/posts/${id}`, data),
+  delete: (id: number) => api.delete(`/api/admin/posts/${id}`),
+};
+
+// 生活记录
+export const lifeApi = {
+  list: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get<any, ApiResponse<PagedData<LifeRecord>>>('/api/admin/life', { params }),
+  get: (id: number) => api.get<any, ApiResponse<LifeRecord>>(`/api/admin/life/${id}`),
+  create: (data: Partial<LifeRecord>) =>
+    api.post<any, ApiResponse<LifeRecord>>('/api/admin/life', data),
+  update: (id: number, data: Partial<LifeRecord>) =>
+    api.put<any, ApiResponse<LifeRecord>>(`/api/admin/life/${id}`, data),
+  delete: (id: number) => api.delete(`/api/admin/life/${id}`),
+};
+
+// 标签
+export const tagApi = {
+  list: () => api.get<any, ApiResponse<Tag[]>>('/api/admin/tags'),
+  create: (data: Partial<Tag>) => api.post<any, ApiResponse<Tag>>('/api/admin/tags', data),
+  update: (id: number, data: Partial<Tag>) =>
+    api.put<any, ApiResponse<Tag>>(`/api/admin/tags/${id}`, data),
+  delete: (id: number) => api.delete(`/api/admin/tags/${id}`),
+};
+
+// 评论
+export const commentApi = {
+  list: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get<any, ApiResponse<PagedData<Comment>>>('/api/admin/comments', { params }),
+  updateStatus: (id: number, status: string) =>
+    api.put(`/api/admin/comments/${id}`, { status }),
+  delete: (id: number) => api.delete(`/api/admin/comments/${id}`),
+  reply: (id: number, content: string) =>
+    api.post(`/api/admin/comments/${id}/reply`, { content }),
+};
+
+// 配置
+export const configApi = {
+  get: () => api.get<any, ApiResponse<Record<string, any>>>('/api/admin/config'),
+  update: (configs: { key: string; value: any; type?: string }[]) =>
+    api.put('/api/admin/config', { configs }),
+};
+
+// 上传
+export const uploadApi = {
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<any, ApiResponse<{ url: string; filename: string; size: number }>>(
+      '/api/admin/upload',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+  },
+};
+
+// 统计
+export const analyticsApi = {
+  overview: () => api.get<any, ApiResponse<Overview>>('/api/admin/analytics/overview'),
+  visits: () => api.get<any, ApiResponse<{ date: string; pv: number; uv: number }[]>>('/api/admin/analytics/visits'),
+  popular: () => api.get<any, ApiResponse<{ id: number; title: string; view_count: number }[]>>('/api/admin/analytics/popular'),
+  charts: (chartType: string) =>
+    api.get<any, ApiResponse<any>>('/api/admin/analytics/charts', { params: { chart_type: chartType } }),
+};
+
+export default api;
+

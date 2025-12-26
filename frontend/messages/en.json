@@ -1,0 +1,111 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "viewMore": "View More",
+    "readMore": "Read More",
+    "back": "Back",
+    "home": "Home",
+    "noData": "No data"
+  },
+  "nav": {
+    "blog": "Blog",
+    "life": "Life",
+    "archive": "Archive",
+    "category": "Categories",
+    "guestbook": "Guestbook"
+  },
+  "home": {
+    "recentPosts": "Recent Posts",
+    "recentLife": "Recent Life",
+    "recentComments": "Recent Comments",
+    "tagCloud": "Tags"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Sharing tech and thoughts",
+    "views": "views",
+    "publishedAt": "Published at",
+    "noPosts": "No posts yet",
+    "filterByTag": "Tag",
+    "clearFilter": "Clear filter",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "backToList": "Back to list"
+  },
+  "life": {
+    "title": "Life",
+    "description": "Recording life moments",
+    "noRecords": "No records yet",
+    "backToList": "Back to list"
+  },
+  "archive": {
+    "title": "Archive",
+    "description": "All posts by date",
+    "year": "Year",
+    "totalPosts": "{count} posts in total",
+    "noPosts": "No posts yet"
+  },
+  "categories": {
+    "title": "Categories",
+    "description": "All tags and categories",
+    "totalTags": "{count} tags in total",
+    "noTags": "No tags yet",
+    "posts": "posts"
+  },
+  "guestbook": {
+    "title": "Guestbook",
+    "description": "Leave your message",
+    "noMessage": "No messages yet"
+  },
+  "comment": {
+    "title": "Comments",
+    "nickname": "Nickname",
+    "email": "Email",
+    "website": "Website",
+    "avatar": "Avatar",
+    "content": "Content",
+    "reply": "Reply",
+    "cancelReply": "Cancel",
+    "viewMoreReplies": "View more replies",
+    "submit": "Submit",
+    "submitReply": "Reply",
+    "pendingTip": "Comment submitted, pending approval",
+    "successTip": "Comment published",
+    "required": "Required",
+    "optional": "Optional",
+    "nicknamePlaceholder": "Your nickname *",
+    "emailPlaceholder": "Your email *",
+    "websitePlaceholder": "https://example.com (optional)",
+    "contentPlaceholder": "Say something...",
+    "replyPlaceholder": "Reply to @{name}...",
+    "noComments": "No comments yet, be the first!",
+    "admin": "Admin"
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "Sorry, the page you are looking for does not exist"
+    },
+    "500": {
+      "title": "Server Error",
+      "description": "Sorry, something went wrong. Please try again later"
+    },
+    "backHome": "Back to Home",
+    "backPrev": "Go Back"
+  },
+  "footer": {
+    "poweredBy": "Powered by",
+    "copyright": "© {year} {name}. All rights reserved."
+  },
+  "language": {
+    "zh": "中文",
+    "en": "English"
+  }
+}

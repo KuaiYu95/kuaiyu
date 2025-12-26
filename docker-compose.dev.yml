@@ -1,0 +1,32 @@
+# ===========================================
+# Docker Compose - 开发环境
+# ===========================================
+
+version: "3.8"
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: kuaiyu_mysql_dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: kuaiyu_db
+      MYSQL_USER: kuaiyu
+      MYSQL_PASSWORD: kuaiyu123
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./api/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  mysql_dev_data:
+    driver: local
+
