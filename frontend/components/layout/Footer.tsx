@@ -40,27 +40,17 @@ export default function Footer({ config, locale }: FooterProps) {
             <p className="text-sm text-text-secondary max-w-xs">
               {config?.footer_left_description || '一个热爱技术的开发者'}
             </p>
-            {config?.site_icp && (
-              <a
-                href="https://beian.miit.gov.cn/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 text-xs text-text-secondary hover:text-text-primary"
-              >
-                {config.site_icp}
-              </a>
-            )}
           </div>
 
           {/* 右侧链接 */}
           {config?.footer_right_categories &&
             Array.isArray(config.footer_right_categories) &&
             config.footer_right_categories.length > 0 && (
-              <div className="flex-1 flex flex-wrap justify-end gap-x-24 gap-y-8 md:pl-12">
+              <div className="flex-1 flex flex-wrap justify-end gap-x-36 gap-y-8 md:pl-12">
                 {config.footer_right_categories
                   .filter((cat) => cat && cat.category)
                   .map((category, index) => (
-                    <div key={index} className="text-right">
+                    <div key={index} className="text-left">
                       <h4 className="text-sm font-semibold text-text-accent mb-3">
                         {category.category}
                       </h4>
@@ -88,11 +78,26 @@ export default function Footer({ config, locale }: FooterProps) {
             )}
         </div>
         <div className="mt-8 pt-2 pb-2 border-t border-border text-center">
-          <p className="text-xs text-text-secondary">
-            {t('copyright', {
-              year: currentYear,
-              name: config?.site_name || 'Yu.kuai',
-            })}
+          <p className="text-xs text-text-secondary flex items-center justify-center gap-2 flex-wrap">
+            <span>
+              {t('copyright', {
+                year: currentYear,
+                name: config?.site_name || 'Yu.kuai',
+              })}
+            </span>
+            {config?.site_icp && (
+              <>
+                <span className="text-text-tertiary">|</span>
+                <a
+                  href="https://beian.miit.gov.cn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-text-primary"
+                >
+                  {config.site_icp}
+                </a>
+              </>
+            )}
           </p>
         </div>
       </div>
