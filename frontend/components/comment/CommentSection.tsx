@@ -70,7 +70,26 @@ export default function CommentSection({
     }
     try {
       const userEmail = email || localStorage.getItem('kuaiyu_comment_email') || '';
+      
+      // 确定评论类型和目标ID
+      let commentType: 'post' | 'life' | 'guestbook' | undefined;
+      let targetId: number | undefined;
+      
+      if (isGuestbook) {
+        commentType = 'guestbook';
+        targetId = undefined;
+      } else if (postId) {
+        commentType = 'post';
+        targetId = postId;
+      } else if (lifeRecordId) {
+        commentType = 'life';
+        targetId = lifeRecordId;
+      }
+      
       const res = await publicApi.comments.list({
+        comment_type: commentType,
+        target_id: targetId,
+        // 向后兼容参数
         post_id: postId,
         life_record_id: lifeRecordId,
         is_guestbook: isGuestbook,
@@ -100,7 +119,25 @@ export default function CommentSection({
     setSubmitting(true);
     setSubmitSuccess(false);
     try {
+      // 确定评论类型和目标ID
+      let commentType: 'post' | 'life' | 'guestbook' | undefined;
+      let targetId: number | undefined;
+      
+      if (isGuestbook) {
+        commentType = 'guestbook';
+        targetId = undefined;
+      } else if (postId) {
+        commentType = 'post';
+        targetId = postId;
+      } else if (lifeRecordId) {
+        commentType = 'life';
+        targetId = lifeRecordId;
+      }
+      
       const res = await publicApi.comments.create({
+        comment_type: commentType,
+        target_id: targetId,
+        // 向后兼容参数
         post_id: postId,
         life_record_id: lifeRecordId,
         is_guestbook: isGuestbook,

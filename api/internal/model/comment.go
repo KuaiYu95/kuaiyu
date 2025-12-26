@@ -6,8 +6,10 @@ import (
 
 type Comment struct {
 	BaseModel
-	PostID         *uint  `gorm:"index" json:"post_id"`
-	LifeRecordID   *uint  `gorm:"index" json:"life_record_id"`
+	CommentType    string `gorm:"size:20;not null;default:post;index:idx_comments_type_target" json:"comment_type"` // post | life | guestbook
+	TargetID       *uint  `gorm:"index:idx_comments_type_target" json:"target_id,omitempty"`                        // 关联的博客ID或生活记录ID
+	PostID         *uint  `gorm:"index" json:"post_id"`                                                              // 保留用于向后兼容
+	LifeRecordID   *uint  `gorm:"index" json:"life_record_id"`                                                      // 保留用于向后兼容
 	ParentID       *uint  `gorm:"index" json:"parent_id"`
 	ReplyToID      *uint  `gorm:"index" json:"reply_to_id"`
 	Nickname       string `gorm:"size:50;not null" json:"nickname"`
@@ -30,16 +32,18 @@ func (Comment) TableName() string {
 }
 
 type CreateCommentRequest struct {
-	PostID       *uint  `json:"post_id"`
-	LifeRecordID *uint  `json:"life_record_id"`
-	IsGuestbook  bool   `json:"is_guestbook"`
-	ParentID     *uint  `json:"parent_id"`
-	ReplyToID    *uint  `json:"reply_to_id"`
-	Nickname     string `json:"nickname" binding:"required,max=50"`
-	Email        string `json:"email" binding:"required,email,max=100"`
-	Avatar       string `json:"avatar" binding:"max=500"`
-	Website      string `json:"website" binding:"max=500"`
-	Content      string `json:"content" binding:"required,max=2000"`
+	CommentType   string `json:"comment_type" binding:"required,oneof=post life guestbook"` // post | life | guestbook
+	TargetID      *uint  `json:"target_id"`                                                 // 博客ID或生活记录ID（留言板时为空）
+	PostID        *uint  `json:"post_id"`                                                   // 保留用于向后兼容
+	LifeRecordID  *uint  `json:"life_record_id"`                                            // 保留用于向后兼容
+	IsGuestbook   bool   `json:"is_guestbook"`                                              // 保留用于向后兼容
+	ParentID      *uint  `json:"parent_id"`
+	ReplyToID     *uint  `json:"reply_to_id"`
+	Nickname      string `json:"nickname" binding:"required,max=50"`
+	Email         string `json:"email" binding:"required,email,max=100"`
+	Avatar        string `json:"avatar" binding:"max=500"`
+	Website       string `json:"website" binding:"max=500"`
+	Content       string `json:"content" binding:"required,max=2000"`
 }
 
 type AdminReplyRequest struct {
@@ -51,42 +55,46 @@ type UpdateCommentRequest struct {
 }
 
 type CommentVO struct {
-	ID            uint         `json:"id"`
-	PostID        *uint        `json:"post_id,omitempty"`
-	LifeRecordID  *uint        `json:"life_record_id,omitempty"`
-	ParentID      *uint        `json:"parent_id,omitempty"`
-	ParentNickname string      `json:"parent_nickname,omitempty"`
-	Nickname      string       `json:"nickname"`
-	Email         string       `json:"email,omitempty"`
-	Avatar        string       `json:"avatar"`
-	Website       string       `json:"website"`
-	Content       string       `json:"content"`
-	IsAdmin       bool         `json:"is_admin"`
-	IsPinned      bool         `json:"is_pinned"`
-	Status        string       `json:"status"`
-	CreatedAt     time.Time    `json:"created_at"`
-	Replies       []CommentVO  `json:"replies,omitempty"`
-	ReplyCount    int          `json:"reply_count,omitempty"`
-	HasMore       bool         `json:"has_more,omitempty"`
+	ID             uint         `json:"id"`
+	CommentType    string       `json:"comment_type"`        // post | life | guestbook
+	TargetID       *uint        `json:"target_id,omitempty"`  // 关联的博客ID或生活记录ID
+	PostID         *uint        `json:"post_id,omitempty"`    // 保留用于向后兼容
+	LifeRecordID   *uint        `json:"life_record_id,omitempty"` // 保留用于向后兼容
+	ParentID       *uint        `json:"parent_id,omitempty"`
+	ParentNickname string       `json:"parent_nickname,omitempty"`
+	Nickname       string       `json:"nickname"`
+	Email          string       `json:"email,omitempty"`
+	Avatar         string       `json:"avatar"`
+	Website        string       `json:"website"`
+	Content        string       `json:"content"`
+	IsAdmin        bool         `json:"is_admin"`
+	IsPinned       bool         `json:"is_pinned"`
+	Status         string       `json:"status"`
+	CreatedAt      time.Time    `json:"created_at"`
+	Replies        []CommentVO  `json:"replies,omitempty"`
+	ReplyCount     int          `json:"reply_count,omitempty"`
+	HasMore        bool         `json:"has_more,omitempty"`
 }
 
 type CommentListVO struct {
-	ID           uint      `json:"id"`
-	PostID       *uint     `json:"post_id,omitempty"`
-	LifeRecordID *uint     `json:"life_record_id,omitempty"`
-	ParentID     *uint     `json:"parent_id,omitempty"`
-	Nickname     string    `json:"nickname"`
-	Email        string    `json:"email"`
-	Avatar       string    `json:"avatar"`
-	Website      string    `json:"website"`
-	Content      string    `json:"content"`
-	IsAdmin      bool      `json:"is_admin"`
-	IsPinned     bool      `json:"is_pinned"`
-	Status       string    `json:"status"`
-	IPAddress    string    `json:"ip_address"`
-	CreatedAt    time.Time `json:"created_at"`
-	PostTitle    string    `json:"post_title,omitempty"`
-	LifeTitle    string    `json:"life_title,omitempty"`
+	ID            uint      `json:"id"`
+	CommentType   string    `json:"comment_type"`        // post | life | guestbook
+	TargetID      *uint     `json:"target_id,omitempty"` // 关联的博客ID或生活记录ID
+	PostID        *uint     `json:"post_id,omitempty"`   // 保留用于向后兼容
+	LifeRecordID  *uint     `json:"life_record_id,omitempty"` // 保留用于向后兼容
+	ParentID      *uint     `json:"parent_id,omitempty"`
+	Nickname      string    `json:"nickname"`
+	Email         string    `json:"email"`
+	Avatar        string    `json:"avatar"`
+	Website       string    `json:"website"`
+	Content       string    `json:"content"`
+	IsAdmin       bool      `json:"is_admin"`
+	IsPinned      bool      `json:"is_pinned"`
+	Status        string    `json:"status"`
+	IPAddress     string    `json:"ip_address"`
+	CreatedAt     time.Time `json:"created_at"`
+	PostTitle     string    `json:"post_title,omitempty"`
+	LifeTitle     string    `json:"life_title,omitempty"`
 }
 
 type CreateCommentResponse struct {
@@ -97,18 +105,20 @@ type CreateCommentResponse struct {
 
 func (c *Comment) ToVO() CommentVO {
 	vo := CommentVO{
-		ID:           c.ID,
-		PostID:       c.PostID,
+		ID:          c.ID,
+		CommentType: c.CommentType,
+		TargetID:    c.TargetID,
+		PostID:      c.PostID,
 		LifeRecordID: c.LifeRecordID,
-		ParentID:     c.ParentID,
-		Nickname:     c.Nickname,
-		Avatar:       c.Avatar,
-		Website:      c.Website,
-		Content:      c.Content,
-		IsAdmin:      c.IsAdmin,
-		IsPinned:     c.IsPinned,
-		Status:       c.Status,
-		CreatedAt:    c.CreatedAt,
+		ParentID:    c.ParentID,
+		Nickname:    c.Nickname,
+		Avatar:      c.Avatar,
+		Website:     c.Website,
+		Content:     c.Content,
+		IsAdmin:     c.IsAdmin,
+		IsPinned:    c.IsPinned,
+		Status:      c.Status,
+		CreatedAt:   c.CreatedAt,
 	}
 	
 	return vo
@@ -123,6 +133,8 @@ func (c *Comment) ToAdminVO() CommentVO {
 func (c *Comment) ToListVO() CommentListVO {
 	return CommentListVO{
 		ID:           c.ID,
+		CommentType:  c.CommentType,
+		TargetID:     c.TargetID,
 		PostID:       c.PostID,
 		LifeRecordID: c.LifeRecordID,
 		ParentID:     c.ParentID,

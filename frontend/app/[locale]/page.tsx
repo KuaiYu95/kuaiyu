@@ -29,7 +29,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
     postApi.recent(),
     lifeApi.list({ limit: 3 }),
     tagApi.list(),
-    commentApi.list({}),
+    commentApi.list({ comment_type: 'guestbook' }), // 只获取留言板的评论
   ]);
 
   const config = configRes.status === 'fulfilled' ? configRes.value.data : null;
@@ -39,7 +39,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
   const comments = commentsRes.status === 'fulfilled' ? commentsRes.value.data.slice(0, 5) : [];
 
   return (
-    <div className="container-content py-12 space-y-16">
+    <div className="container-content pt-12 pb-0 space-y-16">
       {/* 首屏区域 */}
       <section className="text-center py-12 animate-fade-up">
         {config?.home_avatar && (
@@ -204,7 +204,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
       </section>
 
       {/* 近期留言 */}
-      <section className="animate-fade-up" style={{ animationDelay: '0.4s' }}>
+      <section className="animate-fade-up pb-12" style={{ animationDelay: '0.4s' }}>
         <div className="flex items-center justify-between mb-6 relative">
           <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-6 bg-text-accent rounded-full"></div>
           <h2 className="text-xl font-bold text-text-accent">{t('recentComments')}</h2>

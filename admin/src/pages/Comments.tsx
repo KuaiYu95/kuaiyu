@@ -326,7 +326,13 @@ export default function Comments() {
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption" color="text.secondary">
-                    {comment.post_title || comment.life_title || '留言板'}
+                    {comment.comment_type === 'post' && comment.post_title
+                      ? comment.post_title
+                      : comment.comment_type === 'life' && comment.life_title
+                      ? comment.life_title
+                      : comment.comment_type === 'guestbook'
+                      ? '留言板'
+                      : comment.post_title || comment.life_title || '留言板'}
                   </Typography>
                 </TableCell>
                 <TableCell>

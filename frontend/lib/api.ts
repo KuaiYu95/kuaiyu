@@ -103,8 +103,10 @@ export interface LifeRecord {
 // 评论类型
 export interface Comment {
   id: number;
-  post_id?: number;
-  life_record_id?: number;
+  comment_type?: 'post' | 'life' | 'guestbook';
+  target_id?: number;
+  post_id?: number; // 向后兼容
+  life_record_id?: number; // 向后兼容
   parent_id?: number;
   nickname: string;
   avatar: string;
@@ -202,14 +204,23 @@ export const archiveApi = {
 // 评论相关
 export const commentApi = {
   // 获取评论列表
-  list: (params?: { post_id?: number; life_record_id?: number }) =>
+  list: (params?: { 
+    comment_type?: 'post' | 'life' | 'guestbook';
+    target_id?: number;
+    post_id?: number; // 向后兼容
+    life_record_id?: number; // 向后兼容
+    is_guestbook?: boolean; // 向后兼容
+    email?: string;
+  }) =>
     api.get<any, ApiResponse<Comment[]>>('/api/comments', { params }),
 
   // 创建评论
   create: (data: {
-    post_id?: number;
-    life_record_id?: number;
-    is_guestbook?: boolean;
+    comment_type?: 'post' | 'life' | 'guestbook';
+    target_id?: number;
+    post_id?: number; // 向后兼容
+    life_record_id?: number; // 向后兼容
+    is_guestbook?: boolean; // 向后兼容
     parent_id?: number;
     reply_to_id?: number;
     nickname: string;
@@ -257,7 +268,14 @@ export const publicApi = {
     list: tagApi.list,
   },
   comments: {
-    list: (params?: { post_id?: number; life_record_id?: number; is_guestbook?: boolean; email?: string }) =>
+    list: (params?: { 
+      comment_type?: 'post' | 'life' | 'guestbook';
+      target_id?: number;
+      post_id?: number; // 向后兼容
+      life_record_id?: number; // 向后兼容
+      is_guestbook?: boolean; // 向后兼容
+      email?: string;
+    }) =>
       api.get<any, ApiResponse<Comment[]>>('/api/comments', { params }),
     create: commentApi.create,
   },

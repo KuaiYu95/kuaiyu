@@ -2,6 +2,7 @@ package handler
 
 import (
 	"sort"
+	"strconv"
 	
 	"github.com/gin-gonic/gin"
 	"kuaiyu/internal/database"
@@ -22,40 +23,69 @@ func NewCommentHandler() *CommentHandler {
 }
 
 func (h *CommentHandler) List(c *gin.Context) {
+	commentType := c.Query("comment_type") // post | life | guestbook
+	targetIDStr := c.Query("target_id")
 	postID, _ := GetIDParam(c, "post_id")
 	lifeID, _ := GetIDParam(c, "life_record_id")
+	isGuestbook := c.Query("is_guestbook") == "true"
 	userEmail := c.Query("email")
 	
 	var comments []model.Comment
 	var err error
+	var targetID *uint
 	
 	db := database.Get()
 	
-	if postID > 0 {
-		comments, err = h.repo.FindByPostID(postID, true)
-		if userEmail != "" {
-			var pendingComments []model.Comment
-			db.Where("post_id = ? AND email = ? AND status = ?", postID, userEmail, "pending").
-				Order("created_at DESC").Find(&pendingComments)
-			comments = append(pendingComments, comments...)
-		}
-	} else if lifeID > 0 {
-		comments, err = h.repo.FindByLifeRecordID(lifeID, true)
-		if userEmail != "" {
-			var pendingComments []model.Comment
-			db.Where("life_record_id = ? AND email = ? AND status = ?", lifeID, userEmail, "pending").
-				Order("created_at DESC").Find(&pendingComments)
-			comments = append(pendingComments, comments...)
+	// 确定评论类型和目标ID
+	if commentType == "" {
+		// 向后兼容：根据旧参数推断类型
+		if postID > 0 {
+			commentType = "post"
+			targetID = &postID
+		} else if lifeID > 0 {
+			commentType = "life"
+			targetID = &lifeID
+		} else if isGuestbook {
+			commentType = "guestbook"
+			targetID = nil
+		} else {
+			// 默认返回最近评论
+			comments, err = h.repo.FindRecent(20)
+			if userEmail != "" {
+				var pendingComments []model.Comment
+				db.Where("comment_type = ? AND email = ? AND status = ?", "guestbook", userEmail, "pending").
+					Order("created_at DESC").Find(&pendingComments)
+				comments = append(pendingComments, comments...)
+			}
+			goto processComments
 		}
 	} else {
-		comments, err = h.repo.FindRecent(20)
-		if userEmail != "" {
-			var pendingComments []model.Comment
-			db.Where("post_id IS NULL AND life_record_id IS NULL AND email = ? AND status = ?", userEmail, "pending").
-				Order("created_at DESC").Find(&pendingComments)
-			comments = append(pendingComments, comments...)
+		// 使用新的 comment_type 参数
+		if targetIDStr != "" {
+			if id, err := strconv.ParseUint(targetIDStr, 10, 32); err == nil && id > 0 {
+				targetIDVal := uint(id)
+				targetID = &targetIDVal
+			}
 		}
 	}
+	
+	// 根据类型查询评论
+	comments, err = h.repo.FindByCommentType(commentType, targetID, true)
+	
+	// 添加待审核评论（如果提供了用户邮箱）
+	if userEmail != "" {
+		var pendingComments []model.Comment
+		query := db.Where("comment_type = ? AND email = ? AND status = ?", commentType, userEmail, "pending")
+		if targetID != nil {
+			query = query.Where("target_id = ?", *targetID)
+		} else {
+			query = query.Where("target_id IS NULL")
+		}
+		query.Order("created_at DESC").Find(&pendingComments)
+		comments = append(pendingComments, comments...)
+	}
+	
+processComments:
 	
 	if err != nil {
 		response.InternalError(c, "")
@@ -175,9 +205,39 @@ func (h *CommentHandler) Create(c *gin.Context) {
 		return
 	}
 	
-	if !req.IsGuestbook && req.PostID == nil && req.LifeRecordID == nil && req.ParentID == nil {
-		response.BadRequest(c, "必须指定评论对象")
-		return
+	// 确定评论类型和目标ID
+	var commentType string
+	var targetID *uint
+	
+	if req.CommentType != "" {
+		// 使用新字段
+		commentType = req.CommentType
+		targetID = req.TargetID
+	} else {
+		// 向后兼容：根据旧字段推断
+		if req.IsGuestbook {
+			commentType = "guestbook"
+			targetID = nil
+		} else if req.PostID != nil {
+			commentType = "post"
+			targetID = req.PostID
+		} else if req.LifeRecordID != nil {
+			commentType = "life"
+			targetID = req.LifeRecordID
+		} else if req.ParentID != nil {
+			// 如果是回复，需要从父评论获取类型和目标ID
+			var parent model.Comment
+			db := database.Get()
+			if err := db.First(&parent, *req.ParentID).Error; err != nil {
+				response.BadRequest(c, "父评论不存在")
+				return
+			}
+			commentType = parent.CommentType
+			targetID = parent.TargetID
+		} else {
+			response.BadRequest(c, "必须指定评论对象")
+			return
+		}
 	}
 	
 	isFirst := h.repo.IsFirstComment(req.Email)
@@ -187,8 +247,10 @@ func (h *CommentHandler) Create(c *gin.Context) {
 	}
 	
 	comment := model.Comment{
-		PostID:       req.PostID,
-		LifeRecordID: req.LifeRecordID,
+		CommentType:  commentType,
+		TargetID:     targetID,
+		PostID:       req.PostID,       // 保留用于向后兼容
+		LifeRecordID: req.LifeRecordID, // 保留用于向后兼容
 		ParentID:     req.ParentID,
 		ReplyToID:    req.ReplyToID,
 		Nickname:     req.Nickname,
@@ -245,11 +307,30 @@ func (h *CommentHandler) AdminList(c *gin.Context) {
 	for i, comment := range comments {
 		vo := comment.ToListVO()
 		
-		// 获取关联文章标题
-		if comment.PostID != nil {
+		// 根据 comment_type 和 target_id 获取关联信息
+		if comment.CommentType == "post" && comment.TargetID != nil {
+			var post model.Post
+			if db.First(&post, *comment.TargetID).Error == nil {
+				vo.PostTitle = post.Title
+			}
+		} else if comment.CommentType == "life" && comment.TargetID != nil {
+			var life model.LifeRecord
+			if db.First(&life, *comment.TargetID).Error == nil {
+				vo.LifeTitle = life.Title
+			}
+		}
+		
+		// 向后兼容：如果新字段为空，使用旧字段
+		if vo.PostTitle == "" && comment.PostID != nil {
 			var post model.Post
 			if db.First(&post, *comment.PostID).Error == nil {
 				vo.PostTitle = post.Title
+			}
+		}
+		if vo.LifeTitle == "" && comment.LifeRecordID != nil {
+			var life model.LifeRecord
+			if db.First(&life, *comment.LifeRecordID).Error == nil {
+				vo.LifeTitle = life.Title
 			}
 		}
 		
@@ -366,8 +447,10 @@ func (h *CommentHandler) AdminReply(c *gin.Context) {
 	
 	// 创建管理员回复
 	reply := model.Comment{
-		PostID:       parent.PostID,
-		LifeRecordID: parent.LifeRecordID,
+		CommentType:  parent.CommentType,
+		TargetID:     parent.TargetID,
+		PostID:       parent.PostID,       // 保留用于向后兼容
+		LifeRecordID: parent.LifeRecordID, // 保留用于向后兼容
 		ParentID:     &id,
 		Nickname:     "管理员",
 		Email:        "admin@kcat.site",

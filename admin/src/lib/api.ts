@@ -107,8 +107,10 @@ export interface Tag {
 
 export interface Comment {
   id: number;
-  post_id: number | null;
-  life_record_id: number | null;
+  comment_type?: 'post' | 'life' | 'guestbook';
+  target_id?: number | null;
+  post_id: number | null; // 向后兼容
+  life_record_id: number | null; // 向后兼容
   parent_id: number | null;
   nickname: string;
   email: string;

@@ -31,8 +31,8 @@ func NewCommentRepository() *CommentRepository {
 func (r *CommentRepository) FindByPostID(postID uint, includeReplies bool) ([]model.Comment, error) {
 	var comments []model.Comment
 	
-	query := r.db.Where("post_id = ? AND parent_id IS NULL AND status = ?",
-		postID, constants.CommentStatusApproved).
+	query := r.db.Where("comment_type = ? AND target_id = ? AND parent_id IS NULL AND status = ?",
+		"post", postID, constants.CommentStatusApproved).
 		Order("is_pinned DESC, created_at DESC")
 	
 	if includeReplies {
@@ -50,8 +50,8 @@ func (r *CommentRepository) FindByPostID(postID uint, includeReplies bool) ([]mo
 func (r *CommentRepository) FindByLifeRecordID(lifeRecordID uint, includeReplies bool) ([]model.Comment, error) {
 	var comments []model.Comment
 	
-	query := r.db.Where("life_record_id = ? AND parent_id IS NULL AND status = ?",
-		lifeRecordID, constants.CommentStatusApproved).
+	query := r.db.Where("comment_type = ? AND target_id = ? AND parent_id IS NULL AND status = ?",
+		"life", lifeRecordID, constants.CommentStatusApproved).
 		Order("is_pinned DESC, created_at DESC")
 	
 	if includeReplies {
@@ -130,6 +130,32 @@ func (r *CommentRepository) FindRecent(limit int) ([]model.Comment, error) {
 	return comments, err
 }
 
+// FindByCommentType 根据评论类型查找评论
+func (r *CommentRepository) FindByCommentType(commentType string, targetID *uint, includeReplies bool) ([]model.Comment, error) {
+	var comments []model.Comment
+	
+	query := r.db.Where("comment_type = ? AND parent_id IS NULL AND status = ?",
+		commentType, constants.CommentStatusApproved)
+	
+	if targetID != nil {
+		query = query.Where("target_id = ?", *targetID)
+	} else {
+		query = query.Where("target_id IS NULL")
+	}
+	
+	query = query.Order("is_pinned DESC, created_at DESC")
+	
+	if includeReplies {
+		query = query.Preload("Replies", func(db *gorm.DB) *gorm.DB {
+			return db.Where("status = ?", constants.CommentStatusApproved).
+				Order("created_at ASC")
+		})
+	}
+	
+	err := query.Find(&comments).Error
+	return comments, err
+}
+
 // ===========================================
 // 首次评论判断
 // ===========================================
@@ -176,7 +202,7 @@ func (r *CommentRepository) CountByStatus() (map[string]int64, error) {
 func (r *CommentRepository) CountByPostID(postID uint) int64 {
 	var count int64
 	r.db.Model(&model.Comment{}).
-		Where("post_id = ? AND status = ?", postID, constants.CommentStatusApproved).
+		Where("comment_type = ? AND target_id = ? AND status = ?", "post", postID, constants.CommentStatusApproved).
 		Count(&count)
 	return count
 }
@@ -185,7 +211,7 @@ func (r *CommentRepository) CountByPostID(postID uint) int64 {
 func (r *CommentRepository) CountByLifeRecordID(lifeRecordID uint) int64 {
 	var count int64
 	r.db.Model(&model.Comment{}).
-		Where("life_record_id = ? AND status = ?", lifeRecordID, constants.CommentStatusApproved).
+		Where("comment_type = ? AND target_id = ? AND status = ?", "life", lifeRecordID, constants.CommentStatusApproved).
 		Count(&count)
 	return count
 }
