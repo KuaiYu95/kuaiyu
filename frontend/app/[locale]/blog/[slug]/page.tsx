@@ -2,29 +2,17 @@
 // 博客详情页
 // ===========================================
 
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import { Tag } from '@/components/ui';
-import { publicApi } from '@/lib/api';
 import CommentSection from '@/components/comment/CommentSection';
 import ViewCounter from '@/components/post/ViewCounter';
-
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  cover_image: string;
-  published_at: string;
-  view_count: number;
-  tags: { id: number; name: string; slug: string; color: string }[];
-}
+import { RelativeTime, Tag } from '@/components/ui';
+import { Post, publicApi } from '@/lib/api';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 
 export async function generateMetadata({
   params,
@@ -68,19 +56,11 @@ export default async function BlogDetailPage({
     notFound();
   }
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   return (
     <main className="min-h-screen py-20">
       {/* 阅读量计数器（同时记录页面访问） */}
       <ViewCounter postId={post.id} />
-      
+
       <article className="max-w-3xl mx-auto px-4">
         {/* 返回链接 */}
         <Link
@@ -109,7 +89,7 @@ export default async function BlogDetailPage({
 
         {/* 元信息 */}
         <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm mb-6">
-          <span>{formatDate(post.published_at)}</span>
+          <RelativeTime date={post.published_at || post.created_at} locale={locale} />
           <span>·</span>
           <span>{post.view_count} {t('views')}</span>
           {post.tags && post.tags.length > 0 && (

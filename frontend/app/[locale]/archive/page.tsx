@@ -2,11 +2,11 @@
 // 归档页
 // ===========================================
 
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
 import { Empty } from '@/components/ui';
-import { publicApi } from '@/lib/api';
+import { Post, publicApi } from '@/lib/api';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('archive');
@@ -14,13 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('title'),
     description: t('description'),
   };
-}
-
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  published_at: string;
 }
 
 export default async function ArchivePage({
@@ -41,11 +34,11 @@ export default async function ArchivePage({
 
   // 按年月分组
   const groupedByYearMonth = posts.reduce((acc, post) => {
-    const date = new Date(post.published_at);
+    const date = new Date(post.published_at || post.created_at);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const key = `${year}-${month}`;
-    
+
     if (!acc[key]) {
       acc[key] = { year, month, posts: [] };
     }
@@ -67,15 +60,15 @@ export default async function ArchivePage({
   };
 
   return (
-    <main className="min-h-screen py-20">
-      <div className="max-w-3xl mx-auto px-4">
+    <main className="min-h-screen">
+      <div className="container-content py-12">
         {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">{t('title')}</h1>
-          <p className="text-gray-400">
+        <section className="text-center py-12 animate-fade-up mb-12">
+          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <p className="text-text-secondary">
             {t('totalPosts', { count: posts.length })}
           </p>
-        </div>
+        </section>
 
         {/* 归档列表 */}
         {posts.length > 0 ? (
@@ -102,7 +95,7 @@ export default async function ArchivePage({
                           className="group flex items-center gap-4"
                         >
                           <span className="text-gray-500 text-sm font-mono">
-                            {formatDay(post.published_at)}
+                            {formatDay(post.published_at || post.created_at)}
                           </span>
                           <span className="text-gray-300 group-hover:text-primary-400 transition-colors">
                             {post.title}
@@ -116,7 +109,7 @@ export default async function ArchivePage({
             })}
           </div>
         ) : (
-          <Empty message={t('noPosts')} />
+          <Empty title={t('noPosts')} />
         )}
       </div>
     </main>

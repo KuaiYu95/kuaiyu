@@ -51,15 +51,15 @@ export default async function CategoriesPage({
   };
 
   return (
-    <main className="min-h-screen py-20">
-      <div className="max-w-4xl mx-auto px-4">
+    <main className="min-h-screen">
+      <div className="container-content py-12">
         {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">{t('title')}</h1>
-          <p className="text-gray-400">
+        <section className="text-center py-12 animate-fade-up mb-12">
+          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <p className="text-text-secondary">
             {t('totalTags', { count: tags.length })}
           </p>
-        </div>
+        </section>
 
         {/* 标签云 */}
         {tags.length > 0 ? (

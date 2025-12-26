@@ -87,9 +87,7 @@ export default function Footer({ config, locale }: FooterProps) {
               </div>
             )}
         </div>
-
-        {/* 版权信息 */}
-        <div className="mt-8 pt-6 border-t border-border text-center">
+        <div className="mt-8 pt-2 pb-2 border-t border-border text-center">
           <p className="text-xs text-text-secondary">
             {t('copyright', {
               year: currentYear,
