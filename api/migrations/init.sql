@@ -1,5 +1,5 @@
 -- ===========================================
--- 快鱼博客数据库初始化脚本
+-- Yu.kuai博客数据库初始化脚本
 -- 用于 Docker 容器首次启动时初始化数据库
 -- ===========================================
 
@@ -194,13 +194,13 @@ INSERT IGNORE INTO `users` (`username`, `password`, `email`) VALUES
 -- 默认配置
 INSERT IGNORE INTO `site_configs` (`key`, `value`, `type`) VALUES 
 ('site_logo', '', 'image'),
-('site_name', '快鱼博客', 'string'),
+('site_name', 'Yu.kuai博客', 'string'),
 ('site_icp', '', 'string'),
 ('home_avatar', '', 'image'),
-('home_nickname', '快鱼', 'string'),
+('home_nickname', 'Yu.kuai', 'string'),
 ('home_about', '欢迎来到我的博客', 'string'),
 ('footer_left_image', '', 'image'),
-('footer_left_name', '快鱼', 'string'),
+('footer_left_name', 'Yu.kuai', 'string'),
 ('footer_left_description', '一个热爱技术的开发者', 'string'),
 ('footer_right_links', '{"categories":[]}', 'json');
 

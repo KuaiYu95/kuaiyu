@@ -1,11 +1,11 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
-import { getTranslations } from 'next-intl/server';
-import { postApi, lifeApi, tagApi, configApi, commentApi } from '@/lib/api';
-import { Card, Tag, Empty } from '@/components/ui';
-import { formatDate } from '@/lib/utils';
+import { Card, Empty, Tag } from '@/components/ui';
+import { commentApi, configApi, lifeApi, postApi, tagApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
+import { formatDate } from '@/lib/utils';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
+import Link from 'next/link';
 
 // ===========================================
 // 首页
@@ -55,7 +55,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
           </div>
         )}
         <h1 className="text-3xl font-bold text-text-accent mb-4">
-          {config?.home_nickname || '快鱼'}
+          {config?.home_nickname || 'Yu.kuai'}
         </h1>
         {config?.home_about && (
           <div
@@ -76,7 +76,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             {tBlog('title')} →
           </Link>
         </div>
-        
+
         {posts.length > 0 ? (
           <div className="space-y-4">
             {posts.map((post) => (
@@ -135,7 +135,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             查看更多 →
           </Link>
         </div>
-        
+
         {lifeRecords.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-3">
             {lifeRecords.map((record) => (
@@ -168,7 +168,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
       {/* 标签云 */}
       <section className="animate-fade-up" style={{ animationDelay: '0.3s' }}>
         <h2 className="text-xl font-bold text-text-accent mb-6">{t('tagCloud')}</h2>
-        
+
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
@@ -201,7 +201,7 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
             查看更多 →
           </Link>
         </div>
-        
+
         {comments.length > 0 ? (
           <div className="space-y-3">
             {comments.map((comment) => (

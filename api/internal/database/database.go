@@ -174,13 +174,13 @@ func seedAdmin() error {
 func seedConfig() error {
 	defaultConfigs := []model.SiteConfig{
 		{Key: "site_logo", Value: "", Type: "image"},
-		{Key: "site_name", Value: "快鱼博客", Type: "string"},
+		{Key: "site_name", Value: "Yu.kuai博客", Type: "string"},
 		{Key: "site_icp", Value: "", Type: "string"},
 		{Key: "home_avatar", Value: "", Type: "image"},
-		{Key: "home_nickname", Value: "快鱼", Type: "string"},
+		{Key: "home_nickname", Value: "Yu.kuai", Type: "string"},
 		{Key: "home_about", Value: "欢迎来到我的博客", Type: "string"},
 		{Key: "footer_left_image", Value: "", Type: "image"},
-		{Key: "footer_left_name", Value: "快鱼", Type: "string"},
+		{Key: "footer_left_name", Value: "Yu.kuai", Type: "string"},
 		{Key: "footer_left_description", Value: "一个热爱技术的开发者", Type: "string"},
 		{Key: "footer_right_links", Value: `{"categories":[]}`, Type: "json"},
 	}

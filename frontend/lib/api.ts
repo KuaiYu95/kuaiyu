@@ -209,6 +209,7 @@ export const commentApi = {
   create: (data: {
     post_id?: number;
     life_record_id?: number;
+    is_guestbook?: boolean;
     parent_id?: number;
     nickname: string;
     email: string;
@@ -245,6 +246,7 @@ export const publicApi = {
   posts: {
     list: postApi.list,
     get: postApi.getBySlug,
+    incrementViews: postApi.incrementViews,
   },
   life: {
     list: lifeApi.list,
@@ -254,7 +256,7 @@ export const publicApi = {
     list: tagApi.list,
   },
   comments: {
-    list: (params?: { post_id?: number; life_record_id?: number; is_guestbook?: boolean }) =>
+    list: (params?: { post_id?: number; life_record_id?: number; is_guestbook?: boolean; email?: string }) =>
       api.get<any, ApiResponse<Comment[]>>('/api/comments', { params }),
     create: commentApi.create,
   },

@@ -4,16 +4,18 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { Card, Button, Avatar, Loading, Empty } from '@/components/ui';
+import { Avatar, Button, Card, Empty, Loading } from '@/components/ui';
 import { publicApi } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 interface Comment {
   id: number;
   nickname: string;
+  email?: string;
   avatar: string;
   content: string;
+  status: string;
   is_admin: boolean;
   created_at: string;
   replies?: Comment[];
@@ -38,20 +40,40 @@ export default function CommentSection({
   const [submitting, setSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
 
-  // 表单状态
+  // 表单状态 (从本地存储恢复)
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [content, setContent] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  // 从本地存储恢复用户信息
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('kuaiyu_comment_user');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          setNickname(user.nickname || '');
+          setEmail(user.email || '');
+          setWebsite(user.website || '');
+        } catch (e) { }
+      }
+    }
+  }, []);
 
   // 加载评论
   const fetchComments = async () => {
     setLoading(true);
     try {
+      // 传递用户 email 以获取自己的待审核评论
+      const userEmail = email || localStorage.getItem('kuaiyu_comment_email') || '';
       const res = await publicApi.comments.list({
         post_id: postId,
         life_record_id: lifeRecordId,
         is_guestbook: isGuestbook,
+        email: userEmail,
       });
       setComments(res.data || []);
     } catch (error) {
@@ -71,23 +93,33 @@ export default function CommentSection({
     if (!content.trim() || !nickname.trim() || !email.trim()) return;
 
     setSubmitting(true);
+    setSubmitSuccess(false);
     try {
-      await publicApi.comments.create({
+      const res = await publicApi.comments.create({
         post_id: postId,
         life_record_id: lifeRecordId,
         is_guestbook: isGuestbook,
-        parent_id: replyTo,
+        parent_id: replyTo || undefined,
         nickname,
         email,
         website,
         content,
       });
 
-      // 清空表单
+      // 保存用户信息到本地存储
+      localStorage.setItem('kuaiyu_comment_user', JSON.stringify({ nickname, email, website }));
+      localStorage.setItem('kuaiyu_comment_email', email);
+
+      // 检查是否待审核
+      setIsPending(res.data?.status === 'pending');
+      setSubmitSuccess(true);
+
+      // 清空内容
       setContent('');
       setReplyTo(null);
+
       // 重新加载评论
-      fetchComments();
+      setTimeout(() => fetchComments(), 500);
     } catch (error) {
       console.error('Failed to submit comment:', error);
     } finally {
@@ -114,11 +146,16 @@ export default function CommentSection({
       <div className="flex gap-4">
         <Avatar name={comment.nickname} src={comment.avatar} size={isReply ? 'sm' : 'md'} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-medium text-white">{comment.nickname}</span>
             {comment.is_admin && (
               <span className="px-2 py-0.5 text-xs bg-primary-500/20 text-primary-400 rounded">
                 {t('admin')}
+              </span>
+            )}
+            {comment.status === 'pending' && (
+              <span className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded">
+                {t('pending')}
               </span>
             )}
             <span className="text-gray-500 text-sm">{formatDate(comment.created_at)}</span>
@@ -163,6 +200,15 @@ export default function CommentSection({
         {t('title')} ({comments.length})
       </h3>
 
+      {/* 提交成功提示 */}
+      {submitSuccess && (
+        <div className={`mb-4 p-4 rounded-lg ${isPending ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
+          <p className={isPending ? 'text-yellow-400' : 'text-green-400'}>
+            {isPending ? t('pendingTip') : t('successTip')}
+          </p>
+        </div>
+      )}
+
       {/* 评论表单 */}
       <Card className="mb-8">
         <form onSubmit={handleSubmit}>
@@ -172,7 +218,7 @@ export default function CommentSection({
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder={t('nicknamePlaceholder')}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
               required
             />
             <input
@@ -180,7 +226,7 @@ export default function CommentSection({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('emailPlaceholder')}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
               required
             />
             <input
@@ -188,14 +234,14 @@ export default function CommentSection({
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder={t('websitePlaceholder')}
-              className="px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-4 py-2 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500"
             />
           </div>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('contentPlaceholder')}
-            className="w-full px-4 py-3 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
+            className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
             rows={4}
             required
           />
@@ -213,7 +259,7 @@ export default function CommentSection({
       ) : comments.length > 0 ? (
         <div>{comments.map((comment) => renderComment(comment))}</div>
       ) : (
-        <Empty message={t('noComments')} />
+        <Empty title={t('noComments')} />
       )}
     </div>
   );

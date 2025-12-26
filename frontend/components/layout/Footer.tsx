@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
 import { SiteConfig } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 // ===========================================
 // Footer 组件
@@ -36,7 +35,7 @@ export default function Footer({ config, locale }: FooterProps) {
               </div>
             )}
             <h3 className="text-lg font-bold text-text-accent mb-2">
-              {config?.footer_left_name || config?.site_name || '快鱼'}
+              {config?.footer_left_name || config?.site_name || 'Yu.kuai'}
             </h3>
             <p className="text-sm text-text-secondary max-w-xs">
               {config?.footer_left_description || '一个热爱技术的开发者'}
@@ -84,7 +83,7 @@ export default function Footer({ config, locale }: FooterProps) {
           <p className="text-xs text-text-secondary">
             {t('copyright', {
               year: currentYear,
-              name: config?.site_name || '快鱼',
+              name: config?.site_name || 'Yu.kuai',
             })}
           </p>
           <p className="text-xs text-text-secondary mt-1">

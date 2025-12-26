@@ -18,7 +18,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 interface LifeRecord {
   id: number;
-  title: string;
   content: string;
   cover_image: string;
   published_at: string;
@@ -92,17 +91,14 @@ export default async function LifePage({
                             <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg">
                               <img
                                 src={record.cover_image}
-                                alt={record.title}
+                                alt=""
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-white group-hover:text-primary-400 transition-colors mb-2">
-                              {record.title}
-                            </h3>
-                            <p className="text-gray-400 text-sm line-clamp-2">
-                              {record.content.replace(/[#*`]/g, '').slice(0, 100)}...
+                            <p className="text-gray-300 text-sm line-clamp-3 group-hover:text-white transition-colors">
+                              {record.content.replace(/[#*`\n]/g, ' ').slice(0, 150)}
                             </p>
                             <div className="text-gray-500 text-xs mt-2">
                               {formatDate(record.published_at)}

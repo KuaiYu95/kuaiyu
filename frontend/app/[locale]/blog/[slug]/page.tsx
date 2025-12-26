@@ -12,6 +12,7 @@ import rehypeHighlight from 'rehype-highlight';
 import { Tag } from '@/components/ui';
 import { publicApi } from '@/lib/api';
 import CommentSection from '@/components/comment/CommentSection';
+import ViewCounter from '@/components/post/ViewCounter';
 
 interface Post {
   id: number;
@@ -77,6 +78,9 @@ export default async function BlogDetailPage({
 
   return (
     <main className="min-h-screen py-20">
+      {/* 阅读量计数器 */}
+      <ViewCounter postId={post.id} />
+      
       <article className="max-w-3xl mx-auto px-4">
         {/* 返回链接 */}
         <Link

@@ -34,23 +34,58 @@ func NewCommentHandler() *CommentHandler {
 func (h *CommentHandler) List(c *gin.Context) {
 	postID, _ := GetIDParam(c, "post_id")
 	lifeID, _ := GetIDParam(c, "life_record_id")
+	userEmail := c.Query("email") // 用户邮箱，用于查询自己的待审核评论
 	
 	var comments []model.Comment
 	var err error
 	
+	db := database.Get()
+	
 	if postID > 0 {
 		comments, err = h.repo.FindByPostID(postID, true)
+		// 追加用户自己的待审核评论
+		if userEmail != "" {
+			var pendingComments []model.Comment
+			db.Where("post_id = ? AND email = ? AND status = ?", postID, userEmail, "pending").
+				Order("created_at DESC").Find(&pendingComments)
+			comments = append(pendingComments, comments...)
+		}
 	} else if lifeID > 0 {
 		comments, err = h.repo.FindByLifeRecordID(lifeID, true)
+		// 追加用户自己的待审核评论
+		if userEmail != "" {
+			var pendingComments []model.Comment
+			db.Where("life_record_id = ? AND email = ? AND status = ?", lifeID, userEmail, "pending").
+				Order("created_at DESC").Find(&pendingComments)
+			comments = append(pendingComments, comments...)
+		}
 	} else {
 		// 获取最近评论（留言板）
 		comments, err = h.repo.FindRecent(20)
+		// 追加用户自己的待审核留言板评论
+		if userEmail != "" {
+			var pendingComments []model.Comment
+			db.Where("post_id IS NULL AND life_record_id IS NULL AND email = ? AND status = ?", userEmail, "pending").
+				Order("created_at DESC").Find(&pendingComments)
+			comments = append(pendingComments, comments...)
+		}
 	}
 	
 	if err != nil {
 		response.InternalError(c, "")
 		return
 	}
+	
+	// 去重（避免已批准的评论重复显示）
+	seen := make(map[uint]bool)
+	uniqueComments := make([]model.Comment, 0)
+	for _, c := range comments {
+		if !seen[c.ID] {
+			seen[c.ID] = true
+			uniqueComments = append(uniqueComments, c)
+		}
+	}
+	comments = uniqueComments
 	
 	// 转换为视图对象
 	items := make([]model.CommentVO, len(comments))

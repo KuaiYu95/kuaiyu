@@ -26,7 +26,7 @@ dev:
 
 # 启动 API 开发服务器
 api:
-	cd api && go run cmd/server/main.go
+	cd api && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USER=kuaiyu DB_PASSWORD=kuaiyu123 DB_NAME=kuaiyu_db go run cmd/server/main.go
 
 # 启动前台开发服务器
 frontend:

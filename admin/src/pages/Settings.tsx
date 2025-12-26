@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Save } from '@mui/icons-material';
 import MDEditor from '@uiw/react-md-editor';
-import { configApi, uploadApi } from '@/lib/api';
+import { configApi, uploadApi, authApi } from '@/lib/api';
 
 export default function Settings() {
   const [loading, setLoading] = useState(true);
@@ -33,6 +33,14 @@ export default function Settings() {
   const [footerLeftImage, setFooterLeftImage] = useState('');
   const [footerLeftName, setFooterLeftName] = useState('');
   const [footerLeftDescription, setFooterLeftDescription] = useState('');
+
+  // 修改密码
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -94,6 +102,39 @@ export default function Settings() {
       setter(res.data.url);
     } catch (err) {
       setError('图片上传失败');
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('请填写所有密码字段');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('两次输入的新密码不一致');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('新密码至少需要6个字符');
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      await authApi.changePassword({ old_password: oldPassword, new_password: newPassword });
+      setPasswordSuccess('密码修改成功');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordError(err.response?.data?.message || '密码修改失败');
+    } finally {
+      setPasswordSaving(false);
     }
   };
 
@@ -181,7 +222,7 @@ export default function Settings() {
       </Paper>
 
       {/* Footer 配置 */}
-      <Paper sx={{ p: 3, border: 1, borderColor: 'divider' }} elevation={0}>
+      <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
         <Typography variant="h6" mb={2}>Footer 配置</Typography>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           {footerLeftImage && (
@@ -207,6 +248,44 @@ export default function Settings() {
           multiline
           rows={2}
         />
+      </Paper>
+
+      {/* 修改密码 */}
+      <Paper sx={{ p: 3, border: 1, borderColor: 'divider' }} elevation={0}>
+        <Typography variant="h6" mb={2}>修改密码</Typography>
+        {passwordError && <Alert severity="error" sx={{ mb: 2 }}>{passwordError}</Alert>}
+        {passwordSuccess && <Alert severity="success" sx={{ mb: 2 }}>{passwordSuccess}</Alert>}
+        <TextField
+          fullWidth
+          type="password"
+          label="当前密码"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          fullWidth
+          type="password"
+          label="新密码"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          fullWidth
+          type="password"
+          label="确认新密码"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleChangePassword}
+          disabled={passwordSaving}
+        >
+          {passwordSaving ? '修改中...' : '修改密码'}
+        </Button>
       </Paper>
     </Box>
   );

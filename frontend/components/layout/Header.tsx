@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { LOCALES, NAV_ITEMS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { NAV_ITEMS, LOCALES } from '@/lib/constants';
+import { useEffect, useState } from 'react';
 
 // ===========================================
 // Header 组件
@@ -61,7 +61,7 @@ export default function Header({ locale }: HeaderProps) {
             href={`/${locale}`}
             className="text-xl font-bold text-text-accent hover:text-accent-primary transition-colors"
           >
-            快鱼
+            Yu.kuai
           </Link>
 
           {/* Desktop Navigation */}

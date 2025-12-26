@@ -117,7 +117,7 @@ export default function Life() {
           <TableHead>
             <TableRow>
               <TableCell width={80}>封面</TableCell>
-              <TableCell>标题</TableCell>
+              <TableCell>内容预览</TableCell>
               <TableCell width={100}>状态</TableCell>
               <TableCell width={120}>发布时间</TableCell>
               <TableCell width={100}>操作</TableCell>
@@ -152,8 +152,8 @@ export default function Life() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={500}>
-                    {record.title}
+                  <Typography variant="body2" sx={{ maxWidth: 400 }} noWrap>
+                    {record.content.replace(/[#*`\n]/g, ' ').slice(0, 80)}...
                   </Typography>
                 </TableCell>
                 <TableCell>

@@ -2,44 +2,42 @@
 // 后台布局组件
 // ===========================================
 
-import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { MENU_ITEMS, ROUTES } from '@/lib/constants';
+import { useAuthStore } from '@/store/auth';
 import {
-  Box,
-  Drawer,
+  Analytics,
+  Article,
+  Comment,
+  Label,
+  Logout,
+  Menu as MenuIcon,
+  PhotoCamera,
+  Settings,
+} from '@mui/icons-material';
+import {
   AppBar,
-  Toolbar,
-  Typography,
+  Avatar,
+  Box,
+  Divider,
+  Drawer,
   IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider,
-  Avatar,
   Menu,
   MenuItem,
+  Toolbar,
+  Typography,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard,
-  Article,
-  PhotoCamera,
-  Comment,
-  Label,
-  Analytics,
-  Settings,
-  Logout,
-} from '@mui/icons-material';
-import { useAuthStore } from '@/store/auth';
-import { MENU_ITEMS, ROUTES } from '@/lib/constants';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 // 图标映射
 const iconMap: Record<string, React.ReactNode> = {
-  Dashboard: <Dashboard />,
   Article: <Article />,
   PhotoCamera: <PhotoCamera />,
   Comment: <Comment />,
@@ -80,7 +78,7 @@ export default function Layout({ children }: LayoutProps) {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-          快鱼博客
+          Yu.kuai博客
         </Typography>
       </Toolbar>
       <Divider />

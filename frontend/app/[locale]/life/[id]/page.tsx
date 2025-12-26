@@ -13,7 +13,6 @@ import CommentSection from '@/components/comment/CommentSection';
 
 interface LifeRecord {
   id: number;
-  title: string;
   content: string;
   cover_image: string;
   published_at: string;
@@ -27,8 +26,10 @@ export async function generateMetadata({
   try {
     const res = await publicApi.life.get(parseInt(params.id));
     const record: LifeRecord = res.data;
+    // 使用内容前30字作为标题
+    const title = record.content.replace(/[#*`\n]/g, ' ').slice(0, 30) + '...';
     return {
-      title: record.title,
+      title,
       description: record.content.slice(0, 160),
     };
   } catch {
@@ -83,14 +84,11 @@ export default async function LifeDetailPage({
           <div className="w-full h-64 md:h-80 overflow-hidden rounded-2xl mb-8">
             <img
               src={record.cover_image}
-              alt={record.title}
+              alt=""
               className="w-full h-full object-cover"
             />
           </div>
         )}
-
-        {/* 标题 */}
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">{record.title}</h1>
 
         {/* 日期 */}
         <div className="text-gray-400 text-sm mb-8">

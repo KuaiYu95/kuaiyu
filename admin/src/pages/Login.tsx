@@ -2,20 +2,20 @@
 // 登录页面
 // ===========================================
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
-import { useAuthStore } from '@/store/auth';
 import { authApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
+import { useAuthStore } from '@/store/auth';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Paper,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function Login() {
         accessToken: res.data.access_token,
         refreshToken: res.data.refresh_token,
       });
-      navigate(ROUTES.DASHBOARD);
+      navigate(ROUTES.ANALYTICS);
     } catch (err: any) {
       setError(err.response?.data?.message || '登录失败，请检查用户名和密码');
     } finally {
@@ -68,7 +68,7 @@ export default function Login() {
         }}
       >
         <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
-          快鱼博客
+          Yu.kuai博客
         </Typography>
         <Typography variant="body2" color="text.secondary" textAlign="center" mb={4}>
           管理后台登录

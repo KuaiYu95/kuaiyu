@@ -67,7 +67,7 @@ func (h *RSSHandler) LifeFeed(c *gin.Context) {
 		Find(&records)
 	
 	// 转换为 RSS 格式
-	xml := h.generateLifeRSS("快鱼生活", "https://kcat.site/life", records)
+	xml := h.generateLifeRSS("Yu.kuai生活", "https://kcat.site/life", records)
 	
 	c.Header("Content-Type", "application/rss+xml; charset=utf-8")
 	c.String(200, xml)

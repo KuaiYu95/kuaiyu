@@ -86,7 +86,8 @@
     "contentPlaceholder": "Say something...",
     "replyPlaceholder": "Reply to @{name}...",
     "noComments": "No comments yet, be the first!",
-    "admin": "Admin"
+    "admin": "Admin",
+    "pending": "Pending"
   },
   "error": {
     "404": {

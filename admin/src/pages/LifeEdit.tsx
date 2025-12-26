@@ -31,8 +31,7 @@ export default function LifeEdit() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // 表单数据
-  const [title, setTitle] = useState('');
+  // 表单数据（生活记录没有标题，只有内容）
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [status, setStatus] = useState('draft');
@@ -44,7 +43,6 @@ export default function LifeEdit() {
         .get(parseInt(id!))
         .then((res) => {
           const record = res.data;
-          setTitle(record.title);
           setContent(record.content);
           setCoverImage(record.cover_image);
           setStatus(record.status);
@@ -62,7 +60,6 @@ export default function LifeEdit() {
     setSaving(true);
 
     const data = {
-      title,
       content,
       cover_image: coverImage,
       status,
@@ -128,14 +125,6 @@ export default function LifeEdit() {
           {/* 左侧主内容 */}
           <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <TextField
-                fullWidth
-                label="标题"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                sx={{ mb: 2 }}
-              />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 内容
               </Typography>

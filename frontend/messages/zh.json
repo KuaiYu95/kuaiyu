@@ -86,7 +86,8 @@
     "contentPlaceholder": "说点什么吧...",
     "replyPlaceholder": "回复 @{name}...",
     "noComments": "暂无评论，快来抢沙发吧！",
-    "admin": "博主"
+    "admin": "博主",
+    "pending": "待审核"
   },
   "error": {
     "404": {

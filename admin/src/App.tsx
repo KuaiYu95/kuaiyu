@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
 import Layout from '@/components/Layout';
 import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
 import Posts from '@/pages/Posts';
 import PostEdit from '@/pages/PostEdit';
 import Life from '@/pages/Life';
@@ -41,7 +40,7 @@ export default function App() {
             <PrivateRoute>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/" element={<Analytics />} />
                   <Route path="/posts" element={<Posts />} />
                   <Route path="/posts/new" element={<PostEdit />} />
                   <Route path="/posts/:id" element={<PostEdit />} />
@@ -51,7 +50,6 @@ export default function App() {
                   <Route path="/comments" element={<Comments />} />
                   <Route path="/tags" element={<Tags />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/analytics" element={<Analytics />} />
                 </Routes>
               </Layout>
             </PrivateRoute>

@@ -14,7 +14,7 @@ export const STORAGE_KEYS = {
 // 路由
 export const ROUTES = {
   LOGIN: '/login',
-  DASHBOARD: '/',
+  ANALYTICS: '/',
   POSTS: '/posts',
   POST_NEW: '/posts/new',
   POST_EDIT: (id: number | string) => `/posts/${id}`,
@@ -24,17 +24,15 @@ export const ROUTES = {
   COMMENTS: '/comments',
   TAGS: '/tags',
   SETTINGS: '/settings',
-  ANALYTICS: '/analytics',
 } as const;
 
 // 侧边栏菜单
 export const MENU_ITEMS = [
-  { key: 'dashboard', path: ROUTES.DASHBOARD, icon: 'Dashboard', label: '仪表盘' },
+  { key: 'analytics', path: ROUTES.ANALYTICS, icon: 'Analytics', label: '统计分析' },
   { key: 'posts', path: ROUTES.POSTS, icon: 'Article', label: '博客管理' },
   { key: 'life', path: ROUTES.LIFE, icon: 'PhotoCamera', label: '生活记录' },
   { key: 'comments', path: ROUTES.COMMENTS, icon: 'Comment', label: '评论管理' },
   { key: 'tags', path: ROUTES.TAGS, icon: 'Label', label: '标签管理' },
-  { key: 'analytics', path: ROUTES.ANALYTICS, icon: 'Analytics', label: '统计分析' },
   { key: 'settings', path: ROUTES.SETTINGS, icon: 'Settings', label: '系统设置' },
 ] as const;
 
