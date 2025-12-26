@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
 -- ===========================================
 CREATE TABLE IF NOT EXISTS `life_records` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
+  `title` varchar(200) DEFAULT '',
   `content` text,
   `cover_image` varchar(500) DEFAULT '',
   `status` varchar(20) DEFAULT 'draft',

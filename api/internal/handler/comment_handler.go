@@ -200,14 +200,6 @@ func (h *CommentHandler) AdminList(c *gin.Context) {
 			}
 		}
 		
-		// 获取关联生活记录标题
-		if comment.LifeRecordID != nil {
-			var life model.LifeRecord
-			if db.First(&life, *comment.LifeRecordID).Error == nil {
-				vo.LifeTitle = life.Title
-			}
-		}
-		
 		items[i] = vo
 	}
 	

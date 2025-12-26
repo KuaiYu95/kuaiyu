@@ -89,7 +89,6 @@ export interface Post {
 
 export interface LifeRecord {
   id: number;
-  title: string;
   content: string;
   cover_image: string;
   status: string;

@@ -145,7 +145,6 @@ func (h *LifeHandler) Create(c *gin.Context) {
 	}
 	
 	record := model.LifeRecord{
-		Title:      req.Title,
 		Content:    req.Content,
 		CoverImage: req.CoverImage,
 		Status:     req.Status,
@@ -187,9 +186,6 @@ func (h *LifeHandler) Update(c *gin.Context) {
 		return
 	}
 	
-	if req.Title != "" {
-		record.Title = req.Title
-	}
 	if req.Content != "" {
 		record.Content = req.Content
 	}

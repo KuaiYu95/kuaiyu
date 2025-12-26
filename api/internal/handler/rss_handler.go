@@ -126,6 +126,13 @@ func (h *RSSHandler) generateLifeRSS(title, link string, records []model.LifeRec
 		
 		// 截取内容预览
 		content := record.Content
+		// 使用内容前50字作为标题
+		titleRunes := []rune(content)
+		title := content
+		if len(titleRunes) > 50 {
+			title = string(titleRunes[:50]) + "..."
+		}
+		
 		if len([]rune(content)) > 200 {
 			content = string([]rune(content)[:200]) + "..."
 		}
@@ -138,7 +145,7 @@ func (h *RSSHandler) generateLifeRSS(title, link string, records []model.LifeRec
       <pubDate>%s</pubDate>
       <guid>%s/%d</guid>
     </item>`,
-			record.Title,
+			title,
 			link, record.ID,
 			content,
 			pubDate,
