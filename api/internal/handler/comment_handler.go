@@ -141,22 +141,11 @@ func (h *CommentHandler) List(c *gin.Context) {
 		vo := comment.ToVO()
 		
 		if len(comment.Replies) > 0 {
-			replyCount := len(comment.Replies)
-			displayLimit := constants.DefaultReplyLimit
-			
-			if replyCount > displayLimit {
-				vo.Replies = make([]model.CommentVO, displayLimit)
-				for j := 0; j < displayLimit; j++ {
-					vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
-				}
-				vo.HasMore = true
-			} else {
-				vo.Replies = make([]model.CommentVO, replyCount)
-				for j := range comment.Replies {
-					vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
-				}
+			vo.Replies = make([]model.CommentVO, len(comment.Replies))
+			for j := range comment.Replies {
+				vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
 			}
-			vo.ReplyCount = replyCount
+			vo.ReplyCount = len(comment.Replies)
 		}
 		
 		items[i] = vo

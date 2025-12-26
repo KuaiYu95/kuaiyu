@@ -64,8 +64,10 @@ export default function CommentSection({
     }
   }, []);
 
-  const fetchComments = async () => {
-    setLoading(true);
+  const fetchComments = async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    }
     try {
       const userEmail = email || localStorage.getItem('kuaiyu_comment_email') || '';
       const res = await publicApi.comments.list({
@@ -75,10 +77,14 @@ export default function CommentSection({
         email: userEmail,
       });
       setComments(res.data || []);
+      return res.data || [];
     } catch (error) {
       console.error('Failed to fetch comments:', error);
+      return [];
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -110,7 +116,8 @@ export default function CommentSection({
       localStorage.setItem('kuaiyu_comment_email', email);
       setHasStoredUserInfo(true);
 
-      setIsPending(res.data?.status === 'pending');
+      const isPendingStatus = res.data?.status === 'pending';
+      setIsPending(isPendingStatus);
       setSubmitSuccess(true);
 
       if (replyTo) {
@@ -120,7 +127,22 @@ export default function CommentSection({
       }
       setReplyTo(null);
 
-      setTimeout(() => fetchComments(), 500);
+      if (isPendingStatus) {
+        setTimeout(() => fetchComments(true), 500);
+      } else {
+        const newCommentId = res.data?.id;
+        await fetchComments(false);
+        if (newCommentId) {
+          setTimeout(() => {
+            const element = document.getElementById(`comment-${newCommentId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              element.classList.add('animate-pulse');
+              setTimeout(() => element.classList.remove('animate-pulse'), 2000);
+            }
+          }, 100);
+        }
+      }
     } catch (error) {
       console.error('Failed to submit comment:', error);
     } finally {
@@ -141,7 +163,8 @@ export default function CommentSection({
   const renderComment = (comment: Comment, isReply = false, parentId?: number) => (
     <div
       key={comment.id}
-      className={`${isReply ? 'ml-12 mt-4' : 'mb-6'}`}
+      id={`comment-${comment.id}`}
+      className={`${isReply ? 'ml-12 mt-4' : 'mb-6'} transition-all duration-300`}
     >
       <div className="flex gap-4">
         <Avatar name={comment.nickname} src={comment.avatar} size={isReply ? 'sm' : 'md'} />
@@ -253,10 +276,10 @@ export default function CommentSection({
         {t('title')} ({comments.length})
       </h3>
 
-      {submitSuccess && (
-        <div className={`mb-4 p-4 rounded-lg ${isPending ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
-          <p className={isPending ? 'text-yellow-400' : 'text-green-400'}>
-            {isPending ? t('pendingTip') : t('successTip')}
+      {submitSuccess && isPending && (
+        <div className="mb-4 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+          <p className="text-yellow-400">
+            {t('pendingTip')}
           </p>
         </div>
       )}
