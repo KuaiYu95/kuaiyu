@@ -163,9 +163,10 @@ func setupAdminRoutes(api *gin.RouterGroup) {
 		comments := auth.Group("/comments")
 		{
 			comments.GET("", commentHandler.AdminList)
+			comments.POST("/:id/toggle-pin", commentHandler.TogglePin)
+			comments.POST("/:id/reply", commentHandler.AdminReply)
 			comments.PUT("/:id", commentHandler.UpdateStatus)
 			comments.DELETE("/:id", commentHandler.Delete)
-			comments.POST("/:id/reply", commentHandler.AdminReply)
 		}
 		
 		// 配置管理

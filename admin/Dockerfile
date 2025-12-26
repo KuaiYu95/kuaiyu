@@ -1,5 +1,5 @@
 # ===========================================
-# Yu.kuai博客 - 后台管理 Dockerfile
+# Yu.kuai - 后台管理 Dockerfile
 # ===========================================
 
 FROM node:20-alpine AS builder

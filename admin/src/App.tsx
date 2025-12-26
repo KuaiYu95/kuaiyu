@@ -1,15 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/auth';
 import Layout from '@/components/Layout';
-import Login from '@/pages/Login';
-import Posts from '@/pages/Posts';
-import PostEdit from '@/pages/PostEdit';
+import { ToastProvider } from '@/components/Toast';
+import Analytics from '@/pages/Analytics';
+import Comments from '@/pages/Comments';
 import Life from '@/pages/Life';
 import LifeEdit from '@/pages/LifeEdit';
-import Comments from '@/pages/Comments';
-import Tags from '@/pages/Tags';
+import Login from '@/pages/Login';
+import PostEdit from '@/pages/PostEdit';
+import Posts from '@/pages/Posts';
 import Settings from '@/pages/Settings';
-import Analytics from '@/pages/Analytics';
+import Tags from '@/pages/Tags';
+import { useAuthStore } from '@/store/auth';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 // ===========================================
 // 路由守卫
@@ -17,11 +18,11 @@ import Analytics from '@/pages/Analytics';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
@@ -31,32 +32,34 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/*"
-          element={
-            <PrivateRoute>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Analytics />} />
-                  <Route path="/posts" element={<Posts />} />
-                  <Route path="/posts/new" element={<PostEdit />} />
-                  <Route path="/posts/:id" element={<PostEdit />} />
-                  <Route path="/life" element={<Life />} />
-                  <Route path="/life/new" element={<LifeEdit />} />
-                  <Route path="/life/:id" element={<LifeEdit />} />
-                  <Route path="/comments" element={<Comments />} />
-                  <Route path="/tags" element={<Tags />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/*"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Analytics />} />
+                    <Route path="/posts" element={<Posts />} />
+                    <Route path="/posts/new" element={<PostEdit />} />
+                    <Route path="/posts/:id" element={<PostEdit />} />
+                    <Route path="/life" element={<Life />} />
+                    <Route path="/life/new" element={<LifeEdit />} />
+                    <Route path="/life/:id" element={<LifeEdit />} />
+                    <Route path="/comments" element={<Comments />} />
+                    <Route path="/tags" element={<Tags />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Routes>
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

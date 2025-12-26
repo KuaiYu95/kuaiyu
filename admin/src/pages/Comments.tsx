@@ -2,53 +2,120 @@
 // 评论管理页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
+import { useToast } from '@/components/Toast';
+import { commentApi, type Comment } from '@/lib/api';
+import { STATUS_LABELS } from '@/lib/constants';
+import { Check, Close, Delete, PushPin, Reply } from '@mui/icons-material';
 import {
+  Avatar,
   Box,
+  Button,
+  Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  IconButton,
-  Chip,
-  Typography,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  TableRow,
   TextField,
-  Avatar,
+  Typography,
 } from '@mui/material';
-import { Check, Close, Delete, Reply } from '@mui/icons-material';
-import { commentApi, type Comment } from '@/lib/api';
-import { STATUS_LABELS, COMMENT_STATUS } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Comments() {
+  const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 从 URL 读取初始值（page 从 1 开始）
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+  const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
+  const statusFromUrl = searchParams.get('status') || '';
+  const isPinnedFromUrl = searchParams.get('isPinned');
+  const isPinnedInitial = isPinnedFromUrl === 'true' ? true : isPinnedFromUrl === 'false' ? false : undefined;
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(pageFromUrl);
+  const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageFromUrl);
   const [total, setTotal] = useState(0);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(statusFromUrl);
+  const [isPinned, setIsPinned] = useState<boolean | undefined>(isPinnedInitial);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [replyId, setReplyId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
+  // 更新 URL 参数
+  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string; isPinned?: boolean | undefined | null }) => {
+    const newParams = new URLSearchParams(searchParams);
+
+    if (updates.page !== undefined) {
+      if (updates.page === 1) {
+        newParams.delete('page');
+      } else {
+        newParams.set('page', updates.page.toString());
+      }
+    }
+
+    if (updates.rowsPerPage !== undefined) {
+      if (updates.rowsPerPage === 10) {
+        newParams.delete('rowsPerPage');
+      } else {
+        newParams.set('rowsPerPage', updates.rowsPerPage.toString());
+      }
+    }
+
+    if (updates.status !== undefined) {
+      if (updates.status === '') {
+        newParams.delete('status');
+      } else {
+        newParams.set('status', updates.status);
+      }
+    }
+
+    // 特殊处理 isPinned：使用 'isPinned' in updates 来判断是否传递了该参数
+    if ('isPinned' in updates) {
+      if (updates.isPinned === true) {
+        newParams.set('isPinned', 'true');
+      } else {
+        newParams.delete('isPinned');
+      }
+    }
+
+    setSearchParams(newParams, { replace: true });
+  };
+
   const fetchComments = async () => {
     setLoading(true);
     try {
-      const res = await commentApi.list({
-        page: page + 1,
+      const params: any = {
+        page: page,
         limit: rowsPerPage,
-        status: status || undefined,
-      });
+      };
+
+      if (status) {
+        params.status = status;
+      }
+
+      // 只有当 isPinned 为 true 时才传递参数
+      if (isPinned === true) {
+        params.is_pinned = true;
+      }
+
+      const res = await commentApi.list(params);
       setComments(res.data.items);
       setTotal(res.data.pagination.total);
     } catch (err) {
@@ -58,16 +125,44 @@ export default function Comments() {
     }
   };
 
+  // 监听 URL 参数变化（浏览器前进/后退）
+  useEffect(() => {
+    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
+    const statusFromUrl = searchParams.get('status') || '';
+    const isPinnedFromUrl = searchParams.get('isPinned');
+    const isPinnedFromUrlValue = isPinnedFromUrl === 'true' ? true : isPinnedFromUrl === 'false' ? false : undefined;
+
+    setPage((prev) => {
+      if (prev !== pageFromUrl) return pageFromUrl;
+      return prev;
+    });
+    setRowsPerPage((prev) => {
+      if (prev !== rowsPerPageFromUrl) return rowsPerPageFromUrl;
+      return prev;
+    });
+    setStatus((prev) => {
+      if (prev !== statusFromUrl) return statusFromUrl;
+      return prev;
+    });
+    setIsPinned((prev) => {
+      if (prev !== isPinnedFromUrlValue) return isPinnedFromUrlValue;
+      return prev;
+    });
+  }, [searchParams]);
+
   useEffect(() => {
     fetchComments();
-  }, [page, rowsPerPage, status]);
+  }, [page, rowsPerPage, status, isPinned]);
 
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
       await commentApi.updateStatus(id, newStatus);
+      toast.success('状态更新成功');
       fetchComments();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update comment status:', err);
+      toast.error(err.response?.data?.message || err.message || '操作失败，请重试');
     }
   };
 
@@ -76,9 +171,11 @@ export default function Comments() {
     try {
       await commentApi.delete(deleteId);
       setDeleteId(null);
+      toast.success('删除成功');
       fetchComments();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete comment:', err);
+      toast.error(err.response?.data?.message || err.message || '删除失败，请重试');
     }
   };
 
@@ -88,9 +185,40 @@ export default function Comments() {
       await commentApi.reply(replyId, replyContent);
       setReplyId(null);
       setReplyContent('');
+      toast.success('回复成功');
       fetchComments();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to reply comment:', err);
+      toast.error(err.response?.data?.message || err.message || '回复失败，请重试');
+    }
+  };
+
+  const handleTogglePin = async (id: number) => {
+    try {
+      await commentApi.togglePin(id);
+      const comment = comments.find((c) => c.id === id);
+      toast.success(comment?.is_pinned ? '已取消置顶' : '已置顶');
+      fetchComments();
+    } catch (err: any) {
+      console.error('Failed to toggle pin:', err);
+      let errorMessage = '操作失败，请重试';
+
+      if (err.response) {
+        // 有响应但状态码不是 2xx
+        if (err.response.status === 404) {
+          errorMessage = '接口不存在，请检查 API 服务是否正常运行';
+        } else if (err.response.status === 400) {
+          errorMessage = err.response.data?.message || '只能置顶一级评论';
+        } else if (err.response.status === 401) {
+          errorMessage = '未授权，请重新登录';
+        } else {
+          errorMessage = err.response.data?.message || `请求失败 (${err.response.status})`;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
@@ -104,20 +232,56 @@ export default function Comments() {
         评论管理
       </Typography>
 
-      {/* 状态筛选 */}
-      <Tabs
-        value={status}
-        onChange={(_, v) => {
-          setStatus(v);
-          setPage(0);
-        }}
-        sx={{ mb: 2 }}
-      >
-        <Tab label="全部" value="" />
-        <Tab label="待审核" value="pending" />
-        <Tab label="已通过" value="approved" />
-        <Tab label="垃圾" value="spam" />
-      </Tabs>
+      {/* 筛选 */}
+      <Paper sx={{ p: 2, mb: 2, border: 1, borderColor: 'divider' }} elevation={0}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>状态</InputLabel>
+            <Select
+              value={status}
+              label="状态"
+              sx={{
+                width: 300
+              }}
+              onChange={(e) => {
+                const newStatus = e.target.value;
+                setStatus(newStatus);
+                setPage(1);
+
+                // 如果切换到待审核或垃圾状态，清除置顶筛选
+                if (newStatus === 'pending' || newStatus === 'spam') {
+                  setIsPinned(undefined);
+                  updateSearchParams({ status: newStatus, isPinned: undefined, page: 1 });
+                } else {
+                  updateSearchParams({ status: newStatus, page: 1 });
+                }
+              }}
+            >
+              <MenuItem value="">全部</MenuItem>
+              <MenuItem value="pending">待审核</MenuItem>
+              <MenuItem value="approved">已通过</MenuItem>
+              <MenuItem value="spam">垃圾</MenuItem>
+            </Select>
+          </FormControl>
+          {/* 只有全部和已通过状态才显示置顶筛选 */}
+          {(status === '' || status === 'approved') && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPinned === true}
+                  onChange={(e) => {
+                    const newIsPinned = e.target.checked ? true : undefined;
+                    setIsPinned(newIsPinned);
+                    setPage(1);
+                    updateSearchParams({ isPinned: newIsPinned, page: 1 });
+                  }}
+                />
+              }
+              label="仅显示置顶"
+            />
+          )}
+        </Box>
+      </Paper>
 
       {/* 表格 */}
       <TableContainer component={Paper} sx={{ border: 1, borderColor: 'divider' }} elevation={0}>
@@ -196,6 +360,17 @@ export default function Comments() {
                       </IconButton>
                     </>
                   )}
+                  {/* 只对一级评论显示置顶按钮 */}
+                  {!comment.parent_id && comment.status === 'approved' && (
+                    <IconButton
+                      size="small"
+                      color={comment.is_pinned ? 'primary' : 'default'}
+                      onClick={() => handleTogglePin(comment.id)}
+                      title={comment.is_pinned ? '取消置顶' : '置顶'}
+                    >
+                      <PushPin fontSize="small" />
+                    </IconButton>
+                  )}
                   <IconButton
                     size="small"
                     onClick={() => setReplyId(comment.id)}
@@ -226,12 +401,18 @@ export default function Comments() {
         <TablePagination
           component="div"
           count={total}
-          page={page}
-          onPageChange={(_, p) => setPage(p)}
+          page={page - 1}
+          onPageChange={(_, p) => {
+            const newPage = p + 1;
+            setPage(newPage);
+            updateSearchParams({ page: newPage });
+          }}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
+            const newRowsPerPage = parseInt(e.target.value, 10);
+            setRowsPerPage(newRowsPerPage);
+            setPage(1);
+            updateSearchParams({ rowsPerPage: newRowsPerPage, page: 1 });
           }}
           labelRowsPerPage="每页行数"
         />

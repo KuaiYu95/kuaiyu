@@ -1,5 +1,5 @@
 # ===========================================
-# Yu.kuai博客 - 前台 Dockerfile
+# Yu.kuai - 前台 Dockerfile
 # ===========================================
 
 FROM node:20-alpine AS base

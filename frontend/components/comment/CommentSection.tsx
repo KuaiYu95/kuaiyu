@@ -17,6 +17,7 @@ interface Comment {
   content: string;
   status: string;
   is_admin: boolean;
+  is_pinned?: boolean; // 是否置顶
   created_at: string;
   parent_id?: number;
   parent_nickname?: string; // 被回复的用户昵称
@@ -149,6 +150,14 @@ export default function CommentSection({
         <Avatar name={comment.nickname} src={comment.avatar} size={isReply ? 'sm' : 'md'} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {!isReply && comment.is_pinned && (
+              <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2L3 7v11h4v-6h6v6h4V7l-7-5z" />
+                </svg>
+                置顶
+              </span>
+            )}
             <span className="font-medium text-white">{comment.nickname}</span>
             {comment.parent_nickname && (
               <span className="text-gray-400 text-sm">

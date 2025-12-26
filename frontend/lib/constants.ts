@@ -8,7 +8,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kcat.site';
 
 // 网站信息
-export const SITE_NAME = 'Yu.kuai博客';
+export const SITE_NAME = 'Yu.kuai';
 export const SITE_DESCRIPTION = '一个关于技术与生活的个人博客';
 export const SITE_AUTHOR = 'Yu.kuai';
 

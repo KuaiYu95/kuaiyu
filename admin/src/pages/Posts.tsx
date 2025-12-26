@@ -2,51 +2,88 @@
 // 博客管理页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { postApi, type Post } from '@/lib/api';
+import { ROUTES, STATUS_LABELS } from '@/lib/constants';
+import { Add, Delete, Edit } from '@mui/icons-material';
 import {
   Box,
   Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  IconButton,
-  Chip,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  TableRow,
+  Typography
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
-import { postApi, type Post } from '@/lib/api';
-import { ROUTES, STATUS_LABELS } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Posts() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 从 URL 读取初始值（page 从 1 开始）
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+  const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
+  const statusFromUrl = searchParams.get('status') || '';
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(pageFromUrl);
+  const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageFromUrl);
   const [total, setTotal] = useState(0);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(statusFromUrl);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  // 更新 URL 参数
+  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string }) => {
+    const newParams = new URLSearchParams(searchParams);
+
+    if (updates.page !== undefined) {
+      if (updates.page === 1) {
+        newParams.delete('page');
+      } else {
+        newParams.set('page', updates.page.toString());
+      }
+    }
+
+    if (updates.rowsPerPage !== undefined) {
+      if (updates.rowsPerPage === 10) {
+        newParams.delete('rowsPerPage');
+      } else {
+        newParams.set('rowsPerPage', updates.rowsPerPage.toString());
+      }
+    }
+
+    if (updates.status !== undefined) {
+      if (updates.status === '') {
+        newParams.delete('status');
+      } else {
+        newParams.set('status', updates.status);
+      }
+    }
+
+    setSearchParams(newParams, { replace: true });
+  };
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const res = await postApi.list({
-        page: page + 1,
+        page: page,
         limit: rowsPerPage,
         status: status || undefined,
       });
@@ -58,6 +95,26 @@ export default function Posts() {
       setLoading(false);
     }
   };
+
+  // 监听 URL 参数变化（浏览器前进/后退）
+  useEffect(() => {
+    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
+    const statusFromUrl = searchParams.get('status') || '';
+
+    setPage((prev) => {
+      if (prev !== pageFromUrl) return pageFromUrl;
+      return prev;
+    });
+    setRowsPerPage((prev) => {
+      if (prev !== rowsPerPageFromUrl) return rowsPerPageFromUrl;
+      return prev;
+    });
+    setStatus((prev) => {
+      if (prev !== statusFromUrl) return statusFromUrl;
+      return prev;
+    });
+  }, [searchParams]);
 
   useEffect(() => {
     fetchPosts();
@@ -101,8 +158,10 @@ export default function Posts() {
             value={status}
             label="状态"
             onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(0);
+              const newStatus = e.target.value;
+              setStatus(newStatus);
+              setPage(1);
+              updateSearchParams({ status: newStatus, page: 1 });
             }}
           >
             <MenuItem value="">全部</MenuItem>
@@ -184,12 +243,18 @@ export default function Posts() {
         <TablePagination
           component="div"
           count={total}
-          page={page}
-          onPageChange={(_, p) => setPage(p)}
+          page={page - 1}
+          onPageChange={(_, p) => {
+            const newPage = p + 1;
+            setPage(newPage);
+            updateSearchParams({ page: newPage });
+          }}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
+            const newRowsPerPage = parseInt(e.target.value, 10);
+            setRowsPerPage(newRowsPerPage);
+            setPage(1);
+            updateSearchParams({ rowsPerPage: newRowsPerPage, page: 1 });
           }}
           labelRowsPerPage="每页行数"
         />

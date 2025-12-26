@@ -1,5 +1,5 @@
 -- ===========================================
--- Yu.kuai博客数据库初始化脚本
+-- Yu.kuai数据库初始化脚本
 -- 用于 Docker 容器首次启动时初始化数据库
 -- ===========================================
 
@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `website` varchar(500) DEFAULT '',
   `content` text NOT NULL,
   `is_admin` tinyint(1) DEFAULT 0,
+  `is_pinned` tinyint(1) DEFAULT 0,
   `status` varchar(20) DEFAULT 'pending',
   `ip_address` varchar(45) DEFAULT '',
   `user_agent` varchar(500) DEFAULT '',
@@ -122,6 +123,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
   KEY `idx_comments_parent_id` (`parent_id`),
   KEY `idx_comments_email` (`email`),
   KEY `idx_comments_status` (`status`),
+  KEY `idx_comments_is_pinned` (`is_pinned`),
   KEY `idx_comments_email_status` (`email`, `status`),
   KEY `idx_comments_post_status` (`post_id`, `status`),
   KEY `idx_comments_life_status` (`life_record_id`, `status`),
@@ -194,7 +196,7 @@ INSERT IGNORE INTO `users` (`username`, `password`, `email`) VALUES
 -- 默认配置
 INSERT IGNORE INTO `site_configs` (`key`, `value`, `type`) VALUES 
 ('site_logo', '', 'image'),
-('site_name', 'Yu.kuai博客', 'string'),
+('site_name', 'Yu.kuai', 'string'),
 ('site_icp', '', 'string'),
 ('home_avatar', '', 'image'),
 ('home_nickname', 'Yu.kuai', 'string'),

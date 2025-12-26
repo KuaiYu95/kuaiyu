@@ -21,6 +21,7 @@ type Comment struct {
 	Website      string `gorm:"size:500" json:"website"`
 	Content      string `gorm:"type:text;not null" json:"content"`
 	IsAdmin      bool   `gorm:"default:false" json:"is_admin"` // 是否为管理员回复
+	IsPinned     bool   `gorm:"default:false;index" json:"is_pinned"` // 是否置顶（仅一级评论）
 	Status       string `gorm:"size:20;default:pending;index" json:"status"` // pending | approved | spam
 	IPAddress    string `gorm:"size:45" json:"ip_address,omitempty"`
 	UserAgent    string `gorm:"size:500" json:"-"`
@@ -74,6 +75,7 @@ type CommentVO struct {
 	Website       string       `json:"website"`
 	Content       string       `json:"content"`
 	IsAdmin       bool         `json:"is_admin"`
+	IsPinned      bool         `json:"is_pinned"` // 是否置顶
 	Status        string       `json:"status"`
 	CreatedAt     time.Time    `json:"created_at"`
 	Replies       []CommentVO  `json:"replies,omitempty"`
@@ -93,6 +95,7 @@ type CommentListVO struct {
 	Website      string    `json:"website"`
 	Content      string    `json:"content"`
 	IsAdmin      bool      `json:"is_admin"`
+	IsPinned     bool      `json:"is_pinned"` // 是否置顶
 	Status       string    `json:"status"`
 	IPAddress    string    `json:"ip_address"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -123,6 +126,7 @@ func (c *Comment) ToVO() CommentVO {
 		Website:      c.Website,
 		Content:      c.Content,
 		IsAdmin:      c.IsAdmin,
+		IsPinned:     c.IsPinned,
 		Status:       c.Status,
 		CreatedAt:    c.CreatedAt,
 	}
@@ -150,6 +154,7 @@ func (c *Comment) ToListVO() CommentListVO {
 		Website:      c.Website,
 		Content:      c.Content,
 		IsAdmin:      c.IsAdmin,
+		IsPinned:     c.IsPinned,
 		Status:       c.Status,
 		IPAddress:    c.IPAddress,
 		CreatedAt:    c.CreatedAt,

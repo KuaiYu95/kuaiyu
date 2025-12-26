@@ -8,6 +8,7 @@ import {
   Analytics,
   Article,
   Comment,
+  Edit,
   Label,
   Logout,
   Menu as MenuIcon,
@@ -33,6 +34,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import UserInfoDialog from './UserInfoDialog';
 
 const drawerWidth = 240;
 
@@ -56,6 +58,7 @@ export default function Layout({ children }: LayoutProps) {
   const { user, clearAuth } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [userInfoDialogOpen, setUserInfoDialogOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -74,11 +77,16 @@ export default function Layout({ children }: LayoutProps) {
     navigate(ROUTES.LOGIN);
   };
 
+  const handleOpenUserInfo = () => {
+    handleMenuClose();
+    setUserInfoDialogOpen(true);
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-          Yu.kuai博客
+          Yu.kuai
         </Typography>
       </Toolbar>
       <Divider />
@@ -163,15 +171,23 @@ export default function Layout({ children }: LayoutProps) {
               <Typography variant="body2">{user?.username}</Typography>
             </MenuItem>
             <Divider />
+            <MenuItem onClick={handleOpenUserInfo}>
+              <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
+              修改信息
+            </MenuItem>
             <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.SETTINGS); }}>
               <ListItemIcon><Settings fontSize="small" /></ListItemIcon>
-              设置
+              系统设置
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
               退出登录
             </MenuItem>
           </Menu>
+          <UserInfoDialog
+            open={userInfoDialogOpen}
+            onClose={() => setUserInfoDialogOpen(false)}
+          />
         </Toolbar>
       </AppBar>
 

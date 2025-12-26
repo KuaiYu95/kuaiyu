@@ -174,7 +174,7 @@ func seedAdmin() error {
 func seedConfig() error {
 	defaultConfigs := []model.SiteConfig{
 		{Key: "site_logo", Value: "", Type: "image"},
-		{Key: "site_name", Value: "Yu.kuai博客", Type: "string"},
+		{Key: "site_name", Value: "Yu.kuai", Type: "string"},
 		{Key: "site_icp", Value: "", Type: "string"},
 		{Key: "home_avatar", Value: "", Type: "image"},
 		{Key: "home_nickname", Value: "Yu.kuai", Type: "string"},

@@ -14,16 +14,23 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { setAuth, isAuthenticated } = useAuthStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 如果已登录，跳转到首页
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(ROUTES.ANALYTICS, { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +75,7 @@ export default function Login() {
         }}
       >
         <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
-          Yu.kuai博客
+          Yu.kuai
         </Typography>
         <Typography variant="body2" color="text.secondary" textAlign="center" mb={4}>
           管理后台登录
@@ -110,10 +117,6 @@ export default function Login() {
             {loading ? <CircularProgress size={24} /> : '登录'}
           </Button>
         </form>
-
-        <Typography variant="caption" color="text.secondary" display="block" textAlign="center" mt={3}>
-          默认账号: admin / admin123
-        </Typography>
       </Paper>
     </Box>
   );

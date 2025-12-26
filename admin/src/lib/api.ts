@@ -116,6 +116,7 @@ export interface Comment {
   website: string;
   content: string;
   is_admin: boolean;
+  is_pinned: boolean;
   status: string;
   ip_address: string;
   created_at: string;
@@ -183,10 +184,12 @@ export const tagApi = {
 
 // 评论
 export const commentApi = {
-  list: (params?: { page?: number; limit?: number; status?: string }) =>
+  list: (params?: { page?: number; limit?: number; status?: string; is_pinned?: boolean }) =>
     api.get<any, ApiResponse<PagedData<Comment>>>('/api/admin/comments', { params }),
   updateStatus: (id: number, status: string) =>
     api.put(`/api/admin/comments/${id}`, { status }),
+  togglePin: (id: number) =>
+    api.post(`/api/admin/comments/${id}/toggle-pin`),
   delete: (id: number) => api.delete(`/api/admin/comments/${id}`),
   reply: (id: number, content: string) =>
     api.post(`/api/admin/comments/${id}/reply`, { content }),

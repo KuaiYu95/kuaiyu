@@ -33,7 +33,7 @@ func (r *CommentRepository) FindByPostID(postID uint, includeReplies bool) ([]mo
 	
 	query := r.db.Where("post_id = ? AND parent_id IS NULL AND status = ?",
 		postID, constants.CommentStatusApproved).
-		Order("created_at ASC")
+		Order("is_pinned DESC, created_at ASC")
 	
 	if includeReplies {
 		query = query.Preload("Replies", func(db *gorm.DB) *gorm.DB {
@@ -52,7 +52,7 @@ func (r *CommentRepository) FindByLifeRecordID(lifeRecordID uint, includeReplies
 	
 	query := r.db.Where("life_record_id = ? AND parent_id IS NULL AND status = ?",
 		lifeRecordID, constants.CommentStatusApproved).
-		Order("created_at ASC")
+		Order("is_pinned DESC, created_at ASC")
 	
 	if includeReplies {
 		query = query.Preload("Replies", func(db *gorm.DB) *gorm.DB {
@@ -87,7 +87,7 @@ func (r *CommentRepository) FindReplies(parentID uint, limit int) ([]model.Comme
 }
 
 // FindAll 查找所有评论（管理后台）
-func (r *CommentRepository) FindAll(page, limit int, status string) ([]model.Comment, int64, error) {
+func (r *CommentRepository) FindAll(page, limit int, status string, isPinned *bool) ([]model.Comment, int64, error) {
 	var comments []model.Comment
 	var count int64
 	
@@ -97,12 +97,16 @@ func (r *CommentRepository) FindAll(page, limit int, status string) ([]model.Com
 		query = query.Where("status = ?", status)
 	}
 	
-	// 计数
+	if isPinned != nil {
+		query = query.Where("is_pinned = ?", *isPinned)
+	}
+	
+	// 先计数
 	if err := query.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
 	
-	// 查询
+	// 再查询（必须使用同一个 query 对象）
 	offset := (page - 1) * limit
 	err := query.Order("created_at DESC").
 		Offset(offset).Limit(limit).
@@ -113,14 +117,14 @@ func (r *CommentRepository) FindAll(page, limit int, status string) ([]model.Com
 
 // FindPending 查找待审核评论
 func (r *CommentRepository) FindPending(page, limit int) ([]model.Comment, int64, error) {
-	return r.FindAll(page, limit, string(constants.CommentStatusPending))
+	return r.FindAll(page, limit, string(constants.CommentStatusPending), nil)
 }
 
 // FindRecent 查找最近评论
 func (r *CommentRepository) FindRecent(limit int) ([]model.Comment, error) {
 	var comments []model.Comment
 	err := r.db.Where("status = ? AND parent_id IS NULL", constants.CommentStatusApproved).
-		Order("created_at DESC").
+		Order("is_pinned DESC, created_at DESC").
 		Limit(limit).
 		Find(&comments).Error
 	return comments, err

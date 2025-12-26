@@ -2,6 +2,8 @@
 package handler
 
 import (
+	"sort"
+	
 	"github.com/gin-gonic/gin"
 	"kuaiyu/internal/database"
 	"kuaiyu/internal/model"
@@ -86,6 +88,14 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	}
 	comments = uniqueComments
+	
+	// 排序：置顶评论在前，然后按创建时间排序
+	sort.Slice(comments, func(i, j int) bool {
+		if comments[i].IsPinned != comments[j].IsPinned {
+			return comments[i].IsPinned
+		}
+		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
+	})
 	
 	// 批量加载所有评论的回复（避免 N+1 查询）
 	if len(comments) > 0 {
@@ -252,8 +262,18 @@ func (h *CommentHandler) Create(c *gin.Context) {
 func (h *CommentHandler) AdminList(c *gin.Context) {
 	page, limit := GetPageParams(c)
 	status := c.Query("status")
+	isPinnedStr := c.Query("is_pinned")
 	
-	comments, total, err := h.repo.FindAll(page, limit, status)
+	var isPinned *bool
+	if isPinnedStr == "true" || isPinnedStr == "1" {
+		pinned := true
+		isPinned = &pinned
+	} else if isPinnedStr == "false" || isPinnedStr == "0" {
+		pinned := false
+		isPinned = &pinned
+	}
+	
+	comments, total, err := h.repo.FindAll(page, limit, status, isPinned)
 	if err != nil {
 		response.InternalError(c, "")
 		return
@@ -301,6 +321,37 @@ func (h *CommentHandler) UpdateStatus(c *gin.Context) {
 	}
 	
 	comment.Status = req.Status
+	if err := db.Save(&comment).Error; err != nil {
+		response.InternalError(c, "更新失败")
+		return
+	}
+	
+	response.SuccessMessage(c, constants.MsgUpdateSuccess, comment.ToAdminVO())
+}
+
+// TogglePin 切换评论置顶状态
+func (h *CommentHandler) TogglePin(c *gin.Context) {
+	id, err := GetIDParam(c, "id")
+	if err != nil {
+		response.BadRequest(c, "无效的 ID")
+		return
+	}
+	
+	var comment model.Comment
+	db := database.Get()
+	if err := db.First(&comment, id).Error; err != nil {
+		response.NotFound(c, "评论不存在")
+		return
+	}
+	
+	// 只允许对一级评论（parent_id 为 NULL）进行置顶
+	if comment.ParentID != nil {
+		response.BadRequest(c, "只能置顶一级评论")
+		return
+	}
+	
+	// 切换置顶状态
+	comment.IsPinned = !comment.IsPinned
 	if err := db.Save(&comment).Error; err != nil {
 		response.InternalError(c, "更新失败")
 		return
