@@ -2,11 +2,11 @@
 // 分类/标签页
 // ===========================================
 
+import { Card } from '@/components/ui';
+import { publicApi, Tag } from '@/lib/api';
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { Card, Empty } from '@/components/ui';
-import { publicApi } from '@/lib/api';
+import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('categories');
@@ -14,14 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('title'),
     description: t('description'),
   };
-}
-
-interface Tag {
-  id: number;
-  name: string;
-  slug: string;
-  color: string;
-  post_count: number;
 }
 
 export default async function CategoriesPage({
@@ -60,36 +52,6 @@ export default async function CategoriesPage({
             {t('totalTags', { count: tags.length })}
           </p>
         </section>
-
-        {/* 标签云 */}
-        {tags.length > 0 ? (
-          <Card className="p-8">
-            <div className="flex flex-wrap justify-center gap-4">
-              {tags.map((tag) => (
-                <Link
-                  key={tag.id}
-                  href={`/${locale}/blog?tag=${tag.slug}`}
-                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-110"
-                  style={{
-                    fontSize: getFontSize(tag.post_count || 0),
-                    backgroundColor: `${tag.color}20`,
-                    color: tag.color || '#60a5fa',
-                  }}
-                >
-                  <span className="group-hover:underline">{tag.name}</span>
-                  <span
-                    className="text-xs opacity-60"
-                    style={{ fontSize: 12 }}
-                  >
-                    ({tag.post_count || 0})
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        ) : (
-          <Empty message={t('noTags')} />
-        )}
 
         {/* 标签列表 */}
         {tags.length > 0 && (
