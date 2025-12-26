@@ -142,9 +142,9 @@ func (h *CommentHandler) List(c *gin.Context) {
 		
 		if len(comment.Replies) > 0 {
 			vo.Replies = make([]model.CommentVO, len(comment.Replies))
-			for j := range comment.Replies {
-				vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
-			}
+				for j := range comment.Replies {
+					vo.Replies[j] = buildReplyVO(&comment.Replies[j], nicknameMap)
+				}
 			vo.ReplyCount = len(comment.Replies)
 		}
 		

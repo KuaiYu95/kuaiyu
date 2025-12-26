@@ -1,4 +1,4 @@
-import { Card, Empty, Tag } from '@/components/ui';
+import { Empty, Tag } from '@/components/ui';
 import { commentApi, configApi, lifeApi, postApi, tagApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
@@ -67,7 +67,8 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
       {/* 近期博客 */}
       <section className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 relative">
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-6 bg-text-accent rounded-full"></div>
           <h2 className="text-xl font-bold text-text-accent">{t('recentPosts')}</h2>
           <Link
             href={`/${locale}${ROUTES.BLOG}`}
@@ -78,45 +79,50 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         </div>
 
         {posts.length > 0 ? (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <Link key={post.id} href={`/${locale}${ROUTES.BLOG_DETAIL(post.slug)}`}>
-                <Card className="flex gap-4 p-4">
-                  {post.cover_image && (
-                    <div className="relative w-24 h-24 flex-shrink-0">
-                      <Image
-                        src={post.cover_image}
-                        alt={post.title}
-                        fill
-                        className="object-cover rounded-md"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-medium text-text-accent mb-1 truncate">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-text-secondary mb-2 line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center gap-3 text-xs text-text-secondary">
-                      <span>{formatDate(post.published_at || post.created_at, locale)}</span>
-                      <span>·</span>
-                      <span>{post.view_count} {tBlog('views')}</span>
-                      {post.tags && post.tags.length > 0 && (
-                        <>
-                          <span>·</span>
-                          <div className="flex gap-1">
-                            {post.tags.slice(0, 2).map((tag) => (
-                              <Tag key={tag.id} size="sm">{tag.name}</Tag>
-                            ))}
-                          </div>
-                        </>
+          <div>
+            {posts.map((post, index) => (
+              <div key={post.id}>
+                {index > 0 && <div className="h-px border-t border-dashed border-border/50 my-2"></div>}
+                <Link href={`/${locale}${ROUTES.BLOG_DETAIL(post.slug)}`} className="block">
+                  <div className="group py-2 px-4 -mx-4 rounded-lg bg-bg-secondary/0 hover:bg-bg-secondary/30 transition-all duration-300">
+                    <div className="flex gap-6">
+                      {post.cover_image && (
+                        <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden rounded-lg">
+                          <Image
+                            src={post.cover_image}
+                            alt={post.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
                       )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-text-accent mb-2 group-hover:text-primary-400 transition-colors line-clamp-1">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm text-text-secondary mb-4 line-clamp-2 leading-relaxed">
+                          {post.excerpt}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-text-secondary">
+                          <span>{formatDate(post.published_at || post.created_at, locale)}</span>
+                          <span className="text-border">·</span>
+                          <span>{post.view_count} {tBlog('views')}</span>
+                          {post.tags && post.tags.length > 0 && (
+                            <>
+                              <span className="text-border">·</span>
+                              <div className="flex gap-2">
+                                {post.tags.slice(0, 2).map((tag) => (
+                                  <Tag key={tag.id} size="sm">{tag.name}</Tag>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </Card>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         ) : (
@@ -126,7 +132,8 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
       {/* 近期生活 */}
       <section className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 relative">
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-6 bg-text-accent rounded-full"></div>
           <h2 className="text-xl font-bold text-text-accent">{t('recentLife')}</h2>
           <Link
             href={`/${locale}${ROUTES.LIFE}`}
@@ -137,27 +144,31 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         </div>
 
         {lifeRecords.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3">
             {lifeRecords.map((record) => (
-              <Card key={record.id} className="p-4">
+              <Link key={record.id} href={`/${locale}/life/${record.id}`} className="group block">
                 {record.cover_image && (
-                  <div className="relative aspect-video mb-3 -mx-4 -mt-4">
+                  <div className="relative aspect-video overflow-hidden rounded-lg mb-3">
                     <Image
                       src={record.cover_image}
                       alt={record.title}
                       fill
-                      className="object-cover rounded-t-lg"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 )}
-                <h3 className="font-medium text-text-accent mb-2">{record.title}</h3>
-                <p className="text-sm text-text-secondary line-clamp-3">
-                  {record.content}
-                </p>
-                <p className="text-xs text-text-secondary mt-2">
-                  {formatDate(record.published_at || record.created_at, locale)}
-                </p>
-              </Card>
+                <div>
+                  <h3 className="font-semibold text-text-accent mb-3 group-hover:text-primary-400 transition-colors line-clamp-1">
+                    {record.title}
+                  </h3>
+                  <p className="text-sm text-text-secondary line-clamp-3 leading-relaxed mb-4">
+                    {record.content}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    {formatDate(record.published_at || record.created_at, locale)}
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
         ) : (
@@ -167,7 +178,10 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
       {/* 标签云 */}
       <section className="animate-fade-up" style={{ animationDelay: '0.3s' }}>
-        <h2 className="text-xl font-bold text-text-accent mb-6">{t('tagCloud')}</h2>
+        <div className="relative mb-6">
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-6 bg-text-accent rounded-full"></div>
+          <h2 className="text-xl font-bold text-text-accent">{t('tagCloud')}</h2>
+        </div>
 
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -192,7 +206,8 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
 
       {/* 近期留言 */}
       <section className="animate-fade-up" style={{ animationDelay: '0.4s' }}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 relative">
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-6 bg-text-accent rounded-full"></div>
           <h2 className="text-xl font-bold text-text-accent">{t('recentComments')}</h2>
           <Link
             href={`/${locale}${ROUTES.GUESTBOOK}`}
@@ -203,34 +218,36 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
         </div>
 
         {comments.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {comments.map((comment) => (
-              <Card key={comment.id} className="p-4">
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent-primary flex items-center justify-center text-white font-medium">
+              <div key={comment.id} className="pb-4 border-b border-border/50 last:border-0">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0 shadow-md">
                     {comment.nickname.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-text-accent">{comment.nickname}</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold text-text-accent">{comment.nickname}</span>
                       {comment.website && (
                         <a
                           href={comment.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-accent-primary"
+                          className="text-xs text-accent-primary hover:underline"
                         >
                           🔗
                         </a>
                       )}
                     </div>
-                    <p className="text-sm text-text-secondary line-clamp-2">{comment.content}</p>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed mb-2">
+                      {comment.content}
+                    </p>
+                    <p className="text-xs text-text-secondary">
                       {formatDate(comment.created_at, locale)}
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         ) : (

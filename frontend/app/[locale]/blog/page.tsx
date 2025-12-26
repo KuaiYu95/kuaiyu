@@ -2,11 +2,11 @@
 // 博客列表页
 // ===========================================
 
+import { Empty, Tag } from '@/components/ui';
+import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { Card, Tag, Empty } from '@/components/ui';
-import { publicApi } from '@/lib/api';
+import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('blog');
@@ -14,17 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('title'),
     description: t('description'),
   };
-}
-
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string;
-  cover_image: string;
-  published_at: string;
-  view_count: number;
-  tags: { id: number; name: string; slug: string; color: string }[];
 }
 
 export default async function BlogPage({
@@ -60,12 +49,12 @@ export default async function BlogPage({
   };
 
   return (
-    <main className="min-h-screen py-20">
-      <div className="max-w-4xl mx-auto px-4">
+    <main className="min-h-screen">
+      <div className="container-content py-12">
         {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">{t('title')}</h1>
-          <p className="text-gray-400">{t('description')}</p>
+        <section className="text-center py-12 animate-fade-up mb-12">
+          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <p className="text-text-secondary">{t('description')}</p>
           {tag && (
             <div className="mt-4">
               <span className="text-gray-500">{t('filterByTag')}: </span>
@@ -75,53 +64,55 @@ export default async function BlogPage({
               </Link>
             </div>
           )}
-        </div>
+        </section>
 
         {/* 文章列表 */}
         {posts.length > 0 ? (
-          <div className="space-y-8">
-            {posts.map((post) => (
-              <Link key={post.id} href={`/${locale}/blog/${post.slug}`}>
-                <Card className="group hover:border-primary-500/50 transition-all duration-300">
-                  <div className="flex gap-6">
-                    {/* 封面图 */}
-                    {post.cover_image && (
-                      <div className="w-48 h-32 flex-shrink-0 overflow-hidden rounded-lg">
-                        <img
-                          src={post.cover_image}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-                    {/* 内容 */}
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-xl font-semibold text-white group-hover:text-primary-400 transition-colors mb-2 line-clamp-1">
-                        {post.title}
-                      </h2>
-                      <p className="text-gray-400 text-sm mb-3 line-clamp-2">{post.excerpt}</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-2">
-                          {post.tags?.slice(0, 3).map((tag) => (
-                            <Tag key={tag.id} color={tag.color}>
-                              {tag.name}
-                            </Tag>
-                          ))}
+          <div>
+            {posts.map((post, index) => (
+              <div key={post.id}>
+                {index > 0 && <div className="h-px border-t border-dashed border-border/50 my-2"></div>}
+                <Link href={`/${locale}/blog/${post.slug}`} className="block">
+                  <div className="group py-2 px-4 -mx-4 rounded-lg bg-bg-secondary/0 hover:bg-bg-secondary/30 transition-all duration-300">
+                    <div className="flex gap-6">
+                      {post.cover_image && (
+                        <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden rounded-lg">
+                          <img
+                            src={post.cover_image}
+                            alt={post.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <div className="text-gray-500 text-sm">
-                          <span>{formatDate(post.published_at)}</span>
-                          <span className="mx-2">·</span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-lg font-semibold text-text-accent mb-2 group-hover:text-primary-400 transition-colors line-clamp-1">
+                          {post.title}
+                        </h2>
+                        <p className="text-sm text-text-secondary mb-4 line-clamp-2 leading-relaxed">{post.excerpt}</p>
+                        <div className="flex items-center gap-4 text-xs text-text-secondary">
+                          <span>{formatDate(post.published_at || '')}</span>
+                          <span className="text-border">·</span>
                           <span>{post.view_count} {t('views')}</span>
+                          {post.tags && post.tags.length > 0 && (
+                            <>
+                              <span className="text-border">·</span>
+                              <div className="flex gap-2">
+                                {post.tags.slice(0, 2).map((tag) => (
+                                  <Tag key={tag.id} color={tag.color} size="sm">{tag.name}</Tag>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </Card>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         ) : (
-          <Empty message={t('noPosts')} />
+          <Empty title={t('noPosts')} />
         )}
 
         {/* 分页 */}

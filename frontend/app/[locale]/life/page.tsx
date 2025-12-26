@@ -2,11 +2,11 @@
 // 生活记录列表页
 // ===========================================
 
+import { Empty } from '@/components/ui';
+import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { Card, Empty } from '@/components/ui';
-import { publicApi } from '@/lib/api';
+import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('life');
@@ -14,13 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('title'),
     description: t('description'),
   };
-}
-
-interface LifeRecord {
-  id: number;
-  content: string;
-  cover_image: string;
-  published_at: string;
 }
 
 export default async function LifePage({
@@ -49,7 +42,9 @@ export default async function LifePage({
 
   // 按年份分组
   const groupedByYear = records.reduce((acc, record) => {
-    const year = new Date(record.published_at).getFullYear();
+    const date = record.published_at || record.created_at;
+    if (!date) return acc;
+    const year = new Date(date).getFullYear();
     if (!acc[year]) acc[year] = [];
     acc[year].push(record);
     return acc;
@@ -58,13 +53,13 @@ export default async function LifePage({
   const years = Object.keys(groupedByYear).sort((a, b) => Number(b) - Number(a));
 
   return (
-    <main className="min-h-screen py-20">
-      <div className="max-w-4xl mx-auto px-4">
+    <main className="min-h-screen">
+      <div className="container-content py-12">
         {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">{t('title')}</h1>
-          <p className="text-gray-400">{t('description')}</p>
-        </div>
+        <section className="text-center py-12 animate-fade-up mb-12">
+          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <p className="text-text-secondary">{t('description')}</p>
+        </section>
 
         {/* 时间线 */}
         {records.length > 0 ? (
@@ -82,10 +77,10 @@ export default async function LifePage({
                 </div>
 
                 {/* 该年的记录 */}
-                <div className="ml-16 space-y-6">
-                  {groupedByYear[Number(year)].map((record) => (
-                    <Link key={record.id} href={`/${locale}/life/${record.id}`}>
-                      <Card className="group hover:border-primary-500/50 transition-all duration-300">
+                <div className="ml-16">
+                  {groupedByYear[Number(year)].map((record, index) => (
+                    <Link key={record.id} href={`/${locale}/life/${record.id}`} className={index > 0 ? "block mt-6" : "block"}>
+                      <div className="group border-b border-border/50 pb-6 transition-all duration-300">
                         <div className="flex gap-4">
                           {record.cover_image && (
                             <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg">
@@ -97,15 +92,15 @@ export default async function LifePage({
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-gray-300 text-sm line-clamp-3 group-hover:text-white transition-colors">
+                            <p className="text-sm text-text-secondary line-clamp-3 group-hover:text-text-accent transition-colors leading-relaxed">
                               {record.content.replace(/[#*`\n]/g, ' ').slice(0, 150)}
                             </p>
-                            <div className="text-gray-500 text-xs mt-2">
-                              {formatDate(record.published_at)}
+                            <div className="text-xs text-text-secondary mt-2">
+                              {formatDate(record.published_at || record.created_at)}
                             </div>
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -113,7 +108,7 @@ export default async function LifePage({
             ))}
           </div>
         ) : (
-          <Empty message={t('noRecords')} />
+          <Empty title={t('noRecords')} />
         )}
       </div>
     </main>
