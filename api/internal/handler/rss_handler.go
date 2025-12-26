@@ -41,7 +41,7 @@ func (h *RSSHandler) Feed(c *gin.Context) {
 	// 获取配置
 	var siteName string
 	var siteConfig model.SiteConfig
-	if db.Where("key = ?", constants.ConfigSiteName).First(&siteConfig).Error == nil {
+	if db.Where("`key` = ?", constants.ConfigSiteName).First(&siteConfig).Error == nil {
 		siteName = siteConfig.Value
 	}
 	

@@ -53,29 +53,39 @@ export default function Footer({ config, locale }: FooterProps) {
           </div>
 
           {/* 右侧链接 */}
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-6 md:pl-12">
-            {config?.footer_right_links?.categories?.map((category, index) => (
-              <div key={index}>
-                <h4 className="text-sm font-semibold text-text-accent mb-3">
-                  {category.name}
-                </h4>
-                <ul className="space-y-2">
-                  {category.links?.map((link, linkIndex) => (
-                    <li key={linkIndex}>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-text-secondary hover:text-accent-primary transition-colors"
-                      >
-                        {link.name}
-                      </a>
-                    </li>
+          {config?.footer_right_categories &&
+            Array.isArray(config.footer_right_categories) &&
+            config.footer_right_categories.length > 0 && (
+              <div className="flex-1 flex flex-wrap justify-end gap-x-24 gap-y-8 md:pl-12">
+                {config.footer_right_categories
+                  .filter((cat) => cat && cat.category)
+                  .map((category, index) => (
+                    <div key={index} className="text-right">
+                      <h4 className="text-sm font-semibold text-text-accent mb-3">
+                        {category.category}
+                      </h4>
+                      {category.links && Array.isArray(category.links) && category.links.length > 0 && (
+                        <ul className="space-y-2">
+                          {category.links
+                            .filter((link) => link && link.url && link.title)
+                            .map((link, linkIndex) => (
+                              <li key={linkIndex}>
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-text-secondary hover:text-accent-primary transition-colors"
+                                >
+                                  {link.title}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+                    </div>
                   ))}
-                </ul>
               </div>
-            ))}
-          </div>
+            )}
         </div>
 
         {/* 版权信息 */}
@@ -85,26 +95,6 @@ export default function Footer({ config, locale }: FooterProps) {
               year: currentYear,
               name: config?.site_name || 'Yu.kuai',
             })}
-          </p>
-          <p className="text-xs text-text-secondary mt-1">
-            {t('poweredBy')}{' '}
-            <a
-              href="https://nextjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent-primary hover:underline"
-            >
-              Next.js
-            </a>
-            {' & '}
-            <a
-              href="https://go.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent-primary hover:underline"
-            >
-              Go
-            </a>
           </p>
         </div>
       </div>

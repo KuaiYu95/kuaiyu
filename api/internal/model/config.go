@@ -13,7 +13,7 @@ import (
 // SiteConfig 网站配置模型
 type SiteConfig struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	Key       string    `gorm:"uniqueIndex;size:100;not null" json:"key"`
+	Key       string    `gorm:"column:key;uniqueIndex;size:100;not null" json:"key"`
 	Value     string    `gorm:"type:text" json:"value"`
 	Type      string    `gorm:"size:20;default:string" json:"type"` // string | json | image
 	UpdatedAt time.Time `json:"updated_at"`
@@ -49,19 +49,14 @@ type ConfigItem struct {
 
 // FooterLink Footer 链接
 type FooterLink struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	Title string `json:"title"`
+	URL   string `json:"url"`
 }
 
 // FooterCategory Footer 分类
 type FooterCategory struct {
-	Name  string       `json:"name"`
-	Links []FooterLink `json:"links"`
-}
-
-// FooterRightLinks Footer 右侧链接配置
-type FooterRightLinks struct {
-	Categories []FooterCategory `json:"categories"`
+	Category string       `json:"category"`
+	Links    []FooterLink `json:"links"`
 }
 
 // ===========================================
@@ -81,10 +76,10 @@ type SiteConfigVO struct {
 	HomeAbout    string `json:"home_about"`
 	
 	// Footer 配置
-	FooterLeftImage       string           `json:"footer_left_image"`
-	FooterLeftName        string           `json:"footer_left_name"`
-	FooterLeftDescription string           `json:"footer_left_description"`
-	FooterRightLinks      FooterRightLinks `json:"footer_right_links"`
+	FooterLeftImage        string           `json:"footer_left_image"`
+	FooterLeftName         string           `json:"footer_left_name"`
+	FooterLeftDescription  string           `json:"footer_left_description"`
+	FooterRightCategories  []FooterCategory `json:"footer_right_categories"`
 }
 
 // ===========================================

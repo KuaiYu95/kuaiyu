@@ -182,12 +182,12 @@ func seedConfig() error {
 		{Key: "footer_left_image", Value: "", Type: "image"},
 		{Key: "footer_left_name", Value: "Yu.kuai", Type: "string"},
 		{Key: "footer_left_description", Value: "一个热爱技术的开发者", Type: "string"},
-		{Key: "footer_right_links", Value: `{"categories":[]}`, Type: "json"},
+		{Key: "footer_right_categories", Value: `[]`, Type: "json"},
 	}
 	
 	for _, cfg := range defaultConfigs {
 		var existing model.SiteConfig
-		result := db.Where("key = ?", cfg.Key).First(&existing)
+		result := db.Where("`key` = ?", cfg.Key).First(&existing)
 		
 		if result.Error == gorm.ErrRecordNotFound {
 			if err := db.Create(&cfg).Error; err != nil {

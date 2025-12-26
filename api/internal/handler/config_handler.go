@@ -60,8 +60,15 @@ func (h *ConfigHandler) Get(c *gin.Context) {
 			result.FooterLeftName = cfg.Value
 		case constants.ConfigFooterLeftDescription:
 			result.FooterLeftDescription = cfg.Value
-		case constants.ConfigFooterRightLinks:
-			json.Unmarshal([]byte(cfg.Value), &result.FooterRightLinks)
+		case constants.ConfigFooterRightCategories:
+			if cfg.Value != "" {
+				if err := json.Unmarshal([]byte(cfg.Value), &result.FooterRightCategories); err != nil {
+					// 如果解析失败，初始化为空数组
+					result.FooterRightCategories = []model.FooterCategory{}
+				}
+			} else {
+				result.FooterRightCategories = []model.FooterCategory{}
+			}
 		}
 	}
 	
@@ -103,7 +110,7 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	
 	for _, item := range req.Configs {
 		var config model.SiteConfig
-		result := db.Where("key = ?", item.Key).First(&config)
+		result := db.Where("`key` = ?", item.Key).First(&config)
 		
 		// 处理值
 		var value string
