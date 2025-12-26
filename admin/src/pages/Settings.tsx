@@ -3,18 +3,31 @@
 // ===========================================
 
 import { configApi, uploadApi } from '@/lib/api';
-import { Save } from '@mui/icons-material';
+import { Add, Delete, Save } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
+  Divider,
+  IconButton,
   Paper,
   TextField,
   Typography
 } from '@mui/material';
 import MDEditor from '@uiw/react-md-editor';
 import { useEffect, useState } from 'react';
+
+// Footer 右侧链接类型
+interface FooterLink {
+  title: string;
+  url: string;
+}
+
+interface FooterCategory {
+  category: string;
+  links: FooterLink[];
+}
 
 export default function Settings() {
   const [loading, setLoading] = useState(true);
@@ -32,6 +45,7 @@ export default function Settings() {
   const [footerLeftImage, setFooterLeftImage] = useState('');
   const [footerLeftName, setFooterLeftName] = useState('');
   const [footerLeftDescription, setFooterLeftDescription] = useState('');
+  const [footerRightCategories, setFooterRightCategories] = useState<FooterCategory[]>([]);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -47,6 +61,12 @@ export default function Settings() {
         setFooterLeftImage(data.footer_left_image || '');
         setFooterLeftName(data.footer_left_name || '');
         setFooterLeftDescription(data.footer_left_description || '');
+        // 解析右侧链接配置
+        if (data.footer_right_categories && Array.isArray(data.footer_right_categories)) {
+          setFooterRightCategories(data.footer_right_categories);
+        } else {
+          setFooterRightCategories([]);
+        }
       } catch (err) {
         setError('加载配置失败');
       } finally {
@@ -72,6 +92,7 @@ export default function Settings() {
         { key: 'footer_left_image', value: footerLeftImage, type: 'image' },
         { key: 'footer_left_name', value: footerLeftName, type: 'string' },
         { key: 'footer_left_description', value: footerLeftDescription, type: 'string' },
+        { key: 'footer_right_categories', value: footerRightCategories, type: 'json' },
       ]);
       setSuccess('保存成功');
     } catch (err) {
@@ -94,6 +115,43 @@ export default function Settings() {
     } catch (err) {
       setError('图片上传失败');
     }
+  };
+
+  // Footer 右侧链接管理函数
+  const addCategory = () => {
+    if (footerRightCategories.length >= 3) {
+      setError('最多只能配置3个类别');
+      return;
+    }
+    setFooterRightCategories([...footerRightCategories, { category: '', links: [] }]);
+  };
+
+  const removeCategory = (index: number) => {
+    setFooterRightCategories(footerRightCategories.filter((_, i) => i !== index));
+  };
+
+  const updateCategoryName = (index: number, category: string) => {
+    const updated = [...footerRightCategories];
+    updated[index].category = category;
+    setFooterRightCategories(updated);
+  };
+
+  const addLink = (categoryIndex: number) => {
+    const updated = [...footerRightCategories];
+    updated[categoryIndex].links.push({ title: '', url: '' });
+    setFooterRightCategories(updated);
+  };
+
+  const removeLink = (categoryIndex: number, linkIndex: number) => {
+    const updated = [...footerRightCategories];
+    updated[categoryIndex].links = updated[categoryIndex].links.filter((_, i) => i !== linkIndex);
+    setFooterRightCategories(updated);
+  };
+
+  const updateLink = (categoryIndex: number, linkIndex: number, field: 'title' | 'url', value: string) => {
+    const updated = [...footerRightCategories];
+    updated[categoryIndex].links[linkIndex][field] = value;
+    setFooterRightCategories(updated);
   };
 
   if (loading) {
@@ -182,6 +240,9 @@ export default function Settings() {
       {/* Footer 配置 */}
       <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
         <Typography variant="h6" mb={2}>Footer 配置</Typography>
+
+        {/* 左侧配置 */}
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>左侧配置</Typography>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           {footerLeftImage && (
             <Box component="img" src={footerLeftImage} sx={{ width: 60, height: 60, borderRadius: 1 }} />
@@ -205,7 +266,92 @@ export default function Settings() {
           onChange={(e) => setFooterLeftDescription(e.target.value)}
           multiline
           rows={2}
+          sx={{ mb: 3 }}
         />
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* 右侧链接配置 */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>右侧链接配置</Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Add />}
+            onClick={addCategory}
+            disabled={footerRightCategories.length >= 3}
+          >
+            添加类别
+          </Button>
+        </Box>
+
+        {footerRightCategories.map((category, categoryIndex) => (
+          <Paper
+            key={categoryIndex}
+            sx={{ p: 2, mb: 2, border: 1, borderColor: 'divider', bgcolor: 'background.default' }}
+            elevation={0}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <TextField
+                fullWidth
+                label="类别名称"
+                value={category.category}
+                onChange={(e) => updateCategoryName(categoryIndex, e.target.value)}
+                size="small"
+              />
+              <IconButton
+                color="error"
+                onClick={() => removeCategory(categoryIndex)}
+                size="small"
+              >
+                <Delete />
+              </IconButton>
+            </Box>
+
+            <Box sx={{ mb: 1 }}>
+              {category.links.map((link, linkIndex) => (
+                <Box key={linkIndex} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                  <TextField
+                    label="链接名称"
+                    value={link.title}
+                    onChange={(e) => updateLink(categoryIndex, linkIndex, 'title', e.target.value)}
+                    size="small"
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="链接地址"
+                    value={link.url}
+                    onChange={(e) => updateLink(categoryIndex, linkIndex, 'url', e.target.value)}
+                    size="small"
+                    sx={{ flex: 2 }}
+                  />
+                  <IconButton
+                    color="error"
+                    onClick={() => removeLink(categoryIndex, linkIndex)}
+                    size="small"
+                  >
+                    <Delete />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<Add />}
+              onClick={() => addLink(categoryIndex)}
+            >
+              添加链接
+            </Button>
+          </Paper>
+        ))}
+
+        {footerRightCategories.length === 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+            暂无类别，点击"添加类别"开始配置
+          </Typography>
+        )}
       </Paper>
     </Box>
   );

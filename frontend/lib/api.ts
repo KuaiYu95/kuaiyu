@@ -131,12 +131,10 @@ export interface SiteConfig {
   footer_left_image: string;
   footer_left_name: string;
   footer_left_description: string;
-  footer_right_links: {
-    categories: {
-      name: string;
-      links: { name: string; url: string }[];
-    }[];
-  };
+  footer_right_categories: {
+    category: string;
+    links: { title: string; url: string }[];
+  }[];
 }
 
 // 归档类型

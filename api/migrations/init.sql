@@ -204,7 +204,7 @@ INSERT IGNORE INTO `site_configs` (`key`, `value`, `type`) VALUES
 ('footer_left_image', '', 'image'),
 ('footer_left_name', 'Yu.kuai', 'string'),
 ('footer_left_description', '一个热爱技术的开发者', 'string'),
-('footer_right_links', '{"categories":[]}', 'json');
+('footer_right_categories', '[]', 'json');
 
 SET FOREIGN_KEY_CHECKS = 1;
 

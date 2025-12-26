@@ -162,10 +162,10 @@ const (
 	ConfigHomeAbout    = "home_about"
 
 	// Footer配置
-	ConfigFooterLeftImage       = "footer_left_image"
-	ConfigFooterLeftName        = "footer_left_name"
-	ConfigFooterLeftDescription = "footer_left_description"
-	ConfigFooterRightLinks      = "footer_right_links"
+	ConfigFooterLeftImage        = "footer_left_image"
+	ConfigFooterLeftName         = "footer_left_name"
+	ConfigFooterLeftDescription  = "footer_left_description"
+	ConfigFooterRightCategories  = "footer_right_categories"
 )
 
 // ===========================================

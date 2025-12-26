@@ -59,8 +59,13 @@ export default async function LocaleLayout({
   try {
     const res = await configApi.get();
     config = res.data;
-  } catch {
+    // 确保 footer_right_categories 存在
+    if (config && !config.footer_right_categories) {
+      config.footer_right_categories = [];
+    }
+  } catch (error) {
     // 使用默认配置
+    console.error('Failed to load config:', error);
   }
 
   return (
