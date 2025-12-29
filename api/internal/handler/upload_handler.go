@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"kuaiyu/internal/config"
 	"kuaiyu/pkg/constants"
+	"kuaiyu/pkg/cos"
 	"kuaiyu/pkg/response"
 	"kuaiyu/pkg/utils"
 )
@@ -49,6 +51,14 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 	
+	// 打开文件
+	src, err := file.Open()
+	if err != nil {
+		response.BadRequest(c, "无法打开文件")
+		return
+	}
+	defer src.Close()
+	
 	// 生成新文件名
 	ext := filepath.Ext(file.Filename)
 	newFilename := fmt.Sprintf("%s_%s%s",
@@ -57,12 +67,29 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		ext,
 	)
 	
-	// TODO: 上传到腾讯云 COS
-	// 这里先返回模拟的 URL
-	url := fmt.Sprintf("/uploads/%s", newFilename)
+	// 检查 COS 配置
+	cfg := config.Get()
+	if cfg.COS.SecretID == "" || cfg.COS.SecretKey == "" || cfg.COS.Bucket == "" || cfg.COS.Region == "" {
+		// COS 未配置，返回错误
+		response.InternalError(c, "文件上传服务未配置，请联系管理员")
+		return
+	}
+	
+	// 初始化 COS 客户端
+	if err := cos.Init(); err != nil {
+		response.InternalError(c, fmt.Sprintf("初始化上传服务失败: %v", err))
+		return
+	}
+	
+	// 上传到腾讯云 COS
+	fileURL, err := cos.UploadFile(src, newFilename, contentType)
+	if err != nil {
+		response.InternalError(c, fmt.Sprintf("上传文件失败: %v", err))
+		return
+	}
 	
 	response.Success(c, gin.H{
-		"url":      url,
+		"url":      fileURL,
 		"filename": newFilename,
 		"size":     file.Size,
 	})

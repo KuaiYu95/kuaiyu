@@ -1,8 +1,8 @@
 import ContributionCalendar from '@/components/contribution/ContributionCalendar';
-import { configApi } from '@/lib/api';
+import SafeImage from '@/components/ui/SafeImage';
+import { DEFAULT_CONFIG } from '@/lib/config';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 
 // ===========================================
 // 首页
@@ -19,23 +19,18 @@ interface HomePageProps {
 export default async function HomePage({ params: { locale } }: HomePageProps) {
   const t = await getTranslations('home');
 
-  let config = null;
-  try {
-    const res = await configApi.get();
-    config = res.data;
-  } catch (error) {
-    console.error('Failed to fetch config:', error);
-  }
+  // 使用写死的配置
+  const config = DEFAULT_CONFIG;
 
   return (
     <div className="container-content pt-12 pb-0 space-y-16">
       {/* 首屏区域 */}
       <section className="text-center py-12 animate-fade-up">
-        {config?.home_avatar && (
+        {config.site_logo && (
           <div className="relative w-28 h-28 mx-auto mb-6">
-            <Image
-              src={config.home_avatar}
-              alt={config.home_nickname || '头像'}
+            <SafeImage
+              src={config.site_logo}
+              alt={config.site_name || '头像'}
               fill
               className="object-cover rounded-full ring-4 ring-border hover:ring-accent-primary transition-all duration-300 hover:scale-105"
               priority
@@ -43,14 +38,8 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
           </div>
         )}
         <h1 className="text-3xl font-bold text-text-accent mb-4">
-          {config?.home_nickname || 'Yu.kuai'}
+          {config.site_name || 'Yu.kuai'}
         </h1>
-        {config?.home_about && (
-          <div
-            className="max-w-lg mx-auto text-text-secondary markdown-content"
-            dangerouslySetInnerHTML={{ __html: config.home_about }}
-          />
-        )}
       </section>
 
       {/* 贡献日历 */}

@@ -8,6 +8,7 @@ export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { default as Empty } from './Empty';
 export { default as Loading } from './Loading';
+export { default as Lottie } from './Lottie';
 export { default as RelativeTime } from './RelativeTime';
 export { default as ScrollToTop } from './ScrollToTop';
 export { default as Skeleton } from './Skeleton';

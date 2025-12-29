@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"kuaiyu/internal/config"
 	"kuaiyu/internal/database"
 	"kuaiyu/internal/middleware"
 	"kuaiyu/internal/model"

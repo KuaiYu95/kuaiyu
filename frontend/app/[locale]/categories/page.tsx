@@ -2,7 +2,8 @@
 // 分类/标签页
 // ===========================================
 
-import { Card } from '@/components/ui';
+import labelAnimation from '@/assets/icons/system-regular-146-label-hover-label.json';
+import { Card, Lottie } from '@/components/ui';
 import { publicApi, Tag } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -47,7 +48,15 @@ export default async function CategoriesPage({
       <div className="container-content py-12">
         {/* 页面标题 */}
         <section className="text-center py-12 animate-fade-up mb-12">
-          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Lottie
+              animationData={labelAnimation}
+              width={24}
+              height={24}
+              autoplay={true}
+            />
+            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+          </div>
           <p className="text-text-secondary">
             {t('totalTags', { count: tags.length })}
           </p>

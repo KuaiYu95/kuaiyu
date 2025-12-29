@@ -1,5 +1,9 @@
 'use client';
 
+import languageAnimation from '@/assets/icons/system-regular-145-language-hover-language.json';
+import { Lottie } from '@/components/ui';
+import SafeImage from '@/components/ui/SafeImage';
+import { SiteConfig } from '@/lib/api';
 import { LOCALES, NAV_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -15,15 +19,17 @@ import { useEffect, useRef, useState } from 'react';
 
 interface HeaderProps {
   locale: string;
+  config?: SiteConfig;
 }
 
-export default function Header({ locale }: HeaderProps) {
+export default function Header({ locale, config }: HeaderProps) {
   const t = useTranslations('nav');
   const tLang = useTranslations('language');
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [isLangHovered, setIsLangHovered] = useState(false);
   const langMenuRef = useRef<HTMLDivElement>(null);
 
   // 监听滚动
@@ -85,9 +91,19 @@ export default function Header({ locale }: HeaderProps) {
           {/* Logo */}
           <Link
             href={`/${locale}`}
-            className="text-xl font-bold text-text-accent hover:text-accent-primary transition-colors"
+            className="flex items-center gap-2 text-xl font-bold text-text-accent hover:text-accent-primary transition-colors"
           >
-            Yu.kuai
+            {config?.site_logo ? (
+              <div className="relative w-8 h-8">
+                <SafeImage
+                  src={config.site_logo}
+                  alt={config.site_name || 'Logo'}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ) : null}
+            <span>{config?.site_name || 'Yu.kuai'}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -119,28 +135,25 @@ export default function Header({ locale }: HeaderProps) {
             <div className="relative" ref={langMenuRef}>
               <button
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                onMouseEnter={() => setIsLangHovered(true)}
+                onMouseLeave={() => setIsLangHovered(false)}
                 className={cn(
                   'p-2 rounded-lg transition-all duration-200',
                   'hover:bg-bg-hover text-text-secondary hover:text-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-primary',
                   isLangMenuOpen && 'bg-bg-hover text-text-primary'
                 )}
+                style={{ lineHeight: 1 }}
                 aria-label="切换语言"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                  />
-                </svg>
+                <Lottie
+                  key={isLangHovered ? 'hover' : 'normal'}
+                  animationData={languageAnimation}
+                  width={20}
+                  height={20}
+                  loop={isLangHovered}
+                  autoplay={true}
+                />
               </button>
 
               {/* Language Dropdown */}

@@ -8,6 +8,7 @@ interface OutlineItem {
   year: number;
   month: number;
   label: string;
+  count: number;
 }
 
 interface ArchiveOutlineProps {
@@ -81,7 +82,7 @@ export default function ArchiveOutline({ items }: ArchiveOutlineProps) {
                   <button
                     key={item.id}
                     onClick={() => scrollToSection(item.id)}
-                    className={`relative block w-full text-left text-xs py-1.5 px-2 rounded transition-all duration-200 ${activeId === item.id
+                    className={`relative flex items-center justify-between w-full text-left text-xs py-1.5 px-2 rounded transition-all duration-200 ${activeId === item.id
                       ? 'text-primary-400 bg-primary-500/20'
                       : 'text-text-secondary hover:text-text-accent hover:bg-bg-secondary/50'
                       }`}
@@ -89,7 +90,10 @@ export default function ArchiveOutline({ items }: ArchiveOutlineProps) {
                     {activeId === item.id && (
                       <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-3 bg-primary-500 rounded-full bg-text-accent" />
                     )}
-                    {item.label}
+                    <span>{item.label}</span>
+                    <span className="text-text-secondary text-xs font-normal">
+                      {item.count}
+                    </span>
                   </button>
                 ))}
               </div>

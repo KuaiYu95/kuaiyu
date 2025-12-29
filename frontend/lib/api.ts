@@ -125,16 +125,7 @@ export interface SiteConfig {
   site_logo: string;
   site_name: string;
   site_icp: string;
-  home_avatar: string;
-  home_nickname: string;
-  home_about: string;
-  footer_left_image: string;
-  footer_left_name: string;
-  footer_left_description: string;
-  footer_right_categories: {
-    category: string;
-    links: { title: string; url: string }[];
-  }[];
+  site_description: string;
 }
 
 // 归档类型
@@ -226,13 +217,6 @@ export const commentApi = {
     api.post<any, ApiResponse<{ id: number; status: string; message: string }>>('/api/comments', data),
 };
 
-// 配置相关
-export const configApi = {
-  // 获取配置
-  get: () =>
-    api.get<any, ApiResponse<SiteConfig>>('/api/config'),
-};
-
 // 埋点相关
 export const analyticsApi = {
   // 记录页面访问
@@ -302,7 +286,6 @@ export const publicApi = {
       api.get<any, ApiResponse<Comment[]>>('/api/comments', { params }),
     create: commentApi.create,
   },
-  config: configApi,
   analytics: analyticsApi,
   contribution: contributionApi,
 };

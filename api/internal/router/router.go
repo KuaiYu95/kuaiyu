@@ -80,10 +80,6 @@ func setupPublicRoutes(api *gin.RouterGroup) {
 		comments.POST("", middleware.CommentRateLimit(), commentHandler.Create)
 	}
 	
-	// 配置
-	configHandler := handler.NewConfigHandler()
-	api.GET("/config", configHandler.Get)
-	
 	// RSS
 	rssHandler := handler.NewRSSHandler()
 	api.GET("/rss", rssHandler.Feed)
@@ -170,14 +166,6 @@ func setupAdminRoutes(api *gin.RouterGroup) {
 			comments.POST("/:id/reply", commentHandler.AdminReply)
 			comments.PUT("/:id", commentHandler.UpdateStatus)
 			comments.DELETE("/:id", commentHandler.Delete)
-		}
-		
-		// 配置管理
-		configHandler := handler.NewConfigHandler()
-		config := auth.Group("/config")
-		{
-			config.GET("", configHandler.AdminGet)
-			config.PUT("", configHandler.Update)
 		}
 		
 		// 文件上传

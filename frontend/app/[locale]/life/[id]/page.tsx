@@ -53,7 +53,7 @@ export default async function LifeDetailPage({
 
   return (
     <main className="min-h-screen py-20">
-      <article className="max-w-3xl mx-auto px-4">
+      <article className="max-w-3xl mx-auto">
         {/* 返回链接 */}
         <Link
           href={`/${locale}/life`}

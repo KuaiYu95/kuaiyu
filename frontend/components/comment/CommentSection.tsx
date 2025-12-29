@@ -1,9 +1,11 @@
 'use client';
 
-import { Avatar, Button, Card, Empty, Loading, RelativeTime } from '@/components/ui';
+import chatAnimation from '@/assets/icons/system-regular-47-chat-hover-chat.json';
+import { Avatar, Button, Card, Empty, Loading, Lottie, RelativeTime } from '@/components/ui';
 import { publicApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import ReplyButton from './ReplyButton';
 
 interface Comment {
   id: number;
@@ -39,7 +41,6 @@ export default function CommentSection({
   const [submitting, setSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyToCommentId, setReplyToCommentId] = useState<number | null>(null);
-  const [replyToNickname, setReplyToNickname] = useState<string>('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
@@ -194,7 +195,7 @@ export default function CommentSection({
       className={`${isReply ? 'ml-12 mt-4' : 'mb-6'} transition-all duration-300`}
     >
       <div className="flex gap-4">
-        <Avatar name={comment.nickname} src={comment.avatar} size={isReply ? 'sm' : 'md'} />
+        <Avatar name={comment.nickname} src={comment.avatar} size='sm' />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             {!isReply && comment.is_pinned && (
@@ -226,30 +227,26 @@ export default function CommentSection({
             </span>
           </div>
           <p className="text-gray-300 mb-2">{comment.content}</p>
-          <button
+          <ReplyButton
+            isActive={
+              (replyTo === (isReply && parentId ? parentId : comment.id) && replyToCommentId === comment.id)
+            }
+            replyText={t('reply')}
+            cancelText={t('cancelReply')}
             onClick={() => {
               if (replyTo === (isReply && parentId ? parentId : comment.id)) {
                 setReplyTo(null);
                 setReplyToCommentId(null);
                 setReplyContent('');
-                setReplyToNickname('');
               } else {
                 setReplyTo(isReply && parentId ? parentId : comment.id);
                 setReplyToCommentId(comment.id);
-                setReplyToNickname(comment.nickname);
               }
             }}
-            className="text-sm text-gray-500 hover:text-primary-400 transition-colors"
-          >
-            {(replyTo === (isReply && parentId ? parentId : comment.id) && replyToCommentId === comment.id) ? t('cancelReply') : t('reply')}
-          </button>
+          />
 
-          {((replyTo === comment.id && replyToCommentId === comment.id) || (isReply && replyTo === parentId && replyToCommentId === comment.id)) && (
+          {replyToCommentId === comment.id && (
             <form onSubmit={handleSubmit} className="mt-4 p-4 bg-bg-secondary rounded-lg border border-border">
-              <div className="mb-4 p-3 bg-dark-800/50 rounded border-l-2 border-primary-500">
-                <div className="text-sm text-gray-400 mb-1">回复 @{replyToNickname}</div>
-                <p className="text-sm text-gray-300">{comment.content}</p>
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <input
                   type="text"
@@ -301,9 +298,17 @@ export default function CommentSection({
 
   return (
     <div>
-      <h3 className="text-xl font-bold text-white mb-6">
-        {t('title')} ({comments.length})
-      </h3>
+      <div className="flex items-center gap-3 mb-6">
+        <Lottie
+          animationData={chatAnimation}
+          width={16}
+          height={16}
+          autoplay={true}
+        />
+        <h3 className="text-xl font-bold text-white">
+          {t('title')} ({comments.length})
+        </h3>
+      </div>
 
       {submitSuccess && isPending && (
         <div className="mb-4 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">

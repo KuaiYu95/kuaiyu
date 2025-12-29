@@ -147,28 +147,6 @@ const (
 )
 
 // ===========================================
-// 配置键常量
-// ===========================================
-
-const (
-	// 网站基础配置
-	ConfigSiteLogo = "site_logo"
-	ConfigSiteName = "site_name"
-	ConfigSiteICP  = "site_icp"
-
-	// 首页配置
-	ConfigHomeAvatar   = "home_avatar"
-	ConfigHomeNickname = "home_nickname"
-	ConfigHomeAbout    = "home_about"
-
-	// Footer配置
-	ConfigFooterLeftImage        = "footer_left_image"
-	ConfigFooterLeftName         = "footer_left_name"
-	ConfigFooterLeftDescription  = "footer_left_description"
-	ConfigFooterRightCategories  = "footer_right_categories"
-)
-
-// ===========================================
 // 错误码常量
 // ===========================================
 

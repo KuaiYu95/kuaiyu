@@ -69,8 +69,8 @@ func (h *CommentHandler) List(c *gin.Context) {
 		}
 	}
 	
-	// 根据类型查询评论
-	comments, err = h.repo.FindByCommentType(commentType, targetID, true)
+	// 根据类型查询评论（不预加载回复，后面手动处理）
+	comments, err = h.repo.FindByCommentType(commentType, targetID, false)
 	
 	// 添加待审核评论（如果提供了用户邮箱）
 	if userEmail != "" {

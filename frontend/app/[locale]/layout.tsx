@@ -3,7 +3,7 @@ import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import ScrollToTop from '@/components/ui/ScrollToTop';
 import { locales } from '@/i18n';
-import { configApi } from '@/lib/api';
+import { DEFAULT_CONFIG } from '@/lib/config';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   metadataBase: new URL(SITE_URL),
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'zh_CN',
@@ -54,29 +59,18 @@ export default async function LocaleLayout({
   // 获取消息
   const messages = await getMessages();
 
-  // 获取配置
-  let config = null;
-  try {
-    const res = await configApi.get();
-    config = res.data;
-    // 确保 footer_right_categories 存在
-    if (config && !config.footer_right_categories) {
-      config.footer_right_categories = [];
-    }
-  } catch (error) {
-    // 使用默认配置
-    console.error('Failed to load config:', error);
-  }
+  // 使用写死的配置
+  const config = DEFAULT_CONFIG;
 
   return (
     <html lang={locale} className="dark" style={{ backgroundColor: '#0a0a0a' }}>
       <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary" style={{ backgroundColor: '#0a0a0a' }}>
         <NextIntlClientProvider messages={messages}>
-          <Header locale={locale} />
-          <main className="flex-1 pt-16" style={{ backgroundColor: '#0a0a0a' }}>
+          <Header locale={locale} config={config} />
+          <main className="flex-1 py-16" style={{ backgroundColor: '#0a0a0a' }}>
             {children}
           </main>
-          <Footer config={config || undefined} locale={locale} />
+          <Footer config={config} locale={locale} />
           <ScrollToTop />
         </NextIntlClientProvider>
       </body>

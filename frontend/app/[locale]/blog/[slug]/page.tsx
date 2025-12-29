@@ -4,7 +4,7 @@
 
 import CommentSection from '@/components/comment/CommentSection';
 import ViewCounter from '@/components/post/ViewCounter';
-import { RelativeTime, Tag } from '@/components/ui';
+import { Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -13,6 +13,8 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import BackButton from './BackButton';
+import PostMeta from './PostMeta';
 
 export async function generateMetadata({
   params,
@@ -57,21 +59,13 @@ export default async function BlogDetailPage({
   }
 
   return (
-    <main className="min-h-screen py-20">
+    <main className="min-h-screen py-2">
       {/* 阅读量计数器（同时记录页面访问） */}
       <ViewCounter postId={post.id} />
 
-      <article className="max-w-3xl mx-auto px-4">
+      <article className="max-w-3xl mx-auto">
         {/* 返回链接 */}
-        <Link
-          href={`/${locale}/blog`}
-          className="inline-flex items-center text-gray-400 hover:text-primary-400 transition-colors mb-8"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          {t('backToList')}
-        </Link>
+        <BackButton href={`/${locale}/blog`} text={t('backToList')} />
 
         {/* 封面图 */}
         {post.cover_image && (
@@ -89,9 +83,12 @@ export default async function BlogDetailPage({
 
         {/* 元信息 */}
         <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm mb-6">
-          <RelativeTime date={post.published_at || post.created_at} locale={locale} />
-          <span>·</span>
-          <span>{post.view_count} {t('views')}</span>
+          <PostMeta
+            date={post.published_at || post.created_at}
+            viewCount={post.view_count}
+            viewsText={t('views')}
+            locale={locale}
+          />
           {post.tags && post.tags.length > 0 && (
             <>
               <span>·</span>
@@ -114,7 +111,7 @@ export default async function BlogDetailPage({
         </div>
 
         {/* 分割线 */}
-        <hr className="border-dark-700 my-12" />
+        <hr className="border-border my-12" />
 
         {/* 评论区 */}
         <CommentSection postId={post.id} locale={locale} />

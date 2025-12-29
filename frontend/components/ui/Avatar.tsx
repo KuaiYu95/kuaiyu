@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import SafeImage from '@/components/ui/SafeImage';
 import { cn } from '@/lib/utils';
 
 // ===========================================
@@ -67,7 +67,7 @@ export default function Avatar({
           className
         )}
       >
-        <Image
+        <SafeImage
           src={src}
           alt={alt}
           width={imageSizes[size]}

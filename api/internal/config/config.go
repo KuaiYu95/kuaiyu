@@ -54,6 +54,7 @@ type COSConfig struct {
 	Bucket    string
 	Region    string
 	BaseURL   string
+	ProxyURL  string // 代理 URL，格式：http://127.0.0.1:7890 或 socks5://127.0.0.1:7891
 }
 
 // ===========================================
@@ -100,6 +101,7 @@ func Load() *Config {
 			Bucket:    getEnv("COS_BUCKET", ""),
 			Region:    getEnv("COS_REGION", ""),
 			BaseURL:   getEnv("COS_BASE_URL", ""),
+			ProxyURL:  getEnv("COS_PROXY_URL", ""), // 支持从环境变量读取代理
 		},
 	}
 }

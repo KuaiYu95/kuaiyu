@@ -2,8 +2,9 @@
 // 生活记录列表页
 // ===========================================
 
+import bulbAnimation from '@/assets/icons/system-regular-121-bulb-hover-bulb.json';
 import ContributionCalendar from '@/components/contribution/ContributionCalendar';
-import { Empty, RelativeTime } from '@/components/ui';
+import { Empty, Lottie, RelativeTime } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -50,7 +51,15 @@ export default async function LifePage({
       <div className="container-content py-12">
         {/* 页面标题 */}
         <section className="text-center pt-12 pb-4 animate-fade-up">
-          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Lottie
+              animationData={bulbAnimation}
+              width={24}
+              height={24}
+              autoplay={true}
+            />
+            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+          </div>
           <p className="text-text-secondary">{t('description')}</p>
         </section>
 
@@ -66,7 +75,7 @@ export default async function LifePage({
             <div className="absolute left-8 top-0 bottom-0 w-px bg-dark-700" />
 
             {years.map((year) => (
-              <div key={year} className="mb-12">
+              <div key={year}>
                 {/* 年份 */}
                 <div className="relative flex items-center mb-6">
                   <div className="bg-primary-500/20 rounded-full z-10">

@@ -86,7 +86,6 @@ func Migrate() error {
 		&model.Tag{},
 		&model.PostTag{},
 		&model.Comment{},
-		&model.SiteConfig{},
 		&model.PageView{},
 		&model.AnalyticsEvent{},
 	)
@@ -132,11 +131,6 @@ func Seed() error {
 		return err
 	}
 	
-	// 创建默认配置
-	if err := seedConfig(); err != nil {
-		return err
-	}
-	
 	log.Println("Database seeding completed")
 	
 	return nil
@@ -170,34 +164,6 @@ func seedAdmin() error {
 	return nil
 }
 
-// seedConfig 创建默认配置
-func seedConfig() error {
-	defaultConfigs := []model.SiteConfig{
-		{Key: "site_logo", Value: "", Type: "image"},
-		{Key: "site_name", Value: "Yu.kuai", Type: "string"},
-		{Key: "site_icp", Value: "", Type: "string"},
-		{Key: "home_avatar", Value: "", Type: "image"},
-		{Key: "home_nickname", Value: "Yu.kuai", Type: "string"},
-		{Key: "home_about", Value: "欢迎来到我的博客", Type: "string"},
-		{Key: "footer_left_image", Value: "", Type: "image"},
-		{Key: "footer_left_name", Value: "Yu.kuai", Type: "string"},
-		{Key: "footer_left_description", Value: "一个热爱技术的开发者", Type: "string"},
-		{Key: "footer_right_categories", Value: `[]`, Type: "json"},
-	}
-	
-	for _, cfg := range defaultConfigs {
-		var existing model.SiteConfig
-		result := db.Where("`key` = ?", cfg.Key).First(&existing)
-		
-		if result.Error == gorm.ErrRecordNotFound {
-			if err := db.Create(&cfg).Error; err != nil {
-				return fmt.Errorf("failed to create config %s: %w", cfg.Key, err)
-			}
-		}
-	}
-	
-	return nil
-}
 
 // ===========================================
 // 数据库健康检查

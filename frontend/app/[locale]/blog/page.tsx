@@ -2,9 +2,10 @@
 // 博客列表页
 // ===========================================
 
+import articleAnimation from '@/assets/icons/system-regular-14-article-hover-article.json';
 import ContributionCalendar from '@/components/contribution/ContributionCalendar';
 import BlogPostItem from '@/components/post/BlogPostItem';
-import { Empty, RelativeTime, Tag } from '@/components/ui';
+import { Empty, Lottie, RelativeTime, Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -47,7 +48,15 @@ export default async function BlogPage({
       <div className="container-content py-12">
         {/* 页面标题 */}
         <section className="text-center pt-12 pb-4 animate-fade-up">
-          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Lottie
+              animationData={articleAnimation}
+              width={24}
+              height={24}
+              autoplay={true}
+            />
+            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+          </div>
           <p className="text-text-secondary">{t('description')}</p>
           {tag && (
             <div className="mt-4">
@@ -86,7 +95,7 @@ export default async function BlogPage({
 
         {/* 分页 */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-12 pb-12">
+          <div className="flex justify-center gap-2 mt-12">
             {page > 1 && (
               <Link
                 href={`/${locale}/blog?page=${page - 1}${tag ? `&tag=${tag}` : ''}`}
@@ -108,9 +117,6 @@ export default async function BlogPage({
             )}
           </div>
         )}
-
-        {/* 无分页时也添加底部间隔 */}
-        {totalPages <= 1 && <div className="pb-12"></div>}
       </div>
     </main>
   );

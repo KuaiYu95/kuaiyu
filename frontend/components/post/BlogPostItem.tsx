@@ -3,8 +3,8 @@
 // ===========================================
 
 import { Tag } from '@/components/ui';
+import SafeImage from '@/components/ui/SafeImage';
 import { Post } from '@/lib/api';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface BlogPostItemProps {
@@ -34,7 +34,7 @@ export default function BlogPostItem({
           <div className="flex gap-6">
             {post.cover_image && (
               <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden rounded-lg">
-                <Image
+                <SafeImage
                   src={post.cover_image}
                   alt={post.title}
                   fill

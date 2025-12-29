@@ -225,13 +225,6 @@ export const commentApi = {
     api.post(`/api/admin/comments/${id}/reply`, { content }),
 };
 
-// 配置
-export const configApi = {
-  get: () => api.get<any, ApiResponse<Record<string, any>>>('/api/admin/config'),
-  update: (configs: { key: string; value: any; type?: string }[]) =>
-    api.put('/api/admin/config', { configs }),
-};
-
 // 上传
 export const uploadApi = {
   upload: (file: File) => {

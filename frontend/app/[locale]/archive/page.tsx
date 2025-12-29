@@ -2,7 +2,8 @@
 // 归档页
 // ===========================================
 
-import { Empty } from '@/components/ui';
+import calendarAnimation from '@/assets/icons/system-regular-23-calendar-hover-calendar.json';
+import { Empty, Lottie } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -68,6 +69,7 @@ export default async function ArchivePage({
       year: group.year,
       month: group.month,
       label: formatMonth(group.month),
+      count: group.posts.length,
     };
   });
 
@@ -76,7 +78,15 @@ export default async function ArchivePage({
       <div className="container-content py-12">
         {/* 页面标题 */}
         <section className="text-center py-12 animate-fade-up mb-12">
-          <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Lottie
+              animationData={calendarAnimation}
+              width={24}
+              height={24}
+              autoplay={true}
+            />
+            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+          </div>
           <p className="text-text-secondary">
             {t('totalPosts', { count: posts.length })}
           </p>
@@ -119,8 +129,9 @@ export default async function ArchivePage({
                               <span className="text-xs text-text-secondary min-w-[30px]">
                                 {formatDay(post.published_at || post.created_at)}
                               </span>
-                              <span className="text-text-accent group-hover:text-primary-400 transition-colors line-clamp-1">
+                              <span className="relative text-text-accent group-hover:text-primary-400 transition-colors line-clamp-1">
                                 {post.title}
+                                <span className="absolute bottom-0 left-0 h-px bg-white transition-all duration-500 ease-out w-0 group-hover:w-full" />
                               </span>
                             </Link>
                           </li>
@@ -131,7 +142,6 @@ export default async function ArchivePage({
                 })}
               </div>
             </div>
-            <div style={{ height: '1000px' }}></div>
             {/* 右侧大纲导航 */}
             <div className="hidden lg:block lg:w-48 lg:flex-shrink-0">
               <ArchiveOutline items={outlineItems} />

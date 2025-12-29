@@ -7,7 +7,6 @@ import LifeEdit from '@/pages/LifeEdit';
 import Login from '@/pages/Login';
 import PostEdit from '@/pages/PostEdit';
 import Posts from '@/pages/Posts';
-import Settings from '@/pages/Settings';
 import Tags from '@/pages/Tags';
 import { useAuthStore } from '@/store/auth';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -51,7 +50,6 @@ export default function App() {
                     <Route path="/life/:id" element={<LifeEdit />} />
                     <Route path="/comments" element={<Comments />} />
                     <Route path="/tags" element={<Tags />} />
-                    <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </Layout>
               </PrivateRoute>

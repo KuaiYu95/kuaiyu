@@ -132,19 +132,6 @@ CREATE TABLE IF NOT EXISTS `comments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===========================================
--- 网站配置表
--- ===========================================
-CREATE TABLE IF NOT EXISTS `site_configs` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `key` varchar(100) NOT NULL,
-  `value` text,
-  `type` varchar(20) DEFAULT 'string',
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_site_configs_key` (`key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ===========================================
 -- 页面访问记录表
 -- ===========================================
 CREATE TABLE IF NOT EXISTS `page_views` (
@@ -192,19 +179,6 @@ CREATE TABLE IF NOT EXISTS `analytics_events` (
 -- 默认管理员 (密码: admin123)
 INSERT IGNORE INTO `users` (`username`, `password`, `email`) VALUES 
 ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.xLRVc.X/fRJjRXcXKi', 'admin@kcat.site');
-
--- 默认配置
-INSERT IGNORE INTO `site_configs` (`key`, `value`, `type`) VALUES 
-('site_logo', '', 'image'),
-('site_name', 'Yu.kuai', 'string'),
-('site_icp', '', 'string'),
-('home_avatar', '', 'image'),
-('home_nickname', 'Yu.kuai', 'string'),
-('home_about', '欢迎来到我的博客', 'string'),
-('footer_left_image', '', 'image'),
-('footer_left_name', 'Yu.kuai', 'string'),
-('footer_left_description', '一个热爱技术的开发者', 'string'),
-('footer_right_categories', '[]', 'json');
 
 SET FOREIGN_KEY_CHECKS = 1;
 

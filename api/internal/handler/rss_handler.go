@@ -38,12 +38,8 @@ func (h *RSSHandler) Feed(c *gin.Context) {
 		Limit(20).
 		Find(&posts)
 	
-	// 获取配置
-	var siteName string
-	var siteConfig model.SiteConfig
-	if db.Where("`key` = ?", constants.ConfigSiteName).First(&siteConfig).Error == nil {
-		siteName = siteConfig.Value
-	}
+	// 使用写死的站点名称
+	siteName := "Yu.kuai"
 	
 	xml := h.generateRSS(siteName, "https://kcat.site", posts)
 	

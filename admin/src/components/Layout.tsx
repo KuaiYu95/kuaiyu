@@ -13,7 +13,6 @@ import {
   Logout,
   Menu as MenuIcon,
   PhotoCamera,
-  Settings,
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -45,7 +44,6 @@ const iconMap: Record<string, React.ReactNode> = {
   Comment: <Comment />,
   Label: <Label />,
   Analytics: <Analytics />,
-  Settings: <Settings />,
 };
 
 interface LayoutProps {
@@ -174,10 +172,6 @@ export default function Layout({ children }: LayoutProps) {
             <MenuItem onClick={handleOpenUserInfo}>
               <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
               修改信息
-            </MenuItem>
-            <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.SETTINGS); }}>
-              <ListItemIcon><Settings fontSize="small" /></ListItemIcon>
-              系统设置
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
