@@ -25,7 +25,8 @@
     "recentPosts": "近期博客",
     "recentLife": "近期生活",
     "recentComments": "近期留言",
-    "tagCloud": "标签分类"
+    "tagCloud": "标签分类",
+    "contributionCalendar": "贡献日历"
   },
   "blog": {
     "title": "博客",
@@ -37,13 +38,15 @@
     "clearFilter": "清除筛选",
     "prevPage": "上一页",
     "nextPage": "下一页",
-    "backToList": "返回列表"
+    "backToList": "返回列表",
+    "contributionCalendar": "贡献日历"
   },
   "life": {
     "title": "生活",
     "description": "记录生活点滴",
     "noRecords": "暂无记录",
-    "backToList": "返回列表"
+    "backToList": "返回列表",
+    "contributionCalendar": "贡献日历"
   },
   "archive": {
     "title": "归档",
@@ -108,5 +111,11 @@
   "language": {
     "zh": "中文",
     "en": "English"
+  },
+  "contribution": {
+    "posts": "博客",
+    "lifeRecords": "生活记录",
+    "records": "条记录",
+    "close": "关闭"
   }
 }

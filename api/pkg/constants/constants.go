@@ -36,7 +36,7 @@ const (
 
 const (
 	// AccessTokenExpiry Access Token 过期时间
-	AccessTokenExpiry = 15 * time.Minute
+	AccessTokenExpiry = 24 * time.Hour
 	// RefreshTokenExpiry Refresh Token 过期时间
 	RefreshTokenExpiry = 7 * 24 * time.Hour
 	// TokenIssuer Token 签发者

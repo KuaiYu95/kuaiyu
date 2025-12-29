@@ -90,7 +90,7 @@ func Load() *Config {
 		},
 		JWT: JWTConfig{
 			Secret:        getEnv("JWT_SECRET", "kuaiyu_jwt_secret"),
-			AccessExpiry:  getDurationEnv("JWT_ACCESS_EXPIRY", 15*time.Minute),
+			AccessExpiry:  getDurationEnv("JWT_ACCESS_EXPIRY", 24*time.Hour),
 			RefreshExpiry: getDurationEnv("JWT_REFRESH_EXPIRY", 7*24*time.Hour),
 			Issuer:        getEnv("JWT_ISSUER", "kuaiyu-api"),
 		},

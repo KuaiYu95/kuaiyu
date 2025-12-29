@@ -139,17 +139,6 @@ func (r *PostRepository) FindFeatured(limit int) ([]model.Post, error) {
 	return posts, err
 }
 
-// FindRecent 查找最近文章
-func (r *PostRepository) FindRecent(limit int) ([]model.Post, error) {
-	var posts []model.Post
-	err := r.db.Where("status = ?", constants.PostStatusPublished).
-		Preload("Tags").
-		Order("published_at DESC").
-		Limit(limit).
-		Find(&posts).Error
-	return posts, err
-}
-
 // FindAll 查找所有文章（管理后台）
 func (r *PostRepository) FindAll(page, limit int, status string) ([]model.Post, int64, error) {
 	var posts []model.Post

@@ -152,23 +152,6 @@ func (h *PostHandler) Featured(c *gin.Context) {
 	response.Success(c, items)
 }
 
-// Recent 获取最近文章
-func (h *PostHandler) Recent(c *gin.Context) {
-	limit := 5
-	posts, err := h.repo.FindRecent(limit)
-	if err != nil {
-		response.InternalError(c, "")
-		return
-	}
-	
-	items := make([]model.PostListVO, len(posts))
-	for i, post := range posts {
-		items[i] = post.ToListVO()
-	}
-	
-	response.Success(c, items)
-}
-
 // ===========================================
 // 管理接口
 // ===========================================

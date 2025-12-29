@@ -2,6 +2,7 @@
 // API 请求封装
 // ===========================================
 
+import { useAuthStore } from '@/store/auth';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { API_BASE_URL, STORAGE_KEYS } from './constants';
 
@@ -33,12 +34,39 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Token 过期，清除认证信息
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      window.location.href = '/login';
+    const originalRequest = error.config as any;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // 尝试使用 refresh token 刷新 access token
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      if (refreshToken) {
+        try {
+          const refreshResponse = await axios.post(`${API_BASE_URL}/api/admin/refresh`, {
+            refresh_token: refreshToken,
+          });
+
+          const newAccessToken = refreshResponse.data.data.access_token;
+          localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, newAccessToken);
+
+          // 更新 store 中的 accessToken
+          useAuthStore.getState().updateAccessToken(newAccessToken);
+
+          // 重试原始请求
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // 刷新失败，清除认证信息并跳转登录
+          useAuthStore.getState().clearAuth();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // 没有 refresh token，直接跳转登录
+        useAuthStore.getState().clearAuth();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

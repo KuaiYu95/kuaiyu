@@ -164,10 +164,6 @@ export const postApi = {
   // 获取推荐文章
   featured: () =>
     api.get<any, ApiResponse<Post[]>>('/api/posts/featured'),
-
-  // 获取最近文章
-  recent: () =>
-    api.get<any, ApiResponse<Post[]>>('/api/posts/recent'),
 };
 
 // 生活记录相关
@@ -202,7 +198,7 @@ export const archiveApi = {
 // 评论相关
 export const commentApi = {
   // 获取评论列表
-  list: (params?: { 
+  list: (params?: {
     comment_type?: 'post' | 'life' | 'guestbook';
     target_id?: number;
     post_id?: number; // 向后兼容
@@ -248,6 +244,35 @@ export const analyticsApi = {
     api.post('/api/analytics/track', data).catch(() => { }), // 静默失败
 };
 
+// 贡献日历相关
+export interface ContributionItem {
+  id: number;
+  title: string;
+  slug?: string;
+  type: 'post' | 'life';
+  published_at: string;
+}
+
+export interface ContributionDay {
+  date: string; // YYYY-MM-DD
+  type: 'post' | 'life' | 'both' | 'none';
+  count: number;
+  posts: ContributionItem[];
+  life_records: ContributionItem[];
+}
+
+export interface ContributionCalendarResponse {
+  year: number;
+  type: 'post' | 'life' | 'all';
+  days: ContributionDay[];
+}
+
+export const contributionApi = {
+  // 获取贡献日历数据
+  getCalendar: (params?: { type?: 'post' | 'life' | 'all'; year?: number }) =>
+    api.get<any, ApiResponse<ContributionCalendarResponse>>('/api/contribution', { params }),
+};
+
 // ===========================================
 // 公共 API 导出（用于服务端组件）
 // ===========================================
@@ -266,7 +291,7 @@ export const publicApi = {
     list: tagApi.list,
   },
   comments: {
-    list: (params?: { 
+    list: (params?: {
       comment_type?: 'post' | 'life' | 'guestbook';
       target_id?: number;
       post_id?: number; // 向后兼容
@@ -279,6 +304,7 @@ export const publicApi = {
   },
   config: configApi,
   analytics: analyticsApi,
+  contribution: contributionApi,
 };
 
 export default api;

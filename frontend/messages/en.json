@@ -25,7 +25,8 @@
     "recentPosts": "Recent Posts",
     "recentLife": "Recent Life",
     "recentComments": "Recent Comments",
-    "tagCloud": "Tags"
+    "tagCloud": "Tags",
+    "contributionCalendar": "Contribution Calendar"
   },
   "blog": {
     "title": "Blog",
@@ -37,13 +38,15 @@
     "clearFilter": "Clear filter",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "backToList": "Back to list"
+    "backToList": "Back to list",
+    "contributionCalendar": "Contribution Calendar"
   },
   "life": {
     "title": "Life",
     "description": "Recording life moments",
     "noRecords": "No records yet",
-    "backToList": "Back to list"
+    "backToList": "Back to list",
+    "contributionCalendar": "Contribution Calendar"
   },
   "archive": {
     "title": "Archive",
@@ -108,5 +111,11 @@
   "language": {
     "zh": "中文",
     "en": "English"
+  },
+  "contribution": {
+    "posts": "posts",
+    "lifeRecords": "life records",
+    "records": "records",
+    "close": "Close"
   }
 }

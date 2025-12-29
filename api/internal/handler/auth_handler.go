@@ -69,10 +69,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	user.LastLogin = &now
 	db.Save(&user)
 	
+	cfg := config.Get()
 	response.Success(c, model.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		ExpiresIn:    int64(15 * 60), // 15 分钟
+		ExpiresIn:    int64(cfg.JWT.AccessExpiry.Seconds()),
 		User:         user.ToVO(),
 	})
 }
@@ -163,9 +164,10 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 	
+	cfg := config.Get()
 	response.Success(c, gin.H{
 		"access_token": accessToken,
-		"expires_in":   int64(15 * 60),
+		"expires_in":   int64(cfg.JWT.AccessExpiry.Seconds()),
 	})
 }
 

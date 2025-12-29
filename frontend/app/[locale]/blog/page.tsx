@@ -2,6 +2,7 @@
 // 博客列表页
 // ===========================================
 
+import ContributionCalendar from '@/components/contribution/ContributionCalendar';
 import BlogPostItem from '@/components/post/BlogPostItem';
 import { Empty, RelativeTime, Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
@@ -45,7 +46,7 @@ export default async function BlogPage({
     <main className="min-h-screen">
       <div className="container-content py-12">
         {/* 页面标题 */}
-        <section className="text-center py-12 animate-fade-up mb-12">
+        <section className="text-center pt-12 pb-4 animate-fade-up">
           <h1 className="text-3xl font-bold text-text-accent mb-4">{t('title')}</h1>
           <p className="text-text-secondary">{t('description')}</p>
           {tag && (
@@ -57,6 +58,11 @@ export default async function BlogPage({
               </Link>
             </div>
           )}
+        </section>
+
+        {/* 贡献日历 */}
+        <section className="animate-fade-up mb-12" style={{ animationDelay: '0.1s' }}>
+          <ContributionCalendar type="post" locale={locale} />
         </section>
 
         {/* 文章列表 */}

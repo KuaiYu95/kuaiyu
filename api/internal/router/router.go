@@ -48,7 +48,6 @@ func setupPublicRoutes(api *gin.RouterGroup) {
 	{
 		posts.GET("", postHandler.List)
 		posts.GET("/featured", postHandler.Featured)
-		posts.GET("/recent", postHandler.Recent)
 		posts.GET("/:slug", postHandler.GetBySlug)
 		posts.POST("/:id/views", postHandler.IncrementViews)
 	}
@@ -103,6 +102,10 @@ func setupPublicRoutes(api *gin.RouterGroup) {
 		analytics.POST("/track", analyticsHandler.Track)
 		analytics.POST("/pageview", analyticsHandler.PageView)
 	}
+	
+	// 贡献日历
+	contributionHandler := handler.NewContributionHandler()
+	api.GET("/contribution", contributionHandler.GetContributionCalendar)
 }
 
 // ===========================================
