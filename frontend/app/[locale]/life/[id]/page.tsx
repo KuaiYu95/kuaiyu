@@ -2,21 +2,15 @@
 // 生活记录详情页
 // ===========================================
 
+import CommentSection from '@/components/comment/CommentSection';
+import { RelativeTime } from '@/components/ui';
+import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { publicApi } from '@/lib/api';
-import CommentSection from '@/components/comment/CommentSection';
-
-interface LifeRecord {
-  id: number;
-  content: string;
-  cover_image: string;
-  published_at: string;
-}
 
 export async function generateMetadata({
   params,
@@ -57,14 +51,6 @@ export default async function LifeDetailPage({
     notFound();
   }
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   return (
     <main className="min-h-screen py-20">
       <article className="max-w-3xl mx-auto px-4">
@@ -92,7 +78,7 @@ export default async function LifeDetailPage({
 
         {/* 日期 */}
         <div className="text-gray-400 text-sm mb-8">
-          {formatDate(record.published_at)}
+          <RelativeTime date={record.published_at || record.created_at} locale={locale} />
         </div>
 
         {/* 内容 */}

@@ -50,7 +50,8 @@
     "description": "所有文章按时间归档",
     "year": "年",
     "totalPosts": "共 {count} 篇文章",
-    "noPosts": "暂无文章"
+    "noPosts": "暂无文章",
+    "outline": "目录"
   },
   "categories": {
     "title": "分类",

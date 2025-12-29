@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Button, Card, Empty, Loading } from '@/components/ui';
+import { Avatar, Button, Card, Empty, Loading, RelativeTime } from '@/components/ui';
 import { publicApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -70,11 +70,11 @@ export default function CommentSection({
     }
     try {
       const userEmail = email || localStorage.getItem('kuaiyu_comment_email') || '';
-      
+
       // 确定评论类型和目标ID
       let commentType: 'post' | 'life' | 'guestbook' | undefined;
       let targetId: number | undefined;
-      
+
       if (isGuestbook) {
         commentType = 'guestbook';
         targetId = undefined;
@@ -85,7 +85,7 @@ export default function CommentSection({
         commentType = 'life';
         targetId = lifeRecordId;
       }
-      
+
       const res = await publicApi.comments.list({
         comment_type: commentType,
         target_id: targetId,
@@ -122,7 +122,7 @@ export default function CommentSection({
       // 确定评论类型和目标ID
       let commentType: 'post' | 'life' | 'guestbook' | undefined;
       let targetId: number | undefined;
-      
+
       if (isGuestbook) {
         commentType = 'guestbook';
         targetId = undefined;
@@ -133,7 +133,7 @@ export default function CommentSection({
         commentType = 'life';
         targetId = lifeRecordId;
       }
-      
+
       const res = await publicApi.comments.create({
         comment_type: commentType,
         target_id: targetId,
@@ -187,16 +187,6 @@ export default function CommentSection({
     }
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const renderComment = (comment: Comment, isReply = false, parentId?: number) => (
     <div
       key={comment.id}
@@ -231,7 +221,9 @@ export default function CommentSection({
                 {t('pending')}
               </span>
             )}
-            <span className="text-gray-500 text-sm">{formatDate(comment.created_at)}</span>
+            <span className="text-gray-500 text-sm">
+              <RelativeTime date={comment.created_at} locale={locale} />
+            </span>
           </div>
           <p className="text-gray-300 mb-2">{comment.content}</p>
           <button

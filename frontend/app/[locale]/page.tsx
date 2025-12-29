@@ -225,4 +225,3 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
     </div>
   );
 }
-

@@ -7,6 +7,7 @@ import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import ArchiveOutline from './ArchiveOutline';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('archive');
@@ -59,6 +60,17 @@ export default async function ArchivePage({
     return new Date(date).getDate().toString().padStart(2, '0');
   };
 
+  // 生成大纲数据
+  const outlineItems = sortedKeys.map((key) => {
+    const group = groupedByYearMonth[key];
+    return {
+      id: `archive-${key}`,
+      year: group.year,
+      month: group.month,
+      label: formatMonth(group.month),
+    };
+  });
+
   return (
     <main className="min-h-screen">
       <div className="container-content py-12">
@@ -72,41 +84,58 @@ export default async function ArchivePage({
 
         {/* 归档列表 */}
         {posts.length > 0 ? (
-          <div className="space-y-12">
-            {sortedKeys.map((key) => {
-              const group = groupedByYearMonth[key];
-              return (
-                <div key={key}>
-                  {/* 年月标题 */}
-                  <h2 className="text-xl font-bold text-white mb-6 flex items-center">
-                    <span className="text-primary-400">{group.year}</span>
-                    <span className="mx-2 text-gray-600">/</span>
-                    <span>{formatMonth(group.month)}</span>
-                    <span className="ml-3 text-sm text-gray-500">({group.posts.length})</span>
-                  </h2>
+          <div className="relative lg:flex lg:gap-8">
+            {/* 左侧列表内容 */}
+            <div className="relative flex-1">
+              {/* 时间线 */}
+              <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary-500/40 via-primary-500/20 to-transparent" />
 
-                  {/* 文章列表 */}
-                  <ul className="space-y-3 ml-4 border-l border-dark-700 pl-6">
-                    {group.posts.map((post) => (
-                      <li key={post.id} className="relative">
-                        <div className="absolute -left-[29px] w-3 h-3 bg-dark-800 border-2 border-primary-500 rounded-full" />
-                        <Link
-                          href={`/${locale}/blog/${post.slug}`}
-                          className="group flex items-center gap-4"
-                        >
-                          <span className="text-gray-500 text-sm font-mono">
-                            {formatDay(post.published_at || post.created_at)}
+              <div className="space-y-8">
+                {sortedKeys.map((key) => {
+                  const group = groupedByYearMonth[key];
+                  return (
+                    <div key={key} id={`archive-${key}`} className="relative scroll-mt-24">
+                      {/* 年月标题 */}
+                      <div className="relative flex items-center mb-4">
+                        <div className="absolute left-0 w-3 h-3 -translate-x-[5px] bg-primary-500 rounded-full border-2 border-dark-900 z-10 shadow-lg shadow-primary-500/30" />
+                        <h2 className="ml-8 text-lg font-semibold text-text-accent flex items-center gap-3">
+                          <span className="text-primary-400">{group.year}</span>
+                          <span className="text-text-secondary">/</span>
+                          <span>{formatMonth(group.month)}</span>
+                          <span className="text-text-secondary text-sm font-normal">
+                            ({group.posts.length})
                           </span>
-                          <span className="text-gray-300 group-hover:text-primary-400 transition-colors">
-                            {post.title}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
+                        </h2>
+                      </div>
+
+                      {/* 文章列表 */}
+                      <ul className="ml-8 space-y-2">
+                        {group.posts.map((post) => (
+                          <li key={post.id} className="group">
+                            <Link
+                              href={`/${locale}/blog/${post.slug}`}
+                              className="flex items-center gap-3 py-1.5 px-2 -mx-2 rounded hover:bg-bg-secondary/30 transition-colors"
+                            >
+                              <span className="text-xs text-text-secondary min-w-[30px]">
+                                {formatDay(post.published_at || post.created_at)}
+                              </span>
+                              <span className="text-text-accent group-hover:text-primary-400 transition-colors line-clamp-1">
+                                {post.title}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ height: '1000px' }}></div>
+            {/* 右侧大纲导航 */}
+            <div className="hidden lg:block lg:w-48 lg:flex-shrink-0">
+              <ArchiveOutline items={outlineItems} />
+            </div>
           </div>
         ) : (
           <Empty title={t('noPosts')} />

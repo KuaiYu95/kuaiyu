@@ -50,7 +50,8 @@
     "description": "All posts by date",
     "year": "Year",
     "totalPosts": "{count} posts in total",
-    "noPosts": "No posts yet"
+    "noPosts": "No posts yet",
+    "outline": "Outline"
   },
   "categories": {
     "title": "Categories",

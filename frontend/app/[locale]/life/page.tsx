@@ -2,7 +2,7 @@
 // 生活记录列表页
 // ===========================================
 
-import { Empty } from '@/components/ui';
+import { Empty, RelativeTime } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -31,14 +31,6 @@ export default async function LifePage({
   } catch (error) {
     console.error('Failed to fetch life records:', error);
   }
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   // 按年份分组
   const groupedByYear = records.reduce((acc, record) => {
@@ -71,13 +63,13 @@ export default async function LifePage({
               <div key={year} className="mb-12">
                 {/* 年份 */}
                 <div className="relative flex items-center mb-6">
-                  <div className="w-16 h-16 bg-primary-500/20 rounded-full flex items-center justify-center z-10">
+                  <div className="bg-primary-500/20 rounded-full z-10">
                     <span className="text-primary-400 font-bold">{year}</span>
                   </div>
                 </div>
 
                 {/* 该年的记录 */}
-                <div className="ml-16">
+                <div>
                   {groupedByYear[Number(year)].map((record, index) => (
                     <Link key={record.id} href={`/${locale}/life/${record.id}`} className={index > 0 ? "block mt-6" : "block"}>
                       <div className="group border-b border-border/50 pb-6 transition-all duration-300">
@@ -96,7 +88,7 @@ export default async function LifePage({
                               {record.content.replace(/[#*`\n]/g, ' ').slice(0, 150)}
                             </p>
                             <div className="text-xs text-text-secondary mt-2">
-                              {formatDate(record.published_at || record.created_at)}
+                              <RelativeTime date={record.published_at || record.created_at} locale={locale} />
                             </div>
                           </div>
                         </div>
