@@ -2,30 +2,28 @@
 // 统计分析页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
+import { analyticsApi, type Overview } from '@/lib/api';
+import { Article, Person, TrendingUp, Visibility } from '@mui/icons-material';
 import {
   Box,
-  Paper,
-  Typography,
-  Grid,
   CircularProgress,
-  ToggleButtonGroup,
+  Grid,
+  Paper,
   ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from '@mui/material';
-import { TrendingUp, Visibility, Person, Article } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts';
-import { analyticsApi, type Overview } from '@/lib/api';
 
 export default function Analytics() {
   const [loading, setLoading] = useState(true);

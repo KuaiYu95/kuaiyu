@@ -2,27 +2,27 @@
 // 文章编辑页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { postApi, tagApi, uploadApi, type Tag } from '@/lib/api';
+import { ROUTES } from '@/lib/constants';
+import { ArrowBack, Save } from '@mui/icons-material';
 import {
+  Alert,
+  Autocomplete,
   Box,
   Button,
-  Paper,
-  TextField,
-  Select,
-  MenuItem,
+  Chip,
+  CircularProgress,
   FormControl,
   InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
   Typography,
-  Chip,
-  Autocomplete,
-  CircularProgress,
-  Alert,
 } from '@mui/material';
-import { Save, ArrowBack } from '@mui/icons-material';
 import MDEditor from '@uiw/react-md-editor';
-import { postApi, tagApi, uploadApi, type Post, type Tag } from '@/lib/api';
-import { ROUTES } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function PostEdit() {
   const { id } = useParams();
@@ -62,7 +62,7 @@ export default function PostEdit() {
           setStatus(post.status);
           setSelectedTags(post.tags || []);
         })
-        .catch((err) => {
+        .catch(() => {
           setError('加载文章失败');
         })
         .finally(() => setLoading(false));

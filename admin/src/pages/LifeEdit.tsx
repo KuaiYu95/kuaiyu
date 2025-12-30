@@ -2,25 +2,24 @@
 // 生活记录编辑页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { lifeApi, uploadApi } from '@/lib/api';
+import { ROUTES } from '@/lib/constants';
+import { ArrowBack, Save } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Button,
-  Paper,
-  TextField,
-  Select,
-  MenuItem,
+  CircularProgress,
   FormControl,
   InputLabel,
+  MenuItem,
+  Paper,
+  Select,
   Typography,
-  CircularProgress,
-  Alert,
 } from '@mui/material';
-import { Save, ArrowBack } from '@mui/icons-material';
 import MDEditor from '@uiw/react-md-editor';
-import { lifeApi, uploadApi, type LifeRecord } from '@/lib/api';
-import { ROUTES } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function LifeEdit() {
   const { id } = useParams();

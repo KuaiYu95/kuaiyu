@@ -4,13 +4,22 @@
 
 FROM node:20-alpine AS builder
 
+# 安装 pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+# 复制依赖文件
+COPY package.json pnpm-lock.yaml ./
 
+# 安装依赖
+RUN pnpm install --frozen-lockfile
+
+# 复制源代码
 COPY . .
-RUN npm run build
+
+# 构建
+RUN pnpm run build
 
 # 使用 Nginx 托管静态文件
 FROM nginx:alpine
