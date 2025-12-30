@@ -14,6 +14,7 @@ interface AvatarProps {
   name?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  isAdmin?: boolean; // 是否为管理员
 }
 
 export default function Avatar({
@@ -22,6 +23,7 @@ export default function Avatar({
   name,
   size = 'md',
   className,
+  isAdmin = false,
 }: AvatarProps) {
   const sizes = {
     sm: 'h-8 w-8 text-xs',
@@ -37,26 +39,45 @@ export default function Avatar({
     xl: 80,
   };
 
-  // 获取名字首字母
-  const getInitials = (name?: string) => {
-    if (!name) return '?';
-    return name.charAt(0).toUpperCase();
+  // 根据名字选择默认头像（从 avatars 文件夹中选择）
+  const getDefaultAvatar = (name?: string) => {
+    // avatars 文件夹中有 20 个头像（1.jpg 到 20.png）
+    const avatarCount = 20;
+    if (!name) {
+      return '/assets/avatars/1.jpg';
+    }
+    // 根据名字的第一个字符生成索引，确保相同名字总是选择同一个头像
+    const index = (name.charCodeAt(0) % avatarCount) + 1;
+    // 根据索引选择对应的头像文件
+    const avatarFiles = [
+      '1.jpg', '2.jpg', '3.jpeg', '4.jpg', '5.jpg',
+      '6.jpeg', '7.jpg', '8.jpg', '9.jpeg', '10.jpeg',
+      '11.jpeg', '12.jpg', '13.jpg', '14.jpg', '15.jpeg',
+      '16.jpg', '17.jpeg', '18.jpg', '19.jpeg', '20.png',
+    ];
+    return `/assets/avatars/${avatarFiles[index - 1]}`;
   };
 
-  // 根据名字生成背景色
-  const getBackgroundColor = (name?: string) => {
-    if (!name) return '#60a5fa';
-    const colors = [
-      '#60a5fa', // blue
-      '#34d399', // green
-      '#a78bfa', // purple
-      '#f472b6', // pink
-      '#fbbf24', // yellow
-      '#fb923c', // orange
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
+  // 如果是管理员，使用 logo
+  if (isAdmin) {
+    return (
+      <div
+        className={cn(
+          'relative rounded-full overflow-hidden bg-bg-hover',
+          sizes[size],
+          className
+        )}
+      >
+        <SafeImage
+          src="/logo.png"
+          alt={alt || 'Admin'}
+          width={imageSizes[size]}
+          height={imageSizes[size]}
+          className="object-cover"
+        />
+      </div>
+    );
+  }
 
   if (src) {
     return (
@@ -78,16 +99,24 @@ export default function Avatar({
     );
   }
 
+  // 没有提供 src 时，使用默认头像
+  const defaultAvatarSrc = getDefaultAvatar(name);
+
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-full font-medium text-white',
+        'relative rounded-full overflow-hidden bg-bg-hover',
         sizes[size],
         className
       )}
-      style={{ backgroundColor: getBackgroundColor(name) }}
     >
-      {getInitials(name)}
+      <SafeImage
+        src={defaultAvatarSrc}
+        alt={alt || name || 'Avatar'}
+        width={imageSizes[size]}
+        height={imageSizes[size]}
+        className="object-cover"
+      />
     </div>
   );
 }

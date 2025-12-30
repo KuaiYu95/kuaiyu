@@ -1,5 +1,7 @@
 'use client';
 
+import httpAnimation from '@/assets/icons/system-regular-142-http-hover-http.json';
+import bookmarkAnimation from '@/assets/icons/system-regular-20-bookmark-hover-bookmark-1.json';
 import chatAnimation from '@/assets/icons/system-regular-47-chat-hover-chat.json';
 import { Avatar, Button, Card, Empty, Loading, Lottie, RelativeTime } from '@/components/ui';
 import { publicApi } from '@/lib/api';
@@ -11,6 +13,7 @@ interface Comment {
   id: number;
   nickname: string;
   email?: string;
+  website?: string;
   avatar: string;
   content: string;
   status: string;
@@ -195,25 +198,51 @@ export default function CommentSection({
       className={`${isReply ? 'ml-12 mt-4' : 'mb-6'} transition-all duration-300`}
     >
       <div className="flex gap-4">
-        <Avatar name={comment.nickname} src={comment.avatar} size='sm' />
+        <Avatar name={comment.nickname} src={comment.avatar} isAdmin={comment.is_admin} size='lg' />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             {!isReply && comment.is_pinned && (
               <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded flex items-center gap-1">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2L3 7v11h4v-6h6v6h4V7l-7-5z" />
-                </svg>
-                置顶
+                <Lottie
+                  animationData={bookmarkAnimation}
+                  width={12}
+                  height={12}
+                  loop={false}
+                  autoplay={true}
+                />
+                {t('pinned')}
               </span>
             )}
-            <span className="font-medium text-white">{comment.nickname}</span>
+            {comment.website ? (
+              <a
+                href={comment.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-white hover:text-primary-400 transition-colors cursor-pointer underline-offset-2 hover:underline flex items-center gap-1"
+                title={comment.website}
+              >
+                {comment.nickname}
+                <Lottie
+                  animationData={httpAnimation}
+                  width={24}
+                  height={24}
+                  loop={false}
+                  autoplay={true}
+                />
+              </a>
+            ) : (
+              <span className="font-medium text-white">{comment.nickname}</span>
+            )}
             {comment.parent_nickname && (
               <span className="text-gray-400 text-sm">
-                回复 <span className="text-primary-400">@{comment.parent_nickname}</span>
+                {t('replyTo')} <span className="text-primary-400">@{comment.parent_nickname}</span>
               </span>
             )}
             {comment.is_admin && (
-              <span className="px-2 py-0.5 text-xs bg-primary-500/20 text-primary-400 rounded">
+              <span className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-400 rounded flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 {t('admin')}
               </span>
             )}
@@ -352,7 +381,7 @@ export default function CommentSection({
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('contentPlaceholder')}
             className="w-full px-4 py-3 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
-            rows={4}
+            rows={2}
             required
           />
           <div className="flex justify-end">

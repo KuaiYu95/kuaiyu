@@ -2,10 +2,13 @@
 // 博客文章列表项组件
 // ===========================================
 
+'use client';
+
 import { Tag } from '@/components/ui';
 import SafeImage from '@/components/ui/SafeImage';
 import { Post } from '@/lib/api';
 import Link from 'next/link';
+import PostMeta from './PostMeta';
 
 interface BlogPostItemProps {
   post: Post;
@@ -13,7 +16,6 @@ interface BlogPostItemProps {
   href: string;
   showIndex?: number;
   viewsText: string;
-  RelativeTime: React.ComponentType<{ date: string; locale: string }>;
 }
 
 export default function BlogPostItem({
@@ -22,7 +24,6 @@ export default function BlogPostItem({
   href,
   showIndex,
   viewsText,
-  RelativeTime,
 }: BlogPostItemProps) {
   return (
     <div>
@@ -50,22 +51,20 @@ export default function BlogPostItem({
                 {post.excerpt}
               </p>
               <div className="flex items-center gap-4 text-xs text-text-secondary">
-                <RelativeTime date={post.published_at || post.created_at} locale={locale} />
-                <span className="text-border">·</span>
-                <span>
-                  {post.view_count} {viewsText}
-                </span>
+                <PostMeta
+                  date={post.published_at || post.created_at}
+                  viewCount={post.view_count}
+                  viewsText={viewsText}
+                  locale={locale}
+                />
                 {post.tags && post.tags.length > 0 && (
-                  <>
-                    <span className="text-border">·</span>
-                    <div className="flex gap-2">
-                      {post.tags.slice(0, 2).map((tag) => (
-                        <Tag key={tag.id} color={tag.color} size="sm">
-                          {tag.name}
-                        </Tag>
-                      ))}
-                    </div>
-                  </>
+                  <div className="flex gap-2">
+                    {post.tags.slice(0, 2).map((tag) => (
+                      <Tag key={tag.id} color={tag.color} size="sm">
+                        {tag.name}
+                      </Tag>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

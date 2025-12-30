@@ -24,14 +24,14 @@ export default function PostMeta({
   return (
     <>
       <div
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 text-xs"
         onMouseEnter={() => setIsClockHovered(true)}
         onMouseLeave={() => setIsClockHovered(false)}
       >
         <Lottie
           animationData={clockAnimation}
-          width={16}
-          height={16}
+          width={12}
+          height={12}
           loop={isClockHovered}
           autoplay={true}
           key={isClockHovered ? 'hover' : 'normal'}
@@ -40,16 +40,15 @@ export default function PostMeta({
           <RelativeTime date={date} locale={locale} />
         </div>
       </div>
-      <span>·</span>
       <div
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 text-xs"
         onMouseEnter={() => setIsVisibilityHovered(true)}
         onMouseLeave={() => setIsVisibilityHovered(false)}
       >
         <Lottie
           animationData={visibilityAnimation}
-          width={16}
-          height={16}
+          width={12}
+          height={12}
           loop={isVisibilityHovered}
           autoplay={true}
           key={isVisibilityHovered ? 'hover' : 'normal'}

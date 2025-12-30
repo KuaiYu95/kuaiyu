@@ -3,6 +3,7 @@
 // ===========================================
 
 import CommentSection from '@/components/comment/CommentSection';
+import PostMeta from '@/components/post/PostMeta';
 import ViewCounter from '@/components/post/ViewCounter';
 import { Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
@@ -14,7 +15,6 @@ import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import BackButton from './BackButton';
-import PostMeta from './PostMeta';
 
 export async function generateMetadata({
   params,
@@ -90,16 +90,13 @@ export default async function BlogDetailPage({
             locale={locale}
           />
           {post.tags && post.tags.length > 0 && (
-            <>
-              <span>·</span>
-              <div className="flex gap-2">
-                {post.tags.map((tag) => (
-                  <Link key={tag.id} href={`/${locale}/blog?tag=${tag.slug}`}>
-                    <Tag color={tag.color}>{tag.name}</Tag>
-                  </Link>
-                ))}
-              </div>
-            </>
+            <div className="flex gap-2">
+              {post.tags.map((tag) => (
+                <Link key={tag.id} href={`/${locale}/blog?tag=${tag.slug}`}>
+                  <Tag color={tag.color}>{tag.name}</Tag>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
 

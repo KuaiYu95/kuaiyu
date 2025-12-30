@@ -86,12 +86,14 @@
     "optional": "选填",
     "nicknamePlaceholder": "请输入昵称 *",
     "emailPlaceholder": "请输入邮箱 *",
-    "websitePlaceholder": "https://example.com (选填)",
+    "websitePlaceholder": "个人站点 / GITHUB 地址 (选填)",
     "contentPlaceholder": "说点什么吧...",
     "replyPlaceholder": "回复 @{name}...",
     "noComments": "暂无评论，快来抢沙发吧！",
     "admin": "博主",
-    "pending": "待审核"
+    "pending": "待审核",
+    "pinned": "置顶",
+    "replyTo": "回复"
   },
   "error": {
     "404": {

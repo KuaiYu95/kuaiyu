@@ -86,12 +86,14 @@
     "optional": "Optional",
     "nicknamePlaceholder": "Your nickname *",
     "emailPlaceholder": "Your email *",
-    "websitePlaceholder": "https://example.com (optional)",
+    "websitePlaceholder": "Personal website / GITHUB address (optional)",
     "contentPlaceholder": "Say something...",
     "replyPlaceholder": "Reply to @{name}...",
     "noComments": "No comments yet, be the first!",
     "admin": "Admin",
-    "pending": "Pending"
+    "pending": "Pending",
+    "pinned": "Pinned",
+    "replyTo": "Reply to"
   },
   "error": {
     "404": {

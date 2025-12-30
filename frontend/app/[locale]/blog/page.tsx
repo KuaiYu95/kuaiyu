@@ -5,7 +5,7 @@
 import articleAnimation from '@/assets/icons/system-regular-14-article-hover-article.json';
 import ContributionCalendar from '@/components/contribution/ContributionCalendar';
 import BlogPostItem from '@/components/post/BlogPostItem';
-import { Empty, Lottie, RelativeTime, Tag } from '@/components/ui';
+import { Empty, Lottie, Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -85,7 +85,6 @@ export default async function BlogPage({
                 href={`/${locale}/blog/${post.slug}`}
                 showIndex={index}
                 viewsText={t('views')}
-                RelativeTime={RelativeTime}
               />
             ))}
           </div>
