@@ -6,7 +6,7 @@ import CommentSection from '@/components/comment/CommentSection';
 import { RelativeTime } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -36,6 +36,7 @@ export default async function LifeDetailPage({
 }: {
   params: { locale: string; id: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('life');
 
   let record: LifeRecord | null = null;

@@ -7,10 +7,11 @@ import ContributionCalendar from '@/components/contribution/ContributionCalendar
 import { Empty, Lottie, RelativeTime } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('life');
   return {
     title: t('title'),
@@ -23,6 +24,7 @@ export default async function LifePage({
 }: {
   params: { locale: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('life');
 
   let records: LifeRecord[] = [];

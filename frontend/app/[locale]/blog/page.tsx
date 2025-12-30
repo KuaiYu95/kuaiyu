@@ -8,10 +8,11 @@ import BlogPostItem from '@/components/post/BlogPostItem';
 import { Empty, Lottie, Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('blog');
   return {
     title: t('title'),
@@ -26,6 +27,7 @@ export default async function BlogPage({
   params: { locale: string };
   searchParams: { page?: string; tag?: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('blog');
   const page = parseInt(searchParams.page || '1');
   const tag = searchParams.tag;

@@ -8,7 +8,7 @@ import ViewCounter from '@/components/post/ViewCounter';
 import { Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -43,6 +43,7 @@ export default async function BlogDetailPage({
 }: {
   params: { locale: string; slug: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('blog');
 
   let post: Post | null = null;

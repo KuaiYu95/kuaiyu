@@ -6,9 +6,10 @@ import forumAnimation from '@/assets/icons/system-regular-192-forum-hover-forum.
 import CommentSection from '@/components/comment/CommentSection';
 import { Lottie } from '@/components/ui';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('guestbook');
   return {
     title: t('title'),
@@ -21,6 +22,7 @@ export default async function GuestbookPage({
 }: {
   params: { locale: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('guestbook');
 
   return (

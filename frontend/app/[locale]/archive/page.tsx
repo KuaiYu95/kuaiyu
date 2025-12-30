@@ -6,11 +6,12 @@ import calendarAnimation from '@/assets/icons/system-regular-23-calendar-hover-c
 import { Empty, Lottie } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import ArchiveOutline from './ArchiveOutline';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('archive');
   return {
     title: t('title'),
@@ -23,6 +24,7 @@ export default async function ArchivePage({
 }: {
   params: { locale: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('archive');
 
   let posts: Post[] = [];

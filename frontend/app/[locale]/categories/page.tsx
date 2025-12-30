@@ -6,10 +6,11 @@ import labelAnimation from '@/assets/icons/system-regular-146-label-hover-label.
 import { Card, Lottie } from '@/components/ui';
 import { publicApi, Tag } from '@/lib/api';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  setRequestLocale(locale);
   const t = await getTranslations('categories');
   return {
     title: t('title'),
@@ -22,6 +23,7 @@ export default async function CategoriesPage({
 }: {
   params: { locale: string };
 }) {
+  setRequestLocale(locale);
   const t = await getTranslations('categories');
 
   let tags: Tag[] = [];

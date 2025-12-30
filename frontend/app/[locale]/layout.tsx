@@ -7,7 +7,7 @@ import { DEFAULT_CONFIG } from '@/lib/config';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
 
@@ -55,6 +55,9 @@ export default async function LocaleLayout({
   if (!locales.includes(locale as any)) {
     notFound();
   }
+
+  // 启用静态渲染
+  setRequestLocale(locale);
 
   // 获取消息
   const messages = await getMessages();

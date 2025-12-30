@@ -4,12 +4,16 @@
 # ===========================================
 
 # 构建阶段
-FROM golang:1.21-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
+# 配置 Alpine 镜像源（直接使用官方源，避免 DNS 问题）
+# 如果网络环境需要，可以取消注释下面的镜像源配置
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+
 # 安装必要的构建工具
-RUN apk add --no-cache gcc musl-dev
+RUN apk update && apk add --no-cache gcc musl-dev
 
 # 复制依赖文件
 COPY go.mod go.sum ./
@@ -24,8 +28,12 @@ FROM alpine:latest
 
 WORKDIR /app
 
+# 配置 Alpine 镜像源（直接使用官方源，避免 DNS 问题）
+# 如果网络环境需要，可以取消注释下面的镜像源配置
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+
 # 安装时区数据和CA证书
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk update && apk --no-cache add ca-certificates tzdata
 
 # 复制构建产物
 COPY --from=builder /app/server .

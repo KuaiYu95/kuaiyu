@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -129,7 +130,7 @@ func (h *PostHandler) IncrementViews(c *gin.Context) {
 	}
 	if err := db.Create(&pv).Error; err != nil {
 		// 页面访问记录失败不影响主流程，仅记录日志
-		// TODO: 添加日志记录
+		log.Printf("Failed to record page view: %v", err)
 	}
 
 	response.Success(c, nil)

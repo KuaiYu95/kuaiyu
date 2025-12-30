@@ -2,7 +2,7 @@ import ContributionCalendar from '@/components/contribution/ContributionCalendar
 import SafeImage from '@/components/ui/SafeImage';
 import { DEFAULT_CONFIG } from '@/lib/config';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 // ===========================================
 // 首页
@@ -17,6 +17,7 @@ interface HomePageProps {
 }
 
 export default async function HomePage({ params: { locale } }: HomePageProps) {
+  setRequestLocale(locale);
   const t = await getTranslations('home');
 
   // 使用写死的配置
