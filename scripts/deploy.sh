@@ -1,7 +1,7 @@
 #!/bin/bash
 # ===========================================
-# 本地部署脚本（用于生产环境更新）
-# 用法: ./scripts/deploy.sh [--pull]
+# 本地部署脚本 - 部署到本地 Docker
+# 用法: ./scripts/deploy.sh [--pull] [--no-cache]
 # ===========================================
 
 set -e
@@ -19,11 +19,15 @@ check_docker
 
 # 解析参数
 PULL_CODE=false
-if [ "$1" = "--pull" ]; then
+NO_CACHE=""
+if [ "$1" = "--pull" ] || [ "$2" = "--pull" ]; then
     PULL_CODE=true
 fi
+if [ "$1" = "--no-cache" ] || [ "$2" = "--no-cache" ]; then
+    NO_CACHE="--no-cache"
+fi
 
-log_info "开始部署..."
+log_info "开始本地部署到 Docker..."
 
 # 拉取最新代码（可选）
 if [ "$PULL_CODE" = true ]; then
@@ -35,9 +39,21 @@ if [ "$PULL_CODE" = true ]; then
     fi
 fi
 
+# 检查 .env 文件
+if [ ! -f .env ]; then
+    log_warning ".env 文件不存在，从 env.example 创建..."
+    if [ -f env.example ]; then
+        cp env.example .env
+        log_warning "请编辑 .env 文件配置环境变量"
+    else
+        log_error ".env 文件不存在且 env.example 也不存在"
+        exit 1
+    fi
+fi
+
 # 构建镜像
 log_step "构建 Docker 镜像..."
-if ! docker-compose build; then
+if ! docker-compose build ${NO_CACHE}; then
     log_error "镜像构建失败"
     exit 1
 fi
@@ -67,8 +83,11 @@ docker image prune -f
 log_info "服务状态:"
 docker-compose ps
 
-log_success "部署完成！"
+log_success "本地部署完成！"
 echo ""
 log_info "访问地址:"
-echo -e "  ${GREEN}前台: https://yukuai.kcat.site${NC}"
-echo -e "  ${GREEN}后台: https://admin.kcat.site${NC}"
+echo -e "  ${GREEN}前台: http://localhost:3000${NC}"
+echo -e "  ${GREEN}后台: http://localhost:5173${NC}"
+echo -e "  ${GREEN}API: http://localhost:8080${NC}"
+echo ""
+log_info "查看日志: docker-compose logs -f"

@@ -18,6 +18,12 @@ RUN pnpm install --frozen-lockfile
 # 复制源代码
 COPY . .
 
+# 构建参数（从 docker-compose.yml 的 build.args 传递）
+ARG VITE_API_URL
+
+# 将构建参数转换为环境变量（Vite 构建时需要）
+ENV VITE_API_URL=${VITE_API_URL}
+
 # 构建
 RUN pnpm run build
 

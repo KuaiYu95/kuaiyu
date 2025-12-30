@@ -21,7 +21,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
+# 构建参数（从 docker-compose.yml 的 build.args 传递）
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SITE_URL
+
+# 将构建参数转换为环境变量（Next.js 构建时需要）
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN pnpm run build
 
