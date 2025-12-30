@@ -102,29 +102,35 @@ export default function ContributionCalendar({
     }
 
     const intensity = Math.min(day.count, 4);
-    const opacity = 0.6 + intensity * 0.1;
+    // 提高透明度范围，使颜色更明显
+    const opacity = 0.2 + intensity * 0.05;
 
     if (type === 'all') {
       if (day.type === 'both') {
+        // 使用更鲜明的蓝色和紫色渐变
         return {
-          background: `linear-gradient(135deg, rgba(59, 130, 246, ${opacity}) 0%, rgba(168, 85, 247, ${opacity}) 100%)`,
+          background: `linear-gradient(135deg, rgba(37, 99, 235, ${opacity}) 0%, rgba(147, 51, 234, ${opacity}) 100%)`,
         };
       } else if (day.type === 'post') {
+        // 使用更鲜明的蓝色 (blue-600)
         return {
-          backgroundColor: `rgba(59, 130, 246, ${opacity})`,
+          backgroundColor: `rgba(37, 99, 235, ${opacity})`,
         };
       } else if (day.type === 'life') {
+        // 使用更鲜明的紫色 (purple-600)
         return {
-          backgroundColor: `rgba(168, 85, 247, ${opacity})`,
+          backgroundColor: `rgba(147, 51, 234, ${opacity})`,
         };
       }
     } else if (type === 'post') {
+      // 使用更鲜明的蓝色
       return {
-        backgroundColor: `rgba(59, 130, 246, ${opacity})`,
+        backgroundColor: `rgba(37, 99, 235, ${opacity})`,
       };
     } else if (type === 'life') {
+      // 使用更鲜明的紫色
       return {
-        backgroundColor: `rgba(168, 85, 247, ${opacity})`,
+        backgroundColor: `rgba(147, 51, 234, ${opacity})`,
       };
     }
 
