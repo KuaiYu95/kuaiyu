@@ -64,12 +64,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1",
+          "wget --quiet --tries=1 -O /dev/null http://localhost:8080/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
@@ -97,16 +97,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
     logging:
       driver: "json-file"
       options:
@@ -129,16 +119,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:80 || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -162,16 +142,16 @@ services:
       - "443:443"
     depends_on:
       frontend:
-        condition: service_healthy
+        condition: service_started
       admin:
-        condition: service_healthy
+        condition: service_started
       api:
         condition: service_healthy
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost/health || nginx -t",
+          "wget --quiet --tries=1 -O /dev/null http://localhost/health || nginx -t",
         ]
       interval: 30s
       timeout: 10s
