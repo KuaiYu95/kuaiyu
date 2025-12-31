@@ -83,7 +83,7 @@ if [ ! -f .env ]; then
 fi
 
 # 构建镜像
-if ! docker-compose build --no-cache; then
+if ! docker compose build --no-cache; then
     log_error "镜像构建失败"
     exit 1
 fi
@@ -192,11 +192,11 @@ ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" << EOF
     
     # 停止旧容器
     echo "停止旧容器..."
-    docker-compose down || true
+    docker compose down || true
     
     # 启动新容器
     echo "启动新容器..."
-    docker-compose up -d
+    docker compose up -d
     
     # 等待服务启动
     echo "等待服务启动..."
@@ -204,7 +204,7 @@ ssh -p "${SERVER_PORT}" "${SERVER_USER}@${SERVER_HOST}" << EOF
     
     # 检查服务状态
     echo "检查服务状态..."
-    docker-compose ps
+    docker compose ps
     
     echo "✅ 部署完成！"
     echo ""
@@ -225,7 +225,7 @@ if [ $? -eq 0 ]; then
     log_info "在服务器上查看日志:"
     echo -e "  ${YELLOW}ssh ${SERVER_USER}@${SERVER_HOST}${NC}"
     echo -e "  ${YELLOW}cd ${DEPLOY_PATH}/kuaiyu${NC}"
-    echo -e "  ${YELLOW}docker-compose logs -f${NC}"
+    echo -e "  ${YELLOW}docker compose logs -f${NC}"
 else
     log_error "部署失败"
     exit 1

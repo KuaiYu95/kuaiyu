@@ -29,7 +29,7 @@ fi
 
 # 启动 MySQL
 log_step "启动 MySQL 容器..."
-if docker-compose -f "${COMPOSE_FILE}" up -d mysql; then
+if docker compose -f "${COMPOSE_FILE}" up -d mysql; then
     log_success "MySQL 容器启动成功"
 else
     log_error "MySQL 容器启动失败"
@@ -37,7 +37,7 @@ else
 fi
 
 # 获取 MySQL 容器名称
-MYSQL_CONTAINER=$(docker-compose -f "${COMPOSE_FILE}" ps -q mysql)
+MYSQL_CONTAINER=$(docker compose -f "${COMPOSE_FILE}" ps -q mysql)
 if [ -z "$MYSQL_CONTAINER" ]; then
     log_error "无法获取 MySQL 容器 ID"
     exit 1

@@ -43,7 +43,7 @@ deploy-server:
 
 # 仅构建镜像
 build:
-	docker-compose build
+	docker compose build
 
 # 启动 API 开发服务器
 api:
@@ -59,11 +59,11 @@ admin:
 
 # 查看日志
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # 清理 Docker 资源
 clean:
-	docker-compose down -v
+	docker compose down -v
 	docker image prune -f
 	docker volume prune -f
 

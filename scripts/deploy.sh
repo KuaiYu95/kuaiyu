@@ -53,18 +53,18 @@ fi
 
 # 构建镜像
 log_step "构建 Docker 镜像..."
-if ! docker-compose build ${NO_CACHE}; then
+if ! docker compose build ${NO_CACHE}; then
     log_error "镜像构建失败"
     exit 1
 fi
 
 # 停止旧容器
 log_step "停止旧容器..."
-docker-compose down
+docker compose down
 
 # 启动新容器
 log_step "启动新容器..."
-if docker-compose up -d; then
+if docker compose up -d; then
     log_success "容器启动成功"
 else
     log_error "容器启动失败"
@@ -81,7 +81,7 @@ docker image prune -f
 
 # 显示服务状态
 log_info "服务状态:"
-docker-compose ps
+docker compose ps
 
 log_success "本地部署完成！"
 echo ""
@@ -90,4 +90,4 @@ echo -e "  ${GREEN}前台: http://localhost:3000${NC}"
 echo -e "  ${GREEN}后台: http://localhost:5173${NC}"
 echo -e "  ${GREEN}API: http://localhost:8080${NC}"
 echo ""
-log_info "查看日志: docker-compose logs -f"
+log_info "查看日志: docker compose logs -f"
