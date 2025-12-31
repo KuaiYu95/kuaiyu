@@ -1,6 +1,6 @@
 # ===========================================
-# Docker Compose - 本地测试环境配置
-# 用法: docker compose up -d 或 ./scripts/deploy.sh
+# Docker Compose - 生产环境配置
+# 用法: docker compose -f docker-compose.prod.yml up -d
 # ===========================================
 
 services:
@@ -10,10 +10,10 @@ services:
     container_name: kuaiyu_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kuaiyu_root_2024}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-kuaiyu_db}
-      MYSQL_USER: ${MYSQL_USER:-kuaiyu_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kuaiyu_pass_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Asia/Shanghai
     volumes:
       - mysql_data:/var/lib/mysql
@@ -45,14 +45,14 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_USER=${MYSQL_USER:-kuaiyu_user}
-      - DB_PASSWORD=${MYSQL_PASSWORD:-kuaiyu_pass_2024}
-      - DB_NAME=${MYSQL_DATABASE:-kuaiyu_db}
-      - JWT_SECRET=${JWT_SECRET:-kuaiyu_jwt_secret_2024}
-      - COS_SECRET_ID=${COS_SECRET_ID:-}
-      - COS_SECRET_KEY=${COS_SECRET_KEY:-}
-      - COS_BUCKET=${COS_BUCKET:-}
-      - COS_REGION=${COS_REGION:-}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${MYSQL_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - COS_SECRET_ID=${COS_SECRET_ID}
+      - COS_SECRET_KEY=${COS_SECRET_KEY}
+      - COS_BUCKET=${COS_BUCKET}
+      - COS_REGION=${COS_REGION}
       - GIN_MODE=${GIN_MODE:-release}
       - TZ=Asia/Shanghai
     ports:
@@ -64,12 +64,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1",
+          "wget --quiet --tries=1 -O /dev/null http://localhost:8080/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
@@ -84,29 +84,19 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:8080}
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://yukuai.kcat.site}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     container_name: kuaiyu_frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:8080}
-      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://yukuai.kcat.site}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
       - TZ=Asia/Shanghai
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       api:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
     logging:
       driver: "json-file"
       options:
@@ -121,7 +111,7 @@ services:
       context: ./admin
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://api:8080}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: kuaiyu_admin
     restart: unless-stopped
     ports:
@@ -129,16 +119,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost:80 || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -155,23 +135,23 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ${SSL_CERT_PATH:-/etc/ssl/kuaiyu}:/etc/nginx/ssl:ro
+      - ${SSL_CERT_PATH}:/etc/nginx/ssl:ro
       - ./nginx/logs:/var/log/nginx
     ports:
       - "80:80"
       - "443:443"
     depends_on:
       frontend:
-        condition: service_healthy
+        condition: service_started
       admin:
-        condition: service_healthy
+        condition: service_started
       api:
         condition: service_healthy
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget --quiet --tries=1 --spider http://localhost/health || nginx -t",
+          "wget --quiet --tries=1 -O /dev/null http://localhost/health || nginx -t",
         ]
       interval: 30s
       timeout: 10s

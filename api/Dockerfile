@@ -32,8 +32,8 @@ WORKDIR /app
 # 如果网络环境需要，可以取消注释下面的镜像源配置
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
 
-# 安装时区数据和CA证书
-RUN apk update && apk --no-cache add ca-certificates tzdata
+# 安装时区数据、CA证书和 wget（用于健康检查）
+RUN apk update && apk --no-cache add ca-certificates tzdata wget
 
 # 复制构建产物
 COPY --from=builder /app/server .

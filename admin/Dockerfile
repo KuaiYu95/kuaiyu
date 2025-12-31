@@ -2,20 +2,25 @@
 # Yu.kuai - 后台管理 Dockerfile
 # ===========================================
 
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS base
 
 # 安装 pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# 安装依赖阶段（利用 Docker 缓存：如果依赖文件未变，可复用此层）
+FROM base AS deps
 WORKDIR /app
-
-# 复制依赖文件
 COPY package.json pnpm-lock.yaml ./
-
-# 安装依赖
 RUN pnpm install --frozen-lockfile
 
-# 复制源代码
+# 构建阶段
+FROM base AS builder
+WORKDIR /app
+
+# 先复制 node_modules（利用缓存层）
+COPY --from=deps /app/node_modules ./node_modules
+
+# 再复制源代码（源代码变化时只需重新构建，不需要重新安装依赖）
 COPY . .
 
 # 构建参数（从 docker-compose.yml 的 build.args 传递）
