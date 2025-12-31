@@ -4,11 +4,13 @@
 
 import calendarAnimation from '@/assets/icons/system-regular-23-calendar-hover-calendar.json';
 import { Empty, Lottie } from '@/components/ui';
-import { Post, publicApi } from '@/lib/api';
+import { ArchiveYear, Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import ArchiveOutline from './ArchiveOutline';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
   setRequestLocale(locale);
@@ -30,10 +32,11 @@ export default async function ArchivePage({
   let posts: Post[] = [];
 
   try {
-    const res = await publicApi.posts.list({ limit: 1000 });
-    posts = res.data?.items || [];
+    const res = await publicApi.archive.list();
+    const archiveYears = res.data || [];
+    posts = archiveYears.flatMap((year: ArchiveYear) => year.posts || []);
   } catch (error) {
-    console.error('Failed to fetch posts:', error);
+    console.error('Failed to fetch archive:', error);
   }
 
   // 按年月分组

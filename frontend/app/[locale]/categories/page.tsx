@@ -9,6 +9,8 @@ import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations('categories');

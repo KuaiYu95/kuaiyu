@@ -34,14 +34,7 @@ api.interceptors.response.use(
     return response.data;
   },
   (error: AxiosError) => {
-    if (process.env.NODE_ENV === 'production' && error.code === 'ECONNREFUSED') {
-      const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
-      if (isBuildTime) {
-        console.warn('API server not available during build, this is expected');
-        return { code: 0, message: 'API unavailable', data: null };
-      }
-    }
-    console.error('API Error:', error);
+    console.error('API Error:', error.message);
     return Promise.reject(error);
   }
 );
@@ -279,6 +272,9 @@ export const publicApi = {
   },
   tags: {
     list: tagApi.list,
+  },
+  archive: {
+    list: archiveApi.list,
   },
   comments: {
     list: (params?: {

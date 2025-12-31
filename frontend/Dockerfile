@@ -30,6 +30,9 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# 安装 sharp（Next.js 图片优化需要，standalone 模式需要显式安装）
+RUN pnpm add sharp
+
 RUN pnpm run build
 
 # 运行阶段
@@ -43,9 +46,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 RUN apk add --no-cache libc6-compat
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY --from=builder /app/package.json ./package.json
-RUN pnpm add sharp && rm -rf package.json
 
 COPY --from=builder /app/public ./public
 

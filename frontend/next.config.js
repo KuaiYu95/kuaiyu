@@ -6,9 +6,13 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig = {
   // 图片优化配置
   images: {
-    domains: ['localhost'],
     remotePatterns: [
-      // 腾讯云 COS - 支持所有地域
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: '*.cos.ap-shanghai.myqcloud.com',

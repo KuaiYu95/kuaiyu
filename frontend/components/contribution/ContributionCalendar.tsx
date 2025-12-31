@@ -3,7 +3,7 @@
 import { ContributionDay, ContributionItem, contributionApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ContributionCalendarProps {
   type: 'post' | 'life' | 'all';
@@ -21,6 +21,7 @@ export default function ContributionCalendar({
   const t = useTranslations('contribution');
   const [data, setData] = useState<ContributionDay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [selectedDay, setSelectedDay] = useState<ContributionDay | null>(null);
   const [selectedElement, setSelectedElement] = useState<HTMLDivElement | null>(null);
   const [hoveredDay, setHoveredDay] = useState<ContributionDay | null>(null);
@@ -31,8 +32,29 @@ export default function ContributionCalendar({
   const [squareSize, setSquareSize] = useState(12);
 
   useEffect(() => {
-    fetchData();
+    setMounted(true);
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await contributionApi.getCalendar({
+        type,
+        year: year || new Date().getFullYear(),
+      });
+      setData(res.data?.days || []);
+    } catch (error) {
+      console.error('Failed to fetch contribution data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [type, year]);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchData();
+    }
+  }, [mounted, fetchData]);
 
   useEffect(() => {
     const calculateSquareSize = () => {
@@ -58,19 +80,11 @@ export default function ContributionCalendar({
     };
   }, [data]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await contributionApi.getCalendar({
-        type,
-        year: year || new Date().getFullYear(),
-      });
-      setData(res.data?.days || []);
-    } catch (error) {
-      console.error('Failed to fetch contribution data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const formatDateKey = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const generateYearDays = (targetYear: number) => {
@@ -84,8 +98,11 @@ export default function ContributionCalendar({
     });
 
     const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
     while (currentDate <= endDate) {
-      const dateKey = currentDate.toISOString().split('T')[0];
+      const dateKey = formatDateKey(currentDate);
       days.push({
         date: new Date(currentDate),
         contribution: dataMap.get(dateKey) || null,
@@ -102,33 +119,27 @@ export default function ContributionCalendar({
     }
 
     const intensity = Math.min(day.count, 4);
-    // 提高透明度范围，使颜色更明显
     const opacity = 0.2 + intensity * 0.05;
 
     if (type === 'all') {
       if (day.type === 'both') {
-        // 使用更鲜明的蓝色和紫色渐变
         return {
           background: `linear-gradient(135deg, rgba(37, 99, 235, ${opacity}) 0%, rgba(147, 51, 234, ${opacity}) 100%)`,
         };
       } else if (day.type === 'post') {
-        // 使用更鲜明的蓝色 (blue-600)
         return {
           backgroundColor: `rgba(37, 99, 235, ${opacity})`,
         };
       } else if (day.type === 'life') {
-        // 使用更鲜明的紫色 (purple-600)
         return {
           backgroundColor: `rgba(147, 51, 234, ${opacity})`,
         };
       }
     } else if (type === 'post') {
-      // 使用更鲜明的蓝色
       return {
         backgroundColor: `rgba(37, 99, 235, ${opacity})`,
       };
     } else if (type === 'life') {
-      // 使用更鲜明的紫色
       return {
         backgroundColor: `rgba(147, 51, 234, ${opacity})`,
       };
@@ -200,8 +211,16 @@ export default function ContributionCalendar({
     return '#';
   };
 
-  const targetYear = year || new Date().getFullYear();
-  const yearDays = generateYearDays(targetYear);
+  const targetYear = mounted ? (year || new Date().getFullYear()) : (year || 2025);
+  const yearDays = mounted ? generateYearDays(targetYear) : [];
+
+  if (loading || !mounted || yearDays.length === 0) {
+    return (
+      <div className={`flex items-center justify-center py-12 ${className}`}>
+        <div className="text-text-secondary">加载中...</div>
+      </div>
+    );
+  }
 
   const weeks: { date: Date; contribution: ContributionDay | null }[][] = [];
   let currentWeek: { date: Date; contribution: ContributionDay | null }[] = [];
@@ -226,14 +245,6 @@ export default function ContributionCalendar({
       currentWeek.push({ date: new Date(0), contribution: null });
     }
     weeks.push(currentWeek);
-  }
-
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center py-12 ${className}`}>
-        <div className="text-text-secondary">加载中...</div>
-      </div>
-    );
   }
 
   const getPopoverPosition = () => {
@@ -272,7 +283,7 @@ export default function ContributionCalendar({
               const isEmpty = day.date.getTime() === 0;
               const style = getDayStyle(day.contribution);
               const isSelected = selectedDay?.date === day.contribution?.date;
-              const dateStr = isEmpty ? null : day.date.toISOString().split('T')[0];
+              const dateStr = isEmpty ? null : formatDateKey(day.date);
 
               return (
                 <div
