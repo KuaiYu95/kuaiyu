@@ -4,7 +4,30 @@
 // ===========================================
 
 // API 配置
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+let API_BASE_URL: string;
+
+if (apiUrl && apiUrl.trim() !== '') {
+  if (apiUrl.startsWith('/')) {
+    API_BASE_URL = typeof window !== 'undefined'
+      ? ''
+      : (process.env.NODE_ENV === 'production' ? 'http://api:8080' : 'http://localhost:8080');
+  } else {
+    let url = apiUrl.trim();
+    if (url.endsWith('/api')) {
+      url = url.slice(0, -4);
+    } else if (url.endsWith('/api/')) {
+      url = url.slice(0, -5);
+    }
+    API_BASE_URL = url;
+  }
+} else {
+  API_BASE_URL = typeof window !== 'undefined'
+    ? ''
+    : 'http://localhost:8080';
+}
+
+export { API_BASE_URL };
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kcat.site';
 
 // 网站信息

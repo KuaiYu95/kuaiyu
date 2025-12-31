@@ -84,12 +84,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     container_name: kuaiyu_frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
       - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
       - TZ=Asia/Shanghai
     ports:
