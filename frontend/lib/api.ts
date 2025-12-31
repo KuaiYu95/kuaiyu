@@ -21,7 +21,6 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    // 可以在这里添加 token 等
     return config;
   },
   (error) => {
@@ -35,11 +34,12 @@ api.interceptors.response.use(
     return response.data;
   },
   (error: AxiosError) => {
-    // 构建时或开发时 API 不可用是正常的，只记录错误不抛出
     if (process.env.NODE_ENV === 'production' && error.code === 'ECONNREFUSED') {
-      console.warn('API server not available during build, this is expected');
-      // 返回一个空响应，避免构建失败
-      return { code: 0, message: 'API unavailable', data: null };
+      const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+      if (isBuildTime) {
+        console.warn('API server not available during build, this is expected');
+        return { code: 0, message: 'API unavailable', data: null };
+      }
     }
     console.error('API Error:', error);
     return Promise.reject(error);

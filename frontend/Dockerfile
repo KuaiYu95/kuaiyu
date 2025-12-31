@@ -42,6 +42,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+RUN apk add --no-cache libc6-compat
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY --from=builder /app/package.json ./package.json
+RUN pnpm add sharp && rm -rf package.json
+
 COPY --from=builder /app/public ./public
 
 RUN mkdir .next
