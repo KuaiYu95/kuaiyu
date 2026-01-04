@@ -25,6 +25,7 @@ export default function ContributionCalendar({
   const popoverRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [squareSize, setSquareSize] = useState(12);
+  const [gap, setGap] = useState(4);
 
   // 计算最近365天的日期范围
   const dateRange = useMemo(() => {
@@ -67,14 +68,16 @@ export default function ContributionCalendar({
     fetchData();
   }, [type, dateRange]);
 
-  // 计算方块大小
+  // 计算方块大小和间隔
   useEffect(() => {
     const calculateSize = () => {
       if (!containerRef.current) return;
       const width = containerRef.current.offsetWidth;
       const weeks = 53;
-      const gap = 4;
-      setSquareSize(Math.max(8, (width - (weeks - 1) * gap) / weeks));
+      const isMobile = window.innerWidth < 768;
+      const currentGap = isMobile ? 1 : 4;
+      setGap(currentGap);
+      setSquareSize((width - (weeks - 1) * currentGap) / weeks);
     };
     calculateSize();
     window.addEventListener('resize', calculateSize);
@@ -218,9 +221,9 @@ export default function ContributionCalendar({
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
-      <div className="flex gap-1 w-full pb-4">
+      <div className="flex w-full pb-4" style={{ gap: `${gap}px` }}>
         {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="flex flex-col gap-1 flex-shrink-0">
+          <div key={weekIndex} className="flex flex-col flex-shrink-0" style={{ gap: `${gap}px` }}>
             {week.map((day, dayIndex) => {
               const isEmpty = day.date.getTime() === 0;
               const dateStr = isEmpty ? null : day.date.toISOString().split('T')[0];
