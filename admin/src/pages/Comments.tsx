@@ -3,6 +3,7 @@
 // ===========================================
 
 import { useToast } from '@/components/Toast';
+import FilterBar from '@/components/FilterBar';
 import { commentApi, type Comment } from '@/lib/api';
 import { STATUS_LABELS } from '@/lib/constants';
 import { Check, Close, Delete, PushPin, Reply } from '@mui/icons-material';
@@ -16,13 +17,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
   IconButton,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -227,44 +224,33 @@ export default function Comments() {
   };
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight="bold" mb={3}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+      <Typography variant="h4" fontWeight="bold" mb={3}>
         评论管理
       </Typography>
 
       {/* 筛选 */}
-      <Paper sx={{ p: 2, mb: 2, border: 1, borderColor: 'divider' }} elevation={0}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>状态</InputLabel>
-            <Select
-              value={status}
-              label="状态"
-              sx={{
-                width: 300
-              }}
-              onChange={(e) => {
-                const newStatus = e.target.value;
-                setStatus(newStatus);
-                setPage(1);
-
-                // 如果切换到待审核或垃圾状态，清除置顶筛选
-                if (newStatus === 'pending' || newStatus === 'spam') {
-                  setIsPinned(undefined);
-                  updateSearchParams({ status: newStatus, isPinned: undefined, page: 1 });
-                } else {
-                  updateSearchParams({ status: newStatus, page: 1 });
-                }
-              }}
-            >
-              <MenuItem value="">全部</MenuItem>
-              <MenuItem value="pending">待审核</MenuItem>
-              <MenuItem value="approved">已通过</MenuItem>
-              <MenuItem value="spam">垃圾</MenuItem>
-            </Select>
-          </FormControl>
-          {/* 只有全部和已通过状态才显示置顶筛选 */}
-          {(status === '' || status === 'approved') && (
+      <FilterBar
+        status={status}
+        onStatusChange={(newStatus) => {
+          setStatus(newStatus);
+          setPage(1);
+          // 如果切换到待审核或垃圾状态，清除置顶筛选
+          if (newStatus === 'pending' || newStatus === 'spam') {
+            setIsPinned(undefined);
+            updateSearchParams({ status: newStatus, isPinned: undefined, page: 1 });
+          } else {
+            updateSearchParams({ status: newStatus, page: 1 });
+          }
+        }}
+        statusOptions={[
+          { value: '', label: '全部' },
+          { value: 'pending', label: '待审核' },
+          { value: 'approved', label: '已通过' },
+          { value: 'spam', label: '垃圾' },
+        ]}
+        additionalFilters={
+          (status === '' || status === 'approved') ? (
             <FormControlLabel
               control={
                 <Checkbox
@@ -279,12 +265,21 @@ export default function Comments() {
               }
               label="仅显示置顶"
             />
-          )}
-        </Box>
-      </Paper>
+          ) : undefined
+        }
+      />
 
       {/* 表格 */}
-      <TableContainer component={Paper} sx={{ border: 1, borderColor: 'divider' }} elevation={0}>
+      <TableContainer
+        component={Paper}
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+        elevation={0}
+      >
         <Table>
           <TableHead>
             <TableRow>
@@ -299,7 +294,7 @@ export default function Comments() {
           <TableBody>
             {comments.map((comment) => (
               <TableRow key={comment.id} hover>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
                       {comment.nickname.charAt(0).toUpperCase()}
@@ -317,14 +312,14 @@ export default function Comments() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                   <Typography variant="body2" sx={{ maxWidth: 300 }}>
                     {comment.content.length > 100
                       ? comment.content.slice(0, 100) + '...'
                       : comment.content}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                   <Typography variant="caption" color="text.secondary">
                     {comment.comment_type === 'post' && comment.post_title
                       ? comment.post_title
@@ -335,63 +330,72 @@ export default function Comments() {
                       : comment.post_title || comment.life_title || '留言板'}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                   <Chip
                     label={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.label}
                     color={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color as any}
                     size="small"
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
                   <Typography variant="caption">{formatDate(comment.created_at)}</Typography>
                 </TableCell>
-                <TableCell>
-                  {comment.status === 'pending' && (
-                    <>
+                <TableCell
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{
+                    verticalAlign: 'top',
+                    py: 2,
+                    width: 150,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    {comment.status === 'pending' && (
+                      <>
+                        <IconButton
+                          size="small"
+                          color="success"
+                          onClick={() => handleStatusChange(comment.id, 'approved')}
+                          title="通过"
+                        >
+                          <Check fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="warning"
+                          onClick={() => handleStatusChange(comment.id, 'spam')}
+                          title="标记为垃圾"
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </>
+                    )}
+                    {/* 只对一级评论显示置顶按钮 */}
+                    {!comment.parent_id && comment.status === 'approved' && (
                       <IconButton
                         size="small"
-                        color="success"
-                        onClick={() => handleStatusChange(comment.id, 'approved')}
-                        title="通过"
+                        color={comment.is_pinned ? 'primary' : 'default'}
+                        onClick={() => handleTogglePin(comment.id)}
+                        title={comment.is_pinned ? '取消置顶' : '置顶'}
                       >
-                        <Check fontSize="small" />
+                        <PushPin fontSize="small" />
                       </IconButton>
-                      <IconButton
-                        size="small"
-                        color="warning"
-                        onClick={() => handleStatusChange(comment.id, 'spam')}
-                        title="标记为垃圾"
-                      >
-                        <Close fontSize="small" />
-                      </IconButton>
-                    </>
-                  )}
-                  {/* 只对一级评论显示置顶按钮 */}
-                  {!comment.parent_id && comment.status === 'approved' && (
+                    )}
                     <IconButton
                       size="small"
-                      color={comment.is_pinned ? 'primary' : 'default'}
-                      onClick={() => handleTogglePin(comment.id)}
-                      title={comment.is_pinned ? '取消置顶' : '置顶'}
+                      onClick={() => setReplyId(comment.id)}
+                      title="回复"
                     >
-                      <PushPin fontSize="small" />
+                      <Reply fontSize="small" />
                     </IconButton>
-                  )}
-                  <IconButton
-                    size="small"
-                    onClick={() => setReplyId(comment.id)}
-                    title="回复"
-                  >
-                    <Reply fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => setDeleteId(comment.id)}
-                    title="删除"
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => setDeleteId(comment.id)}
+                      title="删除"
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

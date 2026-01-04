@@ -4,7 +4,8 @@
 
 import { postApi, type Post } from '@/lib/api';
 import { ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import FilterBar from '@/components/FilterBar';
+import { Add, Delete } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -13,32 +14,30 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
+  List,
+  ListItem,
+  Pagination,
   Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Typography
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Posts() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isPC = useMediaQuery(theme.breakpoints.up('sm'));
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 从 URL 读取初始值（page 从 1 开始）
   const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
   const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
   const statusFromUrl = searchParams.get('status') || '';
+  const searchFromUrl = searchParams.get('search') || '';
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,10 +45,12 @@ export default function Posts() {
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageFromUrl);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState(statusFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   // 更新 URL 参数
-  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string }) => {
+  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string; search?: string }) => {
     const newParams = new URLSearchParams(searchParams);
 
     if (updates.page !== undefined) {
@@ -76,6 +77,14 @@ export default function Posts() {
       }
     }
 
+    if (updates.search !== undefined) {
+      if (updates.search === '') {
+        newParams.delete('search');
+      } else {
+        newParams.set('search', updates.search);
+      }
+    }
+
     setSearchParams(newParams, { replace: true });
   };
 
@@ -86,6 +95,7 @@ export default function Posts() {
         page: page,
         limit: rowsPerPage,
         status: status || undefined,
+        search: search || undefined,
       });
       setPosts(res.data.items);
       setTotal(res.data.pagination.total);
@@ -101,6 +111,7 @@ export default function Posts() {
     const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
     const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
     const statusFromUrl = searchParams.get('status') || '';
+    const searchFromUrl = searchParams.get('search') || '';
 
     setPage((prev) => {
       if (prev !== pageFromUrl) return pageFromUrl;
@@ -114,11 +125,15 @@ export default function Posts() {
       if (prev !== statusFromUrl) return statusFromUrl;
       return prev;
     });
+    setSearch((prev) => {
+      if (prev !== searchFromUrl) return searchFromUrl;
+      return prev;
+    });
   }, [searchParams]);
 
   useEffect(() => {
     fetchPosts();
-  }, [page, rowsPerPage, status]);
+  }, [page, rowsPerPage, status, search]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -136,129 +151,145 @@ export default function Posts() {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold">
           博客管理
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate(ROUTES.POST_NEW)}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
         >
           新建文章
         </Button>
       </Box>
 
       {/* 筛选 */}
-      <Paper sx={{ p: 2, mb: 2, border: 1, borderColor: 'divider' }} elevation={0}>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>状态</InputLabel>
-          <Select
-            value={status}
-            label="状态"
-            onChange={(e) => {
-              const newStatus = e.target.value;
-              setStatus(newStatus);
-              setPage(1);
-              updateSearchParams({ status: newStatus, page: 1 });
-            }}
-          >
-            <MenuItem value="">全部</MenuItem>
-            <MenuItem value="draft">草稿</MenuItem>
-            <MenuItem value="published">已发布</MenuItem>
-          </Select>
-        </FormControl>
-      </Paper>
+      <FilterBar
+        status={status}
+        searchValue={search}
+        onStatusChange={(newStatus) => {
+          setStatus(newStatus);
+          setPage(1);
+          updateSearchParams({ status: newStatus, page: 1 });
+        }}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+          updateSearchParams({ search: value, page: 1 });
+        }}
+        statusOptions={[
+          { value: '', label: '全部' },
+          { value: 'draft', label: '草稿' },
+          { value: 'published', label: '已发布' },
+        ]}
+        showSearch={isPC}
+      />
 
-      {/* 表格 */}
-      <TableContainer component={Paper} sx={{ border: 1, borderColor: 'divider' }} elevation={0}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>标题</TableCell>
-              <TableCell width={100}>状态</TableCell>
-              <TableCell width={80}>阅读量</TableCell>
-              <TableCell width={120}>发布时间</TableCell>
-              <TableCell width={120}>操作</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={500}>
-                    {post.title}
-                  </Typography>
-                  {post.tags && post.tags.length > 0 && (
-                    <Box sx={{ mt: 0.5 }}>
-                      {post.tags.map((tag) => (
-                        <Chip
-                          key={tag.id}
-                          label={tag.name}
-                          size="small"
-                          sx={{ mr: 0.5, height: 20, fontSize: 11 }}
-                        />
-                      ))}
-                    </Box>
-                  )}
-                </TableCell>
-                <TableCell>
+      {/* 列表 */}
+      <Paper
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+        elevation={0}
+      >
+        <List sx={{ p: 0 }}>
+          {posts.map((post) => (
+            <ListItem
+              key={post.id}
+              onClick={() => navigate(ROUTES.POST_EDIT(post.id))}
+              onMouseEnter={() => setHoveredId(post.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              sx={{
+                cursor: 'pointer',
+                borderBottom: 1,
+                borderColor: 'divider',
+                py: 2,
+                px: 3,
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+                '&:last-child': {
+                  borderBottom: 'none',
+                },
+              }}
+              secondaryAction={
+                hoveredId === post.id ? (
+                  <IconButton
+                    edge="end"
+                    color="error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteId(post.id);
+                    }}
+                    sx={{
+                      '&:hover': {
+                        bgcolor: 'error.main',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                ) : null
+              }
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
                   <Chip
                     label={STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.label}
                     color={STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.color as any}
                     size="small"
                   />
-                </TableCell>
-                <TableCell>{post.view_count}</TableCell>
-                <TableCell>
-                  {post.published_at ? formatDate(post.published_at) : '-'}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={() => navigate(ROUTES.POST_EDIT(post.id))}
-                  >
-                    <Edit fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => setDeleteId(post.id)}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            {posts.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <Typography color="text.secondary">暂无文章</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={total}
-          page={page - 1}
-          onPageChange={(_, p) => {
-            const newPage = p + 1;
-            setPage(newPage);
-            updateSearchParams({ page: newPage });
-          }}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            const newRowsPerPage = parseInt(e.target.value, 10);
-            setRowsPerPage(newRowsPerPage);
-            setPage(1);
-            updateSearchParams({ rowsPerPage: newRowsPerPage, page: 1 });
-          }}
-          labelRowsPerPage="每页行数"
-        />
-      </TableContainer>
+                  <Typography variant="body1" fontWeight={500} sx={{ flex: 1, minWidth: 0 }}>
+                    {post.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    {post.view_count} 阅读
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' }, minWidth: 100 }}>
+                    {post.published_at ? formatDate(post.published_at) : '-'}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ display: { xs: 'flex', sm: 'none' } }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {post.view_count} 阅读
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    •
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {post.published_at ? formatDate(post.published_at) : '-'}
+                  </Typography>
+                </Stack>
+              </Box>
+            </ListItem>
+          ))}
+          {posts.length === 0 && !loading && (
+            <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Typography color="text.secondary">暂无文章</Typography>
+            </Box>
+          )}
+        </List>
+        {total > 0 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Pagination
+              count={Math.ceil(total / rowsPerPage)}
+              page={page}
+              onChange={(_, p) => {
+                setPage(p);
+                updateSearchParams({ page: p });
+              }}
+              color="primary"
+            />
+          </Box>
+        )}
+      </Paper>
 
       {/* 删除确认对话框 */}
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>

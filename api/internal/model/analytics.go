@@ -13,14 +13,14 @@ import (
 // PageView 页面访问记录
 type PageView struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
-	PageType   string    `gorm:"size:50;index" json:"page_type"`   // home | post | life | archive | category | guestbook
-	PageID     *uint     `gorm:"index" json:"page_id"`             // 文章/记录ID
+	PageType   string    `gorm:"size:50;index" json:"page_type"` // home | post | life | archive | category | guestbook
+	PageID     *uint     `gorm:"index" json:"page_id"`           // 文章/记录ID
 	IPAddress  string    `gorm:"size:45" json:"ip_address"`
 	UserAgent  string    `gorm:"size:500" json:"user_agent"`
 	Referer    string    `gorm:"size:500" json:"referer"`
 	Country    string    `gorm:"size:50" json:"country"`
 	City       string    `gorm:"size:50" json:"city"`
-	DeviceType string    `gorm:"size:20" json:"device_type"`       // desktop | mobile | tablet
+	DeviceType string    `gorm:"size:20" json:"device_type"` // desktop | mobile | tablet
 	Browser    string    `gorm:"size:50" json:"browser"`
 	OS         string    `gorm:"size:50" json:"os"`
 	CreatedAt  time.Time `gorm:"index" json:"created_at"`
@@ -80,14 +80,16 @@ type TrackPageViewRequest struct {
 
 // OverviewVO 统计概览
 type OverviewVO struct {
-	TotalPV      int64 `json:"total_pv"`
-	TodayPV      int64 `json:"today_pv"`
-	TotalUV      int64 `json:"total_uv"`
-	TodayUV      int64 `json:"today_uv"`
-	PostCount    int64 `json:"post_count"`
-	LifeCount    int64 `json:"life_count"`
-	CommentCount int64 `json:"comment_count"`
-	TagCount     int64 `json:"tag_count"`
+	TotalPV      int64   `json:"total_pv"`
+	TodayPV      int64   `json:"today_pv"`
+	AvgPV30Days  float64 `json:"avg_pv_30_days"` // 过去30天平均PV
+	TotalUV      int64   `json:"total_uv"`
+	TodayUV      int64   `json:"today_uv"`
+	AvgUV30Days  float64 `json:"avg_uv_30_days"` // 过去30天平均UV
+	PostCount    int64   `json:"post_count"`
+	LifeCount    int64   `json:"life_count"`
+	CommentCount int64   `json:"comment_count"`
+	TagCount     int64   `json:"tag_count"`
 }
 
 // VisitTrendVO 访问趋势
@@ -99,8 +101,8 @@ type VisitTrendVO struct {
 
 // DeviceDistributionVO 设备分布
 type DeviceDistributionVO struct {
-	DeviceType string `json:"device_type"`
-	Count      int64  `json:"count"`
+	DeviceType string  `json:"device_type"`
+	Count      int64   `json:"count"`
 	Percentage float64 `json:"percentage"`
 }
 
@@ -113,10 +115,18 @@ type BrowserDistributionVO struct {
 
 // PopularContentVO 热门内容
 type PopularContentVO struct {
-	ID        uint   `json:"id"`
-	Title     string `json:"title"`
-	ViewCount int64  `json:"view_count"`
-	Type      string `json:"type"` // post | life
+	ID          uint       `json:"id"`
+	Title       string     `json:"title"`
+	Content     string     `json:"content,omitempty"` // 生活记录的内容
+	ViewCount   int64      `json:"view_count"`
+	PublishedAt *time.Time `json:"published_at"`
+	Type        string     `json:"type"` // post | life
+}
+
+// PopularVO 热门内容响应
+type PopularVO struct {
+	Posts []PopularContentVO `json:"posts"`
+	Lifes []PopularContentVO `json:"lifes"`
 }
 
 // RealtimeVisitVO 实时访问
@@ -151,4 +161,3 @@ func (e *AnalyticsEvent) SetProperties(props map[string]interface{}) error {
 	e.Properties = string(data)
 	return nil
 }
-

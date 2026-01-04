@@ -4,7 +4,8 @@
 
 import { lifeApi, type LifeRecord } from '@/lib/api';
 import { ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import FilterBar from '@/components/FilterBar';
+import { Add, Delete } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -13,32 +14,30 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
+  List,
+  ListItem,
+  Pagination,
   Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
+  Stack,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Life() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isPC = useMediaQuery(theme.breakpoints.up('sm'));
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 从 URL 读取初始值（page 从 1 开始）
   const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
   const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
   const statusFromUrl = searchParams.get('status') || '';
+  const searchFromUrl = searchParams.get('search') || '';
 
   const [records, setRecords] = useState<LifeRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,10 +45,12 @@ export default function Life() {
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageFromUrl);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState(statusFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   // 更新 URL 参数
-  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string }) => {
+  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string; search?: string }) => {
     const newParams = new URLSearchParams(searchParams);
 
     if (updates.page !== undefined) {
@@ -76,6 +77,14 @@ export default function Life() {
       }
     }
 
+    if (updates.search !== undefined) {
+      if (updates.search === '') {
+        newParams.delete('search');
+      } else {
+        newParams.set('search', updates.search);
+      }
+    }
+
     setSearchParams(newParams, { replace: true });
   };
 
@@ -86,6 +95,7 @@ export default function Life() {
         page: page,
         limit: rowsPerPage,
         status: status || undefined,
+        search: search || undefined,
       });
       setRecords(res.data.items);
       setTotal(res.data.pagination.total);
@@ -101,6 +111,7 @@ export default function Life() {
     const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
     const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
     const statusFromUrl = searchParams.get('status') || '';
+    const searchFromUrl = searchParams.get('search') || '';
 
     setPage((prev) => {
       if (prev !== pageFromUrl) return pageFromUrl;
@@ -114,11 +125,15 @@ export default function Life() {
       if (prev !== statusFromUrl) return statusFromUrl;
       return prev;
     });
+    setSearch((prev) => {
+      if (prev !== searchFromUrl) return searchFromUrl;
+      return prev;
+    });
   }, [searchParams]);
 
   useEffect(() => {
     fetchRecords();
-  }, [page, rowsPerPage, status]);
+  }, [page, rowsPerPage, status, search]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -136,141 +151,177 @@ export default function Life() {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, pb: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold">
           生活记录
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate(ROUTES.LIFE_NEW)}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
         >
           新建记录
         </Button>
       </Box>
 
       {/* 筛选 */}
-      <Paper sx={{ p: 2, mb: 2, border: 1, borderColor: 'divider' }} elevation={0}>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>状态</InputLabel>
-          <Select
-            value={status}
-            label="状态"
-            onChange={(e) => {
-              const newStatus = e.target.value;
-              setStatus(newStatus);
-              setPage(1);
-              updateSearchParams({ status: newStatus, page: 1 });
-            }}
-          >
-            <MenuItem value="">全部</MenuItem>
-            <MenuItem value="draft">草稿</MenuItem>
-            <MenuItem value="published">已发布</MenuItem>
-          </Select>
-        </FormControl>
-      </Paper>
+      <FilterBar
+        status={status}
+        searchValue={search}
+        onStatusChange={(newStatus) => {
+          setStatus(newStatus);
+          setPage(1);
+          updateSearchParams({ status: newStatus, page: 1 });
+        }}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+          updateSearchParams({ search: value, page: 1 });
+        }}
+        statusOptions={[
+          { value: '', label: '全部' },
+          { value: 'draft', label: '草稿' },
+          { value: 'published', label: '已发布' },
+        ]}
+        showSearch={isPC}
+      />
 
-      {/* 表格 */}
-      <TableContainer component={Paper} sx={{ border: 1, borderColor: 'divider' }} elevation={0}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell width={80}>封面</TableCell>
-              <TableCell>内容预览</TableCell>
-              <TableCell width={100}>状态</TableCell>
-              <TableCell width={120}>发布时间</TableCell>
-              <TableCell width={100}>操作</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {records.map((record) => (
-              <TableRow key={record.id} hover>
-                <TableCell>
+      {/* 列表 */}
+      <Paper
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+        elevation={0}
+      >
+        <List sx={{ p: 0 }}>
+          {records.map((record) => (
+            <ListItem
+              key={record.id}
+              onClick={() => navigate(ROUTES.LIFE_EDIT(record.id))}
+              onMouseEnter={() => setHoveredId(record.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              sx={{
+                cursor: 'pointer',
+                borderBottom: 1,
+                borderColor: 'divider',
+                py: 2,
+                px: 3,
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+                '&:last-child': {
+                  borderBottom: 'none',
+                },
+              }}
+              secondaryAction={
+                hoveredId === record.id ? (
+                  <IconButton
+                    edge="end"
+                    color="error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteId(record.id);
+                    }}
+                    sx={{
+                      '&:hover': {
+                        bgcolor: 'error.main',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                ) : null
+              }
+            >
+              <Stack direction="row" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
+                {/* 封面 */}
+                <Box
+                  sx={{
+                    width: { xs: 60, sm: 80 },
+                    height: { xs: 45, sm: 60 },
+                    flexShrink: 0,
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    bgcolor: 'grey.800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   {record.cover_image ? (
                     <Box
                       component="img"
                       src={record.cover_image}
-                      sx={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 1 }}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
                     />
                   ) : (
-                    <Box
+                    <Typography variant="caption" color="text.secondary">
+                      无
+                    </Typography>
+                  )}
+                </Box>
+                {/* 内容 */}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+                    <Chip
+                      label={STATUS_LABELS[record.status as keyof typeof STATUS_LABELS]?.label}
+                      color={STATUS_LABELS[record.status as keyof typeof STATUS_LABELS]?.color as any}
+                      size="small"
+                    />
+                    <Typography
+                      variant="body2"
                       sx={{
-                        width: 60,
-                        height: 40,
-                        bgcolor: 'grey.800',
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      <Typography variant="caption" color="text.secondary">
-                        无
-                      </Typography>
-                    </Box>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ maxWidth: 400 }} noWrap>
-                    {record.content.replace(/[#*`\n]/g, ' ').slice(0, 80)}...
+                      {record.content.replace(/[#*`\n]/g, ' ').slice(0, 80)}
+                      {record.content.length > 80 ? '...' : ''}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' }, minWidth: 100 }}>
+                      {record.published_at ? formatDate(record.published_at) : '-'}
+                    </Typography>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'block', md: 'none' } }}>
+                    {record.published_at ? formatDate(record.published_at) : '-'}
                   </Typography>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={STATUS_LABELS[record.status as keyof typeof STATUS_LABELS]?.label}
-                    color={STATUS_LABELS[record.status as keyof typeof STATUS_LABELS]?.color as any}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  {record.published_at ? formatDate(record.published_at) : '-'}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={() => navigate(ROUTES.LIFE_EDIT(record.id))}
-                  >
-                    <Edit fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => setDeleteId(record.id)}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            {records.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <Typography color="text.secondary">暂无记录</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={total}
-          page={page - 1}
-          onPageChange={(_, p) => {
-            const newPage = p + 1;
-            setPage(newPage);
-            updateSearchParams({ page: newPage });
-          }}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            const newRowsPerPage = parseInt(e.target.value, 10);
-            setRowsPerPage(newRowsPerPage);
-            setPage(1);
-            updateSearchParams({ rowsPerPage: newRowsPerPage, page: 1 });
-          }}
-          labelRowsPerPage="每页行数"
-        />
-      </TableContainer>
+                </Box>
+              </Stack>
+            </ListItem>
+          ))}
+          {records.length === 0 && !loading && (
+            <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Typography color="text.secondary">暂无记录</Typography>
+            </Box>
+          )}
+        </List>
+        {total > 0 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Pagination
+              count={Math.ceil(total / rowsPerPage)}
+              page={page}
+              onChange={(_, p) => {
+                setPage(p);
+                updateSearchParams({ page: p });
+              }}
+              color="primary"
+            />
+          </Box>
+        )}
+      </Paper>
 
       {/* 删除确认对话框 */}
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>

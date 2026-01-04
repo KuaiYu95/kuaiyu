@@ -29,8 +29,6 @@ export default function Tags() {
 
   // 表单数据
   const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
   const [color, setColor] = useState('#60a5fa');
 
   const fetchTags = async () => {
@@ -53,21 +51,17 @@ export default function Tags() {
     if (tag) {
       setEditingTag(tag);
       setName(tag.name);
-      setSlug(tag.slug);
-      setDescription(tag.description || '');
       setColor(tag.color || '#60a5fa');
     } else {
       setEditingTag(null);
       setName('');
-      setSlug('');
-      setDescription('');
       setColor('#60a5fa');
     }
     setDialogOpen(true);
   };
 
   const handleSubmit = async () => {
-    const data = { name, slug, description, color };
+    const data = { name, color };
     try {
       if (editingTag) {
         await tagApi.update(editingTag.id, data);
@@ -116,22 +110,22 @@ export default function Tags() {
               }}
               elevation={0}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: tag.color || 'primary.main',
+                    }}
+                  />
                   <Typography variant="subtitle1" fontWeight={600}>
                     {tag.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    /{tag.slug}
                   </Typography>
                 </Box>
                 <Chip label={`${tag.post_count || 0} 篇`} size="small" />
               </Box>
-              {tag.description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {tag.description}
-                </Typography>
-              )}
               <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
                 <IconButton size="small" onClick={() => openDialog(tag)}>
                   <Edit fontSize="small" />
@@ -163,23 +157,6 @@ export default function Tags() {
             onChange={(e) => setName(e.target.value)}
             required
             sx={{ mt: 1, mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="URL 标识 (slug)"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="留空自动生成"
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="描述"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            multiline
-            rows={2}
-            sx={{ mb: 2 }}
           />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2">颜色</Typography>

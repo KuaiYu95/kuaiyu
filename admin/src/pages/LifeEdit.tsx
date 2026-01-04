@@ -17,7 +17,7 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import MDEditor from '@uiw/react-md-editor';
+import MarkdownEditor from '@/components/MarkdownEditor';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -99,16 +99,16 @@ export default function LifeEdit() {
   }
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate(ROUTES.LIFE)}
-          sx={{ mr: 2 }}
+          sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
         >
           返回
         </Button>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold">
           {isEdit ? '编辑记录' : '新建记录'}
         </Typography>
       </Box>
@@ -120,25 +120,29 @@ export default function LifeEdit() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Box sx={{ display: 'flex', gap: 3 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 3,
+          }}
+        >
           {/* 左侧主内容 */}
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, width: { xs: '100%', md: 'auto' } }}>
             <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 内容
               </Typography>
-              <Box data-color-mode="dark">
-                <MDEditor
-                  value={content}
-                  onChange={(val) => setContent(val || '')}
-                  height={500}
-                />
-              </Box>
+              <MarkdownEditor
+                value={content}
+                onChange={setContent}
+                height={500}
+              />
             </Paper>
           </Box>
 
           {/* 右侧设置 */}
-          <Box sx={{ width: 300 }}>
+          <Box sx={{ width: { xs: '100%', md: 300 } }}>
             <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
               <Typography variant="subtitle2" sx={{ mb: 2 }}>
                 发布设置

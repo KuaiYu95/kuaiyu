@@ -127,8 +127,8 @@ export interface LifeRecord {
 export interface Tag {
   id: number;
   name: string;
-  slug: string;
-  description: string;
+  slug?: string; // 已废弃，不再使用
+  description?: string; // 已废弃，不再使用
   color: string;
   post_count?: number;
 }
@@ -157,8 +157,10 @@ export interface Comment {
 export interface Overview {
   total_pv: number;
   today_pv: number;
+  avg_pv_30_days: number; // 过去30天平均PV
   total_uv: number;
   today_uv: number;
+  avg_uv_30_days: number; // 过去30天平均UV
   post_count: number;
   life_count: number;
   comment_count: number;
@@ -181,7 +183,7 @@ export const authApi = {
 
 // 文章
 export const postApi = {
-  list: (params?: { page?: number; limit?: number; status?: string }) =>
+  list: (params?: { page?: number; limit?: number; status?: string; search?: string }) =>
     api.get<any, ApiResponse<PagedData<Post>>>('/api/admin/posts', { params }),
   get: (id: number) => api.get<any, ApiResponse<Post>>(`/api/admin/posts/${id}`),
   create: (data: Partial<Post> & { tag_ids?: number[] }) =>
@@ -193,7 +195,7 @@ export const postApi = {
 
 // 生活记录
 export const lifeApi = {
-  list: (params?: { page?: number; limit?: number; status?: string }) =>
+  list: (params?: { page?: number; limit?: number; status?: string; search?: string }) =>
     api.get<any, ApiResponse<PagedData<LifeRecord>>>('/api/admin/life', { params }),
   get: (id: number) => api.get<any, ApiResponse<LifeRecord>>(`/api/admin/life/${id}`),
   create: (data: Partial<LifeRecord>) =>
@@ -238,11 +240,20 @@ export const uploadApi = {
   },
 };
 
+// 热门内容类型
+export interface PopularContentVO {
+  id: number;
+  title: string;
+  content?: string; // 生活记录的内容
+  view_count: number;
+  published_at: string | null;
+}
+
 // 统计
 export const analyticsApi = {
   overview: () => api.get<any, ApiResponse<Overview>>('/api/admin/analytics/overview'),
   visits: () => api.get<any, ApiResponse<{ date: string; pv: number; uv: number }[]>>('/api/admin/analytics/visits'),
-  popular: () => api.get<any, ApiResponse<{ id: number; title: string; view_count: number }[]>>('/api/admin/analytics/popular'),
+  popular: () => api.get<any, ApiResponse<{ posts: PopularContentVO[]; lifes: PopularContentVO[] }>>('/api/admin/analytics/popular'),
   charts: (chartType: string) =>
     api.get<any, ApiResponse<any>>('/api/admin/analytics/charts', { params: { chart_type: chartType } }),
 };
