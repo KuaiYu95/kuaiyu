@@ -3,7 +3,7 @@
 import { ContributionDay, ContributionItem, contributionApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 interface ContributionCalendarProps {
   type: 'post' | 'life' | 'all';
@@ -24,8 +24,9 @@ export default function ContributionCalendar({
   const [hoverInfo, setHoverInfo] = useState<{ day: ContributionDay | null; date: string | null; x: number; y: number } | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [squareSize, setSquareSize] = useState(12);
+  const [squareSize, setSquareSize] = useState(0);
   const [gap, setGap] = useState(4);
+  const [sizeCalculated, setSizeCalculated] = useState(false);
 
   // 计算最近365天的日期范围
   const dateRange = useMemo(() => {
@@ -68,22 +69,6 @@ export default function ContributionCalendar({
     fetchData();
   }, [type, dateRange]);
 
-  // 计算方块大小和间隔
-  useEffect(() => {
-    const calculateSize = () => {
-      if (!containerRef.current) return;
-      const width = containerRef.current.offsetWidth;
-      const weeks = 53;
-      const isMobile = window.innerWidth < 768;
-      const currentGap = isMobile ? 1 : 4;
-      setGap(currentGap);
-      setSquareSize((width - (weeks - 1) * currentGap) / weeks);
-    };
-    calculateSize();
-    window.addEventListener('resize', calculateSize);
-    return () => window.removeEventListener('resize', calculateSize);
-  }, [data]);
-
   // 生成365天的数据
   const days = useMemo(() => {
     const dataMap = new Map(data.map(d => [d.date, d]));
@@ -100,6 +85,40 @@ export default function ContributionCalendar({
     }
     return result;
   }, [data, dateRange]);
+
+  // 计算方块大小和间隔 - 使用 useLayoutEffect 在绘制前同步计算
+  useLayoutEffect(() => {
+    if (loading || days.length === 0) {
+      setSizeCalculated(false);
+      return;
+    }
+
+    const calculateSize = () => {
+      if (!containerRef.current) {
+        setSizeCalculated(false);
+        return;
+      }
+      const width = containerRef.current.offsetWidth;
+      if (width === 0) {
+        setSizeCalculated(false);
+        return;
+      }
+
+      const weeks = 53;
+      const isMobile = window.innerWidth < 768;
+      const currentGap = isMobile ? 1 : 4;
+      setGap(currentGap);
+      const calculatedSize = (width - (weeks - 1) * currentGap) / weeks;
+      setSquareSize(calculatedSize);
+      setSizeCalculated(true);
+    };
+
+    calculateSize();
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', calculateSize);
+    return () => window.removeEventListener('resize', calculateSize);
+  }, [data, loading, days.length]);
 
   // 生成周数组
   const weeks = useMemo(() => {
@@ -211,9 +230,9 @@ export default function ContributionCalendar({
     return { top, left };
   }, [selectedDay, selectedElementRect]);
 
-  if (loading || days.length === 0) {
+  if (loading || days.length === 0 || !sizeCalculated || squareSize === 0) {
     return (
-      <div className={`flex items-center justify-center py-12 ${className}`}>
+      <div className={`flex items-center justify-center py-12 ${className}`} ref={containerRef}>
         <div className="text-text-secondary">加载中...</div>
       </div>
     );

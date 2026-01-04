@@ -67,11 +67,11 @@ export default async function LocaleLayout({
   const config = DEFAULT_CONFIG;
 
   return (
-    <html lang={locale} className="dark" data-scroll-behavior="smooth" style={{ backgroundColor: '#0a0a0a' }}>
-      <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary" style={{ backgroundColor: '#0a0a0a' }}>
+    <html lang={locale} className="dark" data-scroll-behavior="smooth">
+      <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
         <NextIntlClientProvider messages={messages}>
           <Header locale={locale} config={config} />
-          <main className="flex-1 py-16" style={{ backgroundColor: '#0a0a0a' }}>
+          <main className="flex-1 py-16">
             {children}
           </main>
           <Footer config={config} locale={locale} />

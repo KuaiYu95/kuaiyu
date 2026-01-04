@@ -216,12 +216,12 @@ export default function Header({ locale, config }: HeaderProps) {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-text-primary"
+            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
             <svg
-              className="w-6 h-6"
+              className="w-6 h-6 transition-transform"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -255,7 +255,8 @@ export default function Header({ locale, config }: HeaderProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 md:hidden"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -264,49 +265,78 @@ export default function Header({ locale, config }: HeaderProps) {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed top-0 right-0 bottom-0 w-64 bg-bg-secondary border-l border-border md:hidden"
+              transition={{ type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className="fixed top-0 right-0 bottom-0 w-80 bg-bg-primary border-l border-border/30 shadow-2xl md:hidden z-50"
             >
-              <div className="flex flex-col h-full p-6">
-                <button
-                  className="self-end p-2 text-text-primary mb-6"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-
-                <div className="flex flex-col gap-4">
-                  {NAV_ITEMS.map((item) => (
-                    <Link
-                      key={item.key}
-                      href={`/${locale}${item.href}`}
-                      className={cn(
-                        'text-lg font-medium py-2 border-b border-border transition-colors',
-                        isActive(item.href)
-                          ? 'text-accent-primary border-accent-primary'
-                          : 'text-text-secondary hover:text-text-primary'
-                      )}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {t(item.key)}
-                    </Link>
-                  ))}
+              <div className="flex flex-col h-full">
+                {/* Header with close button */}
+                <div className="flex items-center justify-end p-4 border-b border-border/30">
+                  <button
+                    className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="关闭菜单"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                <div className="mt-auto">
-                  <div className="flex flex-col gap-2">
-                    <div className="text-xs text-text-secondary mb-1">语言</div>
+                {/* Navigation */}
+                <div className="flex-1 overflow-y-auto px-4 py-4">
+                  <nav className="flex flex-col gap-1">
+                    {NAV_ITEMS.map((item, index) => (
+                      <motion.div
+                        key={item.key}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03, duration: 0.2 }}
+                      >
+                        <Link
+                          href={`/${locale}${item.href}`}
+                          className={cn(
+                            'relative flex items-center px-4 py-3 rounded-lg text-base transition-all duration-200',
+                            isActive(item.href)
+                              ? 'text-accent-primary bg-accent-primary/5'
+                              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                          )}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {isActive(item.href) && (
+                            <motion.div
+                              layoutId="mobileActiveIndicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-primary rounded-r-full"
+                            />
+                          )}
+                          <span className="font-medium">{t(item.key)}</span>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Language Switcher */}
+                <div className="border-t border-border/30 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lottie
+                      animationData={languageAnimation}
+                      width={16}
+                      height={16}
+                      loop={false}
+                      autoplay={true}
+                    />
+                    <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">{tLang('title')}</span>
+                  </div>
+                  <div className="flex gap-2">
                     {LOCALES.map((l) => (
                       <Link
                         key={l}
                         href={getLanguageLink(l)}
                         className={cn(
-                          'flex items-center gap-2 px-4 py-2.5 text-sm rounded-lg transition-colors',
+                          'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                           l === locale
-                            ? 'bg-accent-primary/10 text-accent-primary font-medium'
-                            : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                            ? 'bg-accent-primary text-white shadow-md'
+                            : 'bg-bg-hover text-text-secondary hover:text-text-primary hover:bg-bg-hover/80'
                         )}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >

@@ -12,8 +12,8 @@ const config: Config = {
       colors: {
         // 背景色
         bg: {
-          primary: '#0a0a0a',
-          secondary: '#1a1a1a',
+          primary: '#141414',
+          secondary: '#1f1f1f',
           hover: '#252525',
         },
         // 文字色

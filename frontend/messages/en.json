@@ -111,6 +111,7 @@
     "copyright": "© {year} {name}. All rights reserved."
   },
   "language": {
+    "title": "Language",
     "zh": "中文",
     "en": "English"
   },
