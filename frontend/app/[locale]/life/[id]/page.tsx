@@ -15,10 +15,11 @@ import remarkGfm from 'remark-gfm';
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const res = await publicApi.life.get(parseInt(params.id));
+    const res = await publicApi.life.get(parseInt(id));
     const record: LifeRecord = res.data;
     // 使用内容前30字作为标题
     const title = record.content.replace(/[#*`\n]/g, ' ').slice(0, 30) + '...';
@@ -32,10 +33,11 @@ export async function generateMetadata({
 }
 
 export default async function LifeDetailPage({
-  params: { locale, id },
+  params,
 }: {
-  params: { locale: string; id: string };
+  params: Promise<{ locale: string; id: string }>;
 }) {
+  const { locale, id } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('life');
 

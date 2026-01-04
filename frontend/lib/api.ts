@@ -252,8 +252,17 @@ export interface ContributionCalendarResponse {
 
 export const contributionApi = {
   // 获取贡献日历数据
-  getCalendar: (params?: { type?: 'post' | 'life' | 'all'; year?: number }) =>
-    api.get<any, ApiResponse<ContributionCalendarResponse>>('/api/contribution', { params }),
+  getCalendar: (params?: { type?: 'post' | 'life' | 'all'; year?: number }) => {
+    // 将 year 转换为字符串，因为后端期望字符串格式
+    const queryParams: Record<string, string> = {};
+    if (params?.type) {
+      queryParams.type = params.type;
+    }
+    if (params?.year) {
+      queryParams.year = params.year.toString();
+    }
+    return api.get<any, ApiResponse<ContributionCalendarResponse>>('/api/contribution', { params: queryParams });
+  },
 };
 
 // ===========================================

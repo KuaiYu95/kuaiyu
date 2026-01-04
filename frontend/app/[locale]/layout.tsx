@@ -44,13 +44,14 @@ export const metadata: Metadata = {
 
 interface LocaleLayoutProps {
   children: ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
 export default async function LocaleLayout({
   children,
-  params: { locale },
+  params,
 }: LocaleLayoutProps) {
+  const { locale } = await params;
   // 验证语言
   if (!locales.includes(locale as any)) {
     notFound();
@@ -66,7 +67,7 @@ export default async function LocaleLayout({
   const config = DEFAULT_CONFIG;
 
   return (
-    <html lang={locale} className="dark" style={{ backgroundColor: '#0a0a0a' }}>
+    <html lang={locale} className="dark" data-scroll-behavior="smooth" style={{ backgroundColor: '#0a0a0a' }}>
       <body className="min-h-screen flex flex-col bg-bg-primary text-text-primary" style={{ backgroundColor: '#0a0a0a' }}>
         <NextIntlClientProvider messages={messages}>
           <Header locale={locale} config={config} />

@@ -19,10 +19,11 @@ import BackButton from './BackButton';
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string; slug: string };
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const res = await publicApi.posts.get(params.slug);
+    const res = await publicApi.posts.get(slug);
     const post: Post = res.data;
     return {
       title: post.title,
@@ -39,10 +40,11 @@ export async function generateMetadata({
 }
 
 export default async function BlogDetailPage({
-  params: { locale, slug },
+  params,
 }: {
-  params: { locale: string; slug: string };
+  params: Promise<{ locale: string; slug: string }>;
 }) {
+  const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('blog');
 

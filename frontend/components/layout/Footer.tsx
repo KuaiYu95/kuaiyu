@@ -30,6 +30,8 @@ export default function Footer({ config, locale }: FooterProps) {
                   src={config.site_logo}
                   alt={config.site_name || ''}
                   fill
+                  loading="eager"
+                  sizes="48px"
                   className="object-cover rounded-full"
                 />
               </div>
@@ -55,19 +57,15 @@ export default function Footer({ config, locale }: FooterProps) {
                 name: config?.site_name || 'Yu.kuai',
               })}
             </span>
-            {config?.site_icp && (
-              <>
-                <span className="text-text-tertiary">|</span>
-                <a
-                  href="https://beian.miit.gov.cn/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-text-primary"
-                >
-                  {config.site_icp}
-                </a>
-              </>
-            )}
+            <span className="text-text-tertiary">|</span>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-secondary hover:text-text-primary"
+            >
+              浙ICP备2021035401号
+            </a>
           </p>
         </div>
       </div>

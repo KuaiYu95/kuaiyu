@@ -2,7 +2,6 @@
 
 import languageAnimation from '@/assets/icons/system-regular-145-language-hover-language.json';
 import { Lottie } from '@/components/ui';
-import SafeImage from '@/components/ui/SafeImage';
 import { SiteConfig } from '@/lib/api';
 import { LOCALES, NAV_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -93,16 +92,18 @@ export default function Header({ locale, config }: HeaderProps) {
             href={`/${locale}`}
             className="flex items-center gap-2 text-xl font-bold text-text-accent hover:text-accent-primary transition-colors"
           >
-            {config?.site_logo ? (
+            {/* {config?.site_logo ? (
               <div className="relative w-8 h-8">
                 <SafeImage
                   src={config.site_logo}
                   alt={config.site_name || 'Logo'}
                   fill
+                  loading="eager"
+                  sizes="32px"
                   className="object-contain"
                 />
               </div>
-            ) : null}
+            ) : null} */}
             <span>{config?.site_name || 'Yu.kuai'}</span>
           </Link>
 

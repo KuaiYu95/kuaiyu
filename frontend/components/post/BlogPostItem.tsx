@@ -39,6 +39,7 @@ export default function BlogPostItem({
                   src={post.cover_image}
                   alt={post.title}
                   fill
+                  sizes="128px"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>

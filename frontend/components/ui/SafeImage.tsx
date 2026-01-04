@@ -12,6 +12,7 @@ interface SafeImageProps {
   className?: string;
   priority?: boolean;
   sizes?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 /**
@@ -27,6 +28,7 @@ export default function SafeImage({
   className,
   priority,
   sizes,
+  loading,
 }: SafeImageProps) {
   const [useFallback, setUseFallback] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -67,6 +69,7 @@ export default function SafeImage({
       className={className}
       priority={priority}
       sizes={sizes}
+      loading={loading}
       onError={() => setUseFallback(true)}
     />
   );

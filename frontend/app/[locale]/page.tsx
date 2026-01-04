@@ -13,10 +13,11 @@ export const metadata: Metadata = {
 };
 
 interface HomePageProps {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
-export default async function HomePage({ params: { locale } }: HomePageProps) {
+export default async function HomePage({ params }: HomePageProps) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('home');
 
@@ -33,8 +34,10 @@ export default async function HomePage({ params: { locale } }: HomePageProps) {
               src={config.site_logo}
               alt={config.site_name || '头像'}
               fill
+              sizes="112px"
               className="object-cover rounded-full ring-4 ring-border hover:ring-accent-primary transition-all duration-300 hover:scale-105"
               priority
+              loading="eager"
             />
           </div>
         )}

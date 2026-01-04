@@ -11,7 +11,8 @@ import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('blog');
   return {
@@ -21,16 +22,18 @@ export async function generateMetadata({ params: { locale } }: { params: { local
 }
 
 export default async function BlogPage({
-  params: { locale },
+  params,
   searchParams,
 }: {
-  params: { locale: string };
-  searchParams: { page?: string; tag?: string };
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ page?: string; tag?: string }>;
 }) {
+  const { locale } = await params;
+  const resolvedSearchParams = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('blog');
-  const page = parseInt(searchParams.page || '1');
-  const tag = searchParams.tag;
+  const page = parseInt(resolvedSearchParams.page || '1');
+  const tag = resolvedSearchParams.tag;
 
   let posts: Post[] = [];
   let total = 0;

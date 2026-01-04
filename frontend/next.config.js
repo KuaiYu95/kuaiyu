@@ -4,6 +4,18 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // API 代理配置（仅开发环境）
+  async rewrites() {
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:8080/api/:path*',
+        },
+      ];
+    }
+    return [];
+  },
   // 图片优化配置
   images: {
     remotePatterns: [
