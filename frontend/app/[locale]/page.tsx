@@ -1,5 +1,4 @@
 import ContributionCalendar from '@/components/contribution/ContributionCalendar';
-import SafeImage from '@/components/ui/SafeImage';
 import { DEFAULT_CONFIG } from '@/lib/config';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -27,7 +26,7 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <div className="container-content pt-12 pb-0 space-y-16">
       {/* 首屏区域 */}
-      <section className="text-center py-12 animate-fade-up">
+      {/* <section className="text-center py-12 animate-fade-up">
         {config.site_logo && (
           <div className="relative w-28 h-28 mx-auto mb-6">
             <SafeImage
@@ -44,10 +43,10 @@ export default async function HomePage({ params }: HomePageProps) {
         <h1 className="text-3xl font-bold text-text-accent mb-4">
           {config.site_name || 'Yu.kuai'}
         </h1>
-      </section>
+      </section> */}
 
       {/* 贡献日历 */}
-      <section className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
+      <section className="animate-fade-up py-12" style={{ animationDelay: '0.1s' }}>
         <ContributionCalendar type="all" locale={locale} />
       </section>
     </div>

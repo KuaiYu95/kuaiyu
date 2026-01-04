@@ -72,19 +72,12 @@ export default function Header({ locale, config }: HeaderProps) {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-border',
         isScrolled
           ? 'bg-bg-primary/80 backdrop-blur-lg shadow-sm'
           : 'bg-transparent'
       )}
     >
-      <div
-        className={cn(
-          'absolute bottom-0 left-0 right-0 h-px transition-opacity duration-300',
-          isScrolled ? 'opacity-20' : 'opacity-0'
-        )}
-        style={{ backgroundColor: '#2a2a2a' }}
-      />
       <nav className="container-content">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
