@@ -2,23 +2,25 @@
 // 标签管理页面
 // ===========================================
 
-import { useEffect, useState } from 'react';
+import { tagApi, type Tag } from '@/lib/api';
+import { Add, Edit } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Paper,
-  Grid,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  IconButton,
+  Card,
+  CardContent,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  TextField,
+  Typography
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
-import { tagApi, type Tag } from '@/lib/api';
+import { useEffect, useState } from 'react';
 
 export default function Tags() {
   const [tags, setTags] = useState<Tag[]>([]);
@@ -26,6 +28,7 @@ export default function Tags() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   // 表单数据
   const [name, setName] = useState('');
@@ -87,64 +90,160 @@ export default function Tags() {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">
-          标签管理
-        </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => openDialog()}>
-          新建标签
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => openDialog()}
+          size="small"
+          sx={{
+            minWidth: { xs: 'auto', sm: 100 },
+            px: { xs: 1, sm: 2 },
+            '& .MuiButton-startIcon': {
+              margin: { xs: 0, sm: '0 4px 0 -4px' },
+            },
+          }}
+        >
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            新建标签
+          </Box>
         </Button>
       </Box>
 
-      <Grid container spacing={2}>
-        {tags.map((tag) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={tag.id}>
-            <Paper
-              sx={{
-                p: 2,
-                border: 1,
-                borderColor: 'divider',
-                borderLeft: 4,
-                borderLeftColor: tag.color || 'primary.main',
-              }}
-              elevation={0}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          {tags.map((tag) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={tag.id}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                  transition: 'transform 0.2s ease, boxShadow 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                  },
+                }}
+                onMouseEnter={() => setHoveredId(tag.id)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 2,
+                    '&:last-child': {
+                      pb: 2,
+                    },
+                  }}
+                >
                   <Box
                     sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 4,
+                      height: '100%',
                       bgcolor: tag.color || 'primary.main',
+                      borderRadius: '4px 0 0 4px',
                     }}
                   />
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {tag.name}
-                  </Typography>
-                </Box>
-                <Chip label={`${tag.post_count || 0} 篇`} size="small" />
-              </Box>
-              <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                <IconButton size="small" onClick={() => openDialog(tag)}>
-                  <Edit fontSize="small" />
-                </IconButton>
-                <IconButton size="small" color="error" onClick={() => setDeleteId(tag.id)}>
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
-        {tags.length === 0 && !loading && (
-          <Grid item xs={12}>
-            <Paper sx={{ p: 4, textAlign: 'center', border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography color="text.secondary">暂无标签</Typography>
-            </Paper>
-          </Grid>
-        )}
-      </Grid>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          bgcolor: tag.color || 'primary.main',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 500,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {tag.name}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(tag.id);
+                      }}
+                      sx={{
+                        minWidth: 'auto',
+                        height: 24,
+                        lineHeight: 1,
+                        px: 1,
+                        color: 'text.secondary',
+                        opacity: hoveredId === tag.id ? 1 : 0,
+                        visibility: hoveredId === tag.id ? 'visible' : 'hidden',
+                        transition: 'opacity 0.2s ease, visibility 0.2s ease',
+                        '&:hover': {
+                          color: 'error.main',
+                          bgcolor: 'transparent',
+                        },
+                      }}
+                    >
+                      删除
+                    </Button>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Chip
+                      label={`${tag.post_count || 0} 篇`}
+                      size="small"
+                      sx={{
+                        height: 20,
+                        fontSize: '0.65rem',
+                        borderRadius: 1,
+                        px: 0.5,
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDialog(tag);
+                      }}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        fontSize: 16,
+                      }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+          {tags.length === 0 && !loading && (
+            <Grid item xs={12}>
+              <Card>
+                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography color="text.secondary">暂无标签</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+        </Grid>
+      )}
 
       {/* 编辑对话框 */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
@@ -157,19 +256,40 @@ export default function Tags() {
             onChange={(e) => setName(e.target.value)}
             required
             sx={{ mt: 1, mb: 2 }}
+            autoFocus
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2">颜色</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <Typography variant="body2" sx={{ minWidth: 40 }}>
+              颜色
+            </Typography>
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              style={{ width: 50, height: 30, border: 'none', cursor: 'pointer' }}
+              style={{
+                width: 50,
+                height: 36,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                padding: 0,
+              }}
             />
-            <Chip label="预览" sx={{ bgcolor: color, color: '#fff' }} />
+            <Chip
+              label="预览"
+              sx={{
+                bgcolor: color,
+                color: '#fff',
+                height: 24,
+                '&:hover': {
+                  bgcolor: color,
+                },
+              }}
+            />
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setDialogOpen(false)}>取消</Button>
           <Button onClick={handleSubmit} variant="contained" disabled={!name.trim()}>
             保存
@@ -180,10 +300,14 @@ export default function Tags() {
       {/* 删除确认对话框 */}
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
         <DialogTitle>确认删除</DialogTitle>
-        <DialogContent>确定要删除这个标签吗？</DialogContent>
-        <DialogActions>
+        <DialogContent>
+          <Typography>确定要删除这个标签吗？此操作不可恢复。</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setDeleteId(null)}>取消</Button>
-          <Button onClick={handleDelete} color="error">删除</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            删除
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -2,78 +2,62 @@
 // 评论管理页面
 // ===========================================
 
-import { useToast } from '@/components/Toast';
 import FilterBar from '@/components/FilterBar';
+import { useToast } from '@/components/Toast';
 import { commentApi, type Comment } from '@/lib/api';
 import { STATUS_LABELS } from '@/lib/constants';
-import { Check, Close, Delete, PushPin, Reply } from '@mui/icons-material';
+import { CalendarToday, Check, Close, Delete, PushPin, Reply } from '@mui/icons-material';
 import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardContent,
   Checkbox,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  Grid,
   IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
+  Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export default function Comments() {
   const toast = useToast();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isPC = useMediaQuery(theme.breakpoints.up('sm'));
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 从 URL 读取初始值（page 从 1 开始）
-  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
-  const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
   const statusFromUrl = searchParams.get('status') || '';
   const isPinnedFromUrl = searchParams.get('isPinned');
   const isPinnedInitial = isPinnedFromUrl === 'true' ? true : isPinnedFromUrl === 'false' ? false : undefined;
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(pageFromUrl);
-  const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageFromUrl);
-  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [status, setStatus] = useState(statusFromUrl);
   const [isPinned, setIsPinned] = useState<boolean | undefined>(isPinnedInitial);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [replyId, setReplyId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
-  // 更新 URL 参数
-  const updateSearchParams = (updates: { page?: number; rowsPerPage?: number; status?: string; isPinned?: boolean | undefined | null }) => {
+  const limit = 20;
+
+  const updateSearchParams = (updates: { status?: string; isPinned?: boolean | undefined | null }) => {
     const newParams = new URLSearchParams(searchParams);
-
-    if (updates.page !== undefined) {
-      if (updates.page === 1) {
-        newParams.delete('page');
-      } else {
-        newParams.set('page', updates.page.toString());
-      }
-    }
-
-    if (updates.rowsPerPage !== undefined) {
-      if (updates.rowsPerPage === 10) {
-        newParams.delete('rowsPerPage');
-      } else {
-        newParams.set('rowsPerPage', updates.rowsPerPage.toString());
-      }
-    }
 
     if (updates.status !== undefined) {
       if (updates.status === '') {
@@ -95,49 +79,70 @@ export default function Comments() {
     setSearchParams(newParams, { replace: true });
   };
 
-  const fetchComments = async () => {
-    setLoading(true);
+  const isLoadingRef = useRef(false);
+
+  const fetchComments = async (reset = false) => {
+    if (reset) {
+      setLoading(true);
+      setPage(1);
+      setComments([]);
+      setHasMore(true);
+      pageRef.current = 1;
+      hasMoreRef.current = true;
+      isLoadingRef.current = true;
+    } else {
+      if (isLoadingRef.current || !hasMore) {
+        return;
+      }
+      isLoadingRef.current = true;
+      setLoadingMore(true);
+    }
+
     try {
+      const currentPage = reset ? 1 : pageRef.current;
       const params: any = {
-        page: page,
-        limit: rowsPerPage,
+        page: currentPage,
+        limit: limit,
       };
 
       if (status) {
         params.status = status;
       }
 
-      // 只有当 isPinned 为 true 时才传递参数
       if (isPinned === true) {
         params.is_pinned = true;
       }
 
       const res = await commentApi.list(params);
-      setComments(res.data.items);
-      setTotal(res.data.pagination.total);
+
+      if (reset) {
+        setComments(res.data.items);
+      } else {
+        setComments((prev) => [...prev, ...res.data.items]);
+      }
+
+      const totalPages = res.data.pagination.totalPages || Math.ceil(res.data.pagination.total / limit);
+      const nextPage = currentPage + 1;
+      const newHasMore = currentPage < totalPages;
+
+      setHasMore(newHasMore);
+      setPage(nextPage);
+      pageRef.current = nextPage;
+      hasMoreRef.current = newHasMore;
     } catch (err) {
       console.error('Failed to fetch comments:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      isLoadingRef.current = false;
     }
   };
 
-  // 监听 URL 参数变化（浏览器前进/后退）
   useEffect(() => {
-    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
-    const rowsPerPageFromUrl = parseInt(searchParams.get('rowsPerPage') || '10', 10);
     const statusFromUrl = searchParams.get('status') || '';
     const isPinnedFromUrl = searchParams.get('isPinned');
     const isPinnedFromUrlValue = isPinnedFromUrl === 'true' ? true : isPinnedFromUrl === 'false' ? false : undefined;
 
-    setPage((prev) => {
-      if (prev !== pageFromUrl) return pageFromUrl;
-      return prev;
-    });
-    setRowsPerPage((prev) => {
-      if (prev !== rowsPerPageFromUrl) return rowsPerPageFromUrl;
-      return prev;
-    });
     setStatus((prev) => {
       if (prev !== statusFromUrl) return statusFromUrl;
       return prev;
@@ -149,14 +154,53 @@ export default function Comments() {
   }, [searchParams]);
 
   useEffect(() => {
-    fetchComments();
-  }, [page, rowsPerPage, status, isPinned]);
+    fetchComments(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isPinned]);
+
+  const pageRef = useRef(page);
+  const hasMoreRef = useRef(hasMore);
+
+  useEffect(() => {
+    pageRef.current = page;
+    hasMoreRef.current = hasMore;
+  }, [page, hasMore]);
+
+  useEffect(() => {
+    let lastScrollTime = 0;
+    const throttleDelay = 200;
+
+    const handleScroll = () => {
+      if (isLoadingRef.current || !hasMoreRef.current) {
+        return;
+      }
+
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const isNearBottom = scrollTop + windowHeight >= documentHeight - 200;
+
+      if (isNearBottom) {
+        fetchComments(false);
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastScrollTime < throttleDelay) {
+        return;
+      }
+      lastScrollTime = now;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore]);
 
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
       await commentApi.updateStatus(id, newStatus);
       toast.success('状态更新成功');
-      fetchComments();
+      setComments((prev) => prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
     } catch (err: any) {
       console.error('Failed to update comment status:', err);
       toast.error(err.response?.data?.message || err.message || '操作失败，请重试');
@@ -169,7 +213,7 @@ export default function Comments() {
       await commentApi.delete(deleteId);
       setDeleteId(null);
       toast.success('删除成功');
-      fetchComments();
+      setComments((prev) => prev.filter((c) => c.id !== deleteId));
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       toast.error(err.response?.data?.message || err.message || '删除失败，请重试');
@@ -183,7 +227,7 @@ export default function Comments() {
       setReplyId(null);
       setReplyContent('');
       toast.success('回复成功');
-      fetchComments();
+      fetchComments(true);
     } catch (err: any) {
       console.error('Failed to reply comment:', err);
       toast.error(err.response?.data?.message || err.message || '回复失败，请重试');
@@ -195,13 +239,11 @@ export default function Comments() {
       await commentApi.togglePin(id);
       const comment = comments.find((c) => c.id === id);
       toast.success(comment?.is_pinned ? '已取消置顶' : '已置顶');
-      fetchComments();
+      setComments((prev) => prev.map((c) => (c.id === id ? { ...c, is_pinned: !c.is_pinned } : c)));
     } catch (err: any) {
-      console.error('Failed to toggle pin:', err);
       let errorMessage = '操作失败，请重试';
 
       if (err.response) {
-        // 有响应但状态码不是 2xx
         if (err.response.status === 404) {
           errorMessage = '接口不存在，请检查 API 服务是否正常运行';
         } else if (err.response.status === 400) {
@@ -223,24 +265,36 @@ export default function Comments() {
     return new Date(date).toLocaleString('zh-CN');
   };
 
-  return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
-        评论管理
-      </Typography>
+  const getParentNickname = (parentId: number | null) => {
+    if (!parentId) return null;
+    const parentComment = comments.find((c) => c.id === parentId);
+    return parentComment?.nickname || null;
+  };
 
-      {/* 筛选 */}
+  const getTargetTitle = (comment: Comment) => {
+    if (comment.comment_type === 'post' && comment.post_title) {
+      return comment.post_title;
+    }
+    if (comment.comment_type === 'life' && comment.life_title) {
+      return comment.life_title;
+    }
+    if (comment.comment_type === 'guestbook') {
+      return '留言板';
+    }
+    return comment.post_title || comment.life_title || '留言板';
+  };
+
+  return (
+    <Box sx={{ p: 2 }}>
       <FilterBar
         status={status}
         onStatusChange={(newStatus) => {
           setStatus(newStatus);
-          setPage(1);
-          // 如果切换到待审核或垃圾状态，清除置顶筛选
           if (newStatus === 'pending' || newStatus === 'spam') {
             setIsPinned(undefined);
-            updateSearchParams({ status: newStatus, isPinned: undefined, page: 1 });
+            updateSearchParams({ status: newStatus, isPinned: undefined });
           } else {
-            updateSearchParams({ status: newStatus, page: 1 });
+            updateSearchParams({ status: newStatus });
           }
         }}
         statusOptions={[
@@ -249,196 +303,283 @@ export default function Comments() {
           { value: 'approved', label: '已通过' },
           { value: 'spam', label: '垃圾' },
         ]}
+        showSearch={isPC}
         additionalFilters={
           (status === '' || status === 'approved') ? (
             <FormControlLabel
               control={
                 <Checkbox
+                  size='small'
                   checked={isPinned === true}
                   onChange={(e) => {
                     const newIsPinned = e.target.checked ? true : undefined;
                     setIsPinned(newIsPinned);
-                    setPage(1);
-                    updateSearchParams({ isPinned: newIsPinned, page: 1 });
+                    updateSearchParams({ isPinned: newIsPinned });
                   }}
                 />
               }
-              label="仅显示置顶"
+              label={<Typography variant="body2" color="text.secondary" >置顶</Typography>}
             />
           ) : undefined
         }
       />
 
-      {/* 表格 */}
-      <TableContainer
-        component={Paper}
-        sx={{
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 2,
-          overflow: 'hidden',
-        }}
-        elevation={0}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>评论者</TableCell>
-              <TableCell>内容</TableCell>
-              <TableCell width={120}>关联内容</TableCell>
-              <TableCell width={100}>状态</TableCell>
-              <TableCell width={150}>时间</TableCell>
-              <TableCell width={150}>操作</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {comments.map((comment) => (
-              <TableRow key={comment.id} hover>
-                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
-                      {comment.nickname.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        {comment.nickname}
-                        {comment.is_admin && (
-                          <Chip label="管理员" size="small" color="primary" sx={{ ml: 1, height: 18 }} />
-                        )}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {comment.email}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
-                  <Typography variant="body2" sx={{ maxWidth: 300 }}>
-                    {comment.content.length > 100
-                      ? comment.content.slice(0, 100) + '...'
-                      : comment.content}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {comment.comment_type === 'post' && comment.post_title
-                      ? comment.post_title
-                      : comment.comment_type === 'life' && comment.life_title
-                      ? comment.life_title
-                      : comment.comment_type === 'guestbook'
-                      ? '留言板'
-                      : comment.post_title || comment.life_title || '留言板'}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
-                  <Chip
-                    label={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.label}
-                    color={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color as any}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell sx={{ verticalAlign: 'top', py: 2 }}>
-                  <Typography variant="caption">{formatDate(comment.created_at)}</Typography>
-                </TableCell>
-                <TableCell
-                  onClick={(e) => e.stopPropagation()}
+      <Box sx={{ mt: 2 }}>
+        <Grid container spacing={2}>
+          {comments.map((comment) => {
+            const parentNickname = getParentNickname(comment.parent_id);
+            const targetTitle = getTargetTitle(comment);
+
+            return (
+              <Grid item xs={12} key={comment.id}>
+                <Card
                   sx={{
-                    verticalAlign: 'top',
-                    py: 2,
-                    width: 150,
+                    position: 'relative',
                   }}
                 >
-                  <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    {comment.status === 'pending' && (
-                      <>
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={() => handleStatusChange(comment.id, 'approved')}
-                          title="通过"
-                        >
-                          <Check fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="warning"
-                          onClick={() => handleStatusChange(comment.id, 'spam')}
-                          title="标记为垃圾"
-                        >
-                          <Close fontSize="small" />
-                        </IconButton>
-                      </>
-                    )}
-                    {/* 只对一级评论显示置顶按钮 */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 16,
+                      right: 16,
+                      zIndex: 1,
+                      display: 'flex',
+                      gap: 0.5,
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReplyId(comment.id);
+                      }}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        bgcolor: 'background.paper',
+                        boxShadow: 1,
+                        '&:hover': {
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                        },
+                      }}
+                      title="回复"
+                    >
+                      <Reply sx={{ fontSize: 16 }} />
+                    </IconButton>
                     {!comment.parent_id && comment.status === 'approved' && (
                       <IconButton
                         size="small"
-                        color={comment.is_pinned ? 'primary' : 'default'}
-                        onClick={() => handleTogglePin(comment.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePin(comment.id);
+                        }}
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          bgcolor: 'background.paper',
+                          boxShadow: 1,
+                          color: comment.is_pinned ? 'warning.main' : 'text.secondary',
+                          '&:hover': {
+                            bgcolor: comment.is_pinned ? 'warning.main' : 'primary.main',
+                            color: 'white',
+                          },
+                        }}
                         title={comment.is_pinned ? '取消置顶' : '置顶'}
                       >
-                        <PushPin fontSize="small" />
+                        <PushPin sx={{ fontSize: 16 }} />
                       </IconButton>
                     )}
                     <IconButton
                       size="small"
-                      onClick={() => setReplyId(comment.id)}
-                      title="回复"
-                    >
-                      <Reply fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => setDeleteId(comment.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(comment.id);
+                      }}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        bgcolor: 'background.paper',
+                        boxShadow: 1,
+                        color: 'text.secondary',
+                        '&:hover': {
+                          bgcolor: 'error.main',
+                          color: 'white',
+                        },
+                        '& svg': {
+                          fontSize: 16,
+                        },
+                      }}
                       title="删除"
                     >
-                      <Delete fontSize="small" />
+                      <Delete />
                     </IconButton>
                   </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-            {comments.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                  <Typography color="text.secondary">暂无评论</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={total}
-          page={page - 1}
-          onPageChange={(_, p) => {
-            const newPage = p + 1;
-            setPage(newPage);
-            updateSearchParams({ page: newPage });
-          }}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            const newRowsPerPage = parseInt(e.target.value, 10);
-            setRowsPerPage(newRowsPerPage);
-            setPage(1);
-            updateSearchParams({ rowsPerPage: newRowsPerPage, page: 1 });
-          }}
-          labelRowsPerPage="每页行数"
-        />
-      </TableContainer>
 
-      {/* 删除确认对话框 */}
+                  <CardContent
+                    sx={{
+                      p: 2,
+                      '&:last-child': {
+                        pb: 2,
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1.5 }}>
+                      {!isMobile && (
+                        <Avatar sx={{ width: 40, height: 40, fontSize: 16 }}>
+                          {comment.nickname.charAt(0).toUpperCase()}
+                        </Avatar>
+                      )}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                          {comment.is_admin && (
+                            <Chip label="管理员" size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem' }} />
+                          )}
+                          {!comment.is_admin && (
+                            <Typography variant="body2" fontWeight={500}>
+                              {comment.nickname}
+                            </Typography>
+                          )}
+                          {parentNickname ? (
+                            <>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                                在
+                              </Typography>
+                              <Typography variant="body2" color="primary" sx={{ fontSize: '0.875rem' }}>
+                                {targetTitle}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                                回复了
+                              </Typography>
+                              <Typography variant="body2" color="primary" sx={{ fontSize: '0.875rem' }}>
+                                @{parentNickname}
+                              </Typography>
+                            </>
+                          ) : (
+                            <>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                                评论了
+                              </Typography>
+                              <Typography variant="body2" color="primary" sx={{ fontSize: '0.875rem' }}>
+                                {targetTitle}
+                              </Typography>
+                            </>
+                          )}
+                        </Stack>
+                        <Typography color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          {comment.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mb: 1.5,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {comment.content}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        pt: 1.5,
+                        borderTop: 1,
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {comment.status !== 'approved' && (
+                          <Chip
+                            label={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.label}
+                            color={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color as any}
+                            size="small"
+                            sx={{
+                              height: 24,
+                              borderRadius: 1.5,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        )}
+                        {comment.status === 'pending' && (
+                          <>
+                            <IconButton
+                              size="small"
+                              color="success"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(comment.id, 'approved');
+                              }}
+                              sx={{ width: 24, height: 24 }}
+                              title="通过"
+                            >
+                              <Check sx={{ fontSize: 14 }} />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="warning"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(comment.id, 'spam');
+                              }}
+                              sx={{ width: 24, height: 24 }}
+                              title="标记为垃圾"
+                            >
+                              <Close sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </>
+                        )}
+                      </Stack>
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          {formatDate(comment.created_at)}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+          {comments.length === 0 && !loading && (
+            <Grid item xs={12}>
+              <Box sx={{ py: 2, textAlign: 'center' }}>
+                <Typography color="text.secondary" sx={{ fontSize: '12px' }}>暂无评论</Typography>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
+      {loadingMore && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      )}
+      {!hasMore && comments.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+            没有更多了
+          </Typography>
+        </Box>
+      )}
+
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
         <DialogTitle>确认删除</DialogTitle>
         <DialogContent>确定要删除这条评论吗？此操作不可恢复。</DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteId(null)}>取消</Button>
-          <Button onClick={handleDelete} color="error">删除</Button>
+          <Button onClick={handleDelete} color="error">
+            删除
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* 回复对话框 */}
       <Dialog open={!!replyId} onClose={() => setReplyId(null)} maxWidth="sm" fullWidth>
         <DialogTitle>回复评论</DialogTitle>
         <DialogContent>

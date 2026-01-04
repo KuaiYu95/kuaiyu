@@ -2,19 +2,15 @@
 // 统一筛选栏组件
 // ===========================================
 
+import { Search } from '@mui/icons-material';
 import {
   Box,
-  Collapse,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
   TextField,
 } from '@mui/material';
-import { FilterList, Search } from '@mui/icons-material';
-import { useState } from 'react';
 
 export interface FilterBarProps {
   status?: string;
@@ -43,25 +39,14 @@ export default function FilterBar({
   showStatus = true,
   additionalFilters,
 }: FilterBarProps) {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <Paper
-      sx={{
-        p: 2,
-        mb: 2,
-        borderRadius: 2,
-        border: '1px solid',
-        borderColor: 'divider',
-      }}
-      elevation={0}
-    >
+    <Box>
       <Box
         sx={{
           display: 'flex',
           gap: 2,
           alignItems: 'center',
-          flexWrap: { xs: 'wrap', sm: 'nowrap' },
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
         }}
       >
         {showSearch && (
@@ -81,7 +66,7 @@ export default function FilterBar({
         )}
 
         {showStatus && (
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
+          <FormControl size="small" sx={{ minWidth: { xs: 120, sm: 240 }, flexShrink: 0 }}>
             <InputLabel>状态</InputLabel>
             <Select
               value={status}
@@ -98,32 +83,12 @@ export default function FilterBar({
         )}
 
         {additionalFilters && (
-          <>
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2, flex: 1 }}>
-              {additionalFilters}
-            </Box>
-            <IconButton
-              size="small"
-              onClick={() => setExpanded(!expanded)}
-              sx={{ display: { xs: 'flex', sm: 'none' } }}
-            >
-              <FilterList />
-            </IconButton>
-          </>
-        )}
-
-        {!additionalFilters && <Box sx={{ flex: 1 }} />}
-      </Box>
-
-      {/* 移动端折叠面板 */}
-      {additionalFilters && (
-        <Collapse in={expanded}>
-          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ gap: 2, display: 'flex', flexShrink: 0 }}>
             {additionalFilters}
           </Box>
-        </Collapse>
-      )}
-    </Paper>
+        )}
+      </Box>
+    </Box>
   );
 }
 
