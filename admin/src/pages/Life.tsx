@@ -3,9 +3,10 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
+import { CalendarIcon } from '@/components/icons';
 import { lifeApi, type LifeRecord } from '@/lib/api';
 import { ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add, CalendarToday, EditNote } from '@mui/icons-material';
+import { Add, EditNote } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -365,7 +366,7 @@ export default function Life() {
                   </Stack>
                   {record.published_at && (
                     <Stack direction="row" spacing={0.5} alignItems="center">
-                      <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
+                      <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
                       <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                         {formatDate(record.published_at)}
                       </Typography>

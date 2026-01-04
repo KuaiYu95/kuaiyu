@@ -3,9 +3,10 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
+import { CalendarIcon, VisibilityIcon } from '@/components/icons';
 import { postApi, type Post } from '@/lib/api';
 import { ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add, CalendarToday, EditNote, Visibility } from '@mui/icons-material';
+import { Add, EditNote } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -412,7 +413,7 @@ export default function Posts() {
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
                     {post.view_count > 0 && (
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Visibility sx={{ fontSize: 14, color: 'text.secondary' }} />
+                        <VisibilityIcon size={14} sx={{ color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                           {post.view_count}
                         </Typography>
@@ -420,7 +421,7 @@ export default function Posts() {
                     )}
                     {post.published_at && (
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
+                        <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                           {formatDate(post.published_at)}
                         </Typography>

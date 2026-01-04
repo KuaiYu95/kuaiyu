@@ -3,10 +3,11 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
+import { CalendarIcon, CloseIcon, ReplyIcon } from '@/components/icons';
 import { useToast } from '@/components/Toast';
 import { commentApi, type Comment } from '@/lib/api';
 import { STATUS_LABELS } from '@/lib/constants';
-import { CalendarToday, Check, Close, Delete, PushPin, Reply } from '@mui/icons-material';
+import { Check, Delete, PushPin } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -365,7 +366,7 @@ export default function Comments() {
                       }}
                       title="回复"
                     >
-                      <Reply sx={{ fontSize: 16 }} />
+                      <ReplyIcon size={16} />
                     </IconButton>
                     {!comment.parent_id && comment.status === 'approved' && (
                       <IconButton
@@ -530,13 +531,13 @@ export default function Comments() {
                               sx={{ width: 24, height: 24 }}
                               title="标记为垃圾"
                             >
-                              <Close sx={{ fontSize: 14 }} />
+                              <CloseIcon size={14} />
                             </IconButton>
                           </>
                         )}
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
+                        <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                           {formatDate(comment.created_at)}
                         </Typography>

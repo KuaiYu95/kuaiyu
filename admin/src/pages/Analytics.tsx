@@ -1,6 +1,7 @@
 import { analyticsApi, type Overview, type PopularContentVO } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { ArrowUpward, Article, Label, Person, PhotoCamera, TrendingUp, Visibility } from '@mui/icons-material';
+import { ArrowUpward, Person, TrendingUp } from '@mui/icons-material';
+import { ArticleIcon, LabelIcon, PhotoCameraIcon, VisibilityIcon } from '@/components/icons';
 import {
   Box,
   CircularProgress,
@@ -95,7 +96,7 @@ export default function Analytics() {
       label: '总访问量',
       value: overview?.total_pv || 0,
       todayValue: overview?.today_pv || 0,
-      icon: <Visibility />,
+      icon: <VisibilityIcon />,
       color: colors.primary,
       gradient: gradientColors[0],
       trend: calculateTrend(overview?.today_pv || 0, overview?.avg_pv_30_days || 0),
@@ -114,7 +115,7 @@ export default function Analytics() {
     {
       label: '文章数',
       value: overview?.post_count || 0,
-      icon: <Article />,
+      icon: <ArticleIcon />,
       color: colors.accent,
       gradient: gradientColors[2],
       trend: 0,
@@ -123,7 +124,7 @@ export default function Analytics() {
     {
       label: '生活记录',
       value: overview?.life_count || 0,
-      icon: <PhotoCamera />,
+      icon: <PhotoCameraIcon />,
       color: colors.yellow,
       gradient: { start: '#fbbf24', end: '#f59e0b' },
       trend: 0,
@@ -141,7 +142,7 @@ export default function Analytics() {
     {
       label: '标签数',
       value: overview?.tag_count || 0,
-      icon: <Label />,
+      icon: <LabelIcon />,
       color: colors.accent,
       gradient: { start: '#8b5cf6', end: '#7c3aed' },
       trend: 0,

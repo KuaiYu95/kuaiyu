@@ -2,9 +2,11 @@
 // 生活记录编辑页面
 // ===========================================
 
+import MarkdownEditor from '@/components/MarkdownEditor';
+import { ArrowBackIcon } from '@/components/icons';
 import { lifeApi, uploadApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { ArrowBack, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -17,7 +19,6 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import MarkdownEditor from '@/components/MarkdownEditor';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -102,7 +103,7 @@ export default function LifeEdit() {
     <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Button
-          startIcon={<ArrowBack />}
+          startIcon={<ArrowBackIcon />}
           onClick={() => navigate(ROUTES.LIFE)}
           sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
         >
