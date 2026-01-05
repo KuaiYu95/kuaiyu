@@ -39,7 +39,8 @@ func Init() error {
 	// 配置日志级别
 	logLevel := logger.Silent
 	if cfg.IsDevelopment() {
-		logLevel = logger.Info
+		// 开发模式下只显示警告和错误，减少日志输出
+		logLevel = logger.Warn
 	}
 	
 	// 连接数据库
@@ -106,15 +107,28 @@ func Migrate() error {
 
 // createIndexes 创建额外索引
 func createIndexes() error {
-	// 评论表索引
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_comments_email_status ON comments(email, status)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_comments_post_status ON comments(post_id, status)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_comments_life_status ON comments(life_record_id, status)")
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_comments_parent_created ON comments(parent_id, created_at)")
-	
-	// 文章表索引
-	db.Exec("CREATE INDEX IF NOT EXISTS idx_posts_published ON posts(status, published_at)")
-	
+	indexes := []struct {
+		name    string
+		table   string
+		columns string
+	}{
+		{"idx_comments_email_status", "comments", "(email, status)"},
+		{"idx_comments_post_status", "comments", "(post_id, status)"},
+		{"idx_comments_life_status", "comments", "(life_record_id, status)"},
+		{"idx_comments_parent_created", "comments", "(parent_id, created_at)"},
+		{"idx_posts_published", "posts", "(status, published_at)"},
+	}
+
+	for _, idx := range indexes {
+		var count int64
+		db.Raw("SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?", idx.table, idx.name).Scan(&count)
+		if count == 0 {
+			if err := db.Exec(fmt.Sprintf("CREATE INDEX %s ON %s %s", idx.name, idx.table, idx.columns)).Error; err != nil {
+				log.Printf("Failed to create index %s: %v", idx.name, err)
+			}
+		}
+	}
+
 	return nil
 }
 

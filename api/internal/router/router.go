@@ -179,8 +179,35 @@ func setupAdminRoutes(api *gin.RouterGroup) {
 			analytics.GET("/overview", analyticsHandler.Overview)
 			analytics.GET("/visits", analyticsHandler.Visits)
 			analytics.GET("/popular", analyticsHandler.Popular)
+			analytics.GET("/post-view-stats", analyticsHandler.PostViewStats)
 			analytics.GET("/events", analyticsHandler.Events)
 			analytics.GET("/charts", analyticsHandler.Charts)
+		}
+
+		// 账单管理
+		billHandler := handler.NewBillHandler()
+		bills := auth.Group("/bills")
+		{
+			bills.GET("", billHandler.List)
+			bills.GET("/statistics", billHandler.Statistics)
+			bills.GET("/trends/daily", billHandler.DailyTrend)
+			bills.GET("/trends/monthly", billHandler.MonthlyTrend)
+			bills.GET("/trends/category-ranking", billHandler.CategoryRanking)
+			bills.GET("/:id", billHandler.Get)
+			bills.POST("", billHandler.Create)
+			bills.PUT("/:id", billHandler.Update)
+			bills.DELETE("/:id", billHandler.Delete)
+			bills.POST("/:id/refund", billHandler.Refund)
+			bills.POST("/:id/charge-back", billHandler.ChargeBack)
+		}
+
+		// 分类管理
+		categoryHandler := handler.NewCategoryHandler()
+		categories := auth.Group("/categories")
+		{
+			categories.GET("", categoryHandler.List)
+			categories.POST("", categoryHandler.Create)
+			categories.DELETE("/:id", categoryHandler.Delete)
 		}
 	}
 }

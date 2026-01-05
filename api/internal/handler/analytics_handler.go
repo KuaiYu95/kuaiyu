@@ -265,6 +265,43 @@ func (h *AnalyticsHandler) Popular(c *gin.Context) {
 	response.Success(c, result)
 }
 
+// PostViewStats 博客阅读量统计（近30天，前10条）
+func (h *AnalyticsHandler) PostViewStats(c *gin.Context) {
+	limit := 10
+	db := database.Get()
+
+	// 计算30天前的日期
+	thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+
+	// 统计近30天内各文章的阅读量
+	type PostViewStat struct {
+		PostID    uint   `json:"post_id"`
+		Title     string `json:"title"`
+		ViewCount int64  `json:"view_count"`
+	}
+
+	var stats []PostViewStat
+	db.Model(&model.PageView{}).
+		Select("page_id as post_id, posts.title, COUNT(*) as view_count").
+		Joins("JOIN posts ON posts.id = page_views.page_id").
+		Where("page_views.page_type = ? AND page_views.created_at >= ? AND posts.status = ?", "post", thirtyDaysAgo, constants.PostStatusPublished).
+		Group("page_id, posts.title").
+		Order("view_count DESC").
+		Limit(limit).
+		Scan(&stats)
+
+	result := make([]model.PostViewStatsVO, len(stats))
+	for i, stat := range stats {
+		result[i] = model.PostViewStatsVO{
+			PostID:    stat.PostID,
+			Title:     stat.Title,
+			ViewCount: stat.ViewCount,
+		}
+	}
+
+	response.Success(c, result)
+}
+
 // Events 埋点事件统计
 func (h *AnalyticsHandler) Events(c *gin.Context) {
 	eventType := c.Query("event_type")

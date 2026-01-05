@@ -2,13 +2,13 @@
 // 命令面板组件 (Cmd+K)
 // ===========================================
 
-import React from 'react';
-import { MENU_ITEMS, ROUTES } from '@/lib/constants';
+import { MENU_ITEMS } from '@/lib/constants';
 import {
   Analytics,
   Article,
   Close,
   Comment,
+  Description,
   Label,
   PhotoCamera,
   Search,
@@ -23,9 +23,9 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Paper,
-  Typography,
+  Typography
 } from '@mui/material';
+import React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +40,7 @@ const iconMap: Record<string, React.ReactNode> = {
   Comment: <Comment />,
   Label: <Label />,
   Analytics: <Analytics />,
+  File: <Description />,
 };
 
 export default function CommandPanel({ open, onClose }: CommandPanelProps) {

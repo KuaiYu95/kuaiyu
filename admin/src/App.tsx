@@ -1,6 +1,9 @@
 import Layout from '@/components/Layout';
 import { ToastProvider } from '@/components/Toast';
 import Analytics from '@/pages/Analytics';
+import BillCategories from '@/pages/BillCategories';
+import BillEdit from '@/pages/BillEdit';
+import Bills from '@/pages/Bills';
 import Comments from '@/pages/Comments';
 import Life from '@/pages/Life';
 import LifeEdit from '@/pages/LifeEdit';
@@ -54,6 +57,10 @@ export default function App() {
                     <Route path="/life/:id" element={<LifeEdit />} />
                     <Route path="/comments" element={<Comments />} />
                     <Route path="/tags" element={<Tags />} />
+                    <Route path="/bills" element={<Bills />} />
+                    <Route path="/bills/new" element={<BillEdit />} />
+                    <Route path="/bills/:id" element={<BillEdit />} />
+                    <Route path="/bills/categories" element={<BillCategories />} />
                   </Routes>
                 </Layout>
               </PrivateRoute>

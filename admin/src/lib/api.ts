@@ -249,13 +249,160 @@ export interface PopularContentVO {
   published_at: string | null;
 }
 
+// 博客阅读量统计
+export interface PostViewStatsVO {
+  post_id: number;
+  title: string;
+  view_count: number;
+}
+
 // 统计
 export const analyticsApi = {
   overview: () => api.get<any, ApiResponse<Overview>>('/api/admin/analytics/overview'),
   visits: () => api.get<any, ApiResponse<{ date: string; pv: number; uv: number }[]>>('/api/admin/analytics/visits'),
   popular: () => api.get<any, ApiResponse<{ posts: PopularContentVO[]; lifes: PopularContentVO[] }>>('/api/admin/analytics/popular'),
+  postViewStats: () => api.get<any, ApiResponse<PostViewStatsVO[]>>('/api/admin/analytics/post-view-stats'),
   charts: (chartType: string) =>
     api.get<any, ApiResponse<any>>('/api/admin/analytics/charts', { params: { chart_type: chartType } }),
+};
+
+// ===========================================
+// 账单相关类型
+// ===========================================
+
+export interface Bill {
+  id: number;
+  type: 'expense' | 'income';
+  category_id: number;
+  amount: number;
+  desc: string;
+  date: string;
+  period_type: 'month' | 'year';
+  is_consumed: boolean;
+  has_charge_back: boolean;
+  charge_back_amount: number;
+  refund: number;
+  created_at: string;
+  updated_at: string;
+  category?: Category;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  key: string;
+  created_at: string;
+  bill_count?: number;
+}
+
+export interface BillStatistics {
+  total_expense: number;
+  total_income: number;
+  month_expense: number;
+  month_income: number;
+  year_expense: number;
+  year_income: number;
+  expense_by_category: Record<string, number>;
+  income_by_category: Record<string, number>;
+}
+
+export interface BillTrendData {
+  date: string;
+  expense: number;
+  income: number;
+}
+
+export interface BillListParams {
+  page?: number;
+  limit?: number;
+  type?: 'expense' | 'income';
+  category_id?: number;
+  start_date?: string;
+  end_date?: string;
+  period_type?: 'month' | 'year';
+  is_consumed?: boolean;
+  has_charge_back?: boolean;
+}
+
+export interface CreateBillRequest {
+  type: 'expense' | 'income';
+  category_id: number;
+  amount: number;
+  desc?: string;
+  date: string;
+  period_type?: 'month' | 'year';
+  is_consumed?: boolean;
+  has_charge_back?: boolean;
+  charge_back_amount?: number;
+}
+
+export interface UpdateBillRequest {
+  type?: 'expense' | 'income';
+  category_id?: number;
+  amount?: number;
+  desc?: string;
+  date?: string;
+  period_type?: 'month' | 'year';
+  is_consumed?: boolean;
+  has_charge_back?: boolean;
+  charge_back_amount?: number;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  key: string;
+}
+
+export interface StatisticsParams {
+  start_date?: string;
+  end_date?: string;
+  type?: 'expense' | 'income';
+}
+
+// ===========================================
+// 账单 API
+// ===========================================
+
+export interface BillTrendData {
+  date: string;
+  expense: number;
+  income: number;
+}
+
+export interface CategoryRankingItem {
+  category_name: string;
+  total: number;
+}
+
+export const billApi = {
+  list: (params?: BillListParams) =>
+    api.get<any, ApiResponse<PagedData<Bill>>>('/api/admin/bills', { params }),
+  get: (id: number) => api.get<any, ApiResponse<Bill>>(`/api/admin/bills/${id}`),
+  create: (data: CreateBillRequest) =>
+    api.post<any, ApiResponse<Bill>>('/api/admin/bills', data),
+  update: (id: number, data: UpdateBillRequest) =>
+    api.put<any, ApiResponse<Bill>>(`/api/admin/bills/${id}`, data),
+  delete: (id: number) => api.delete(`/api/admin/bills/${id}`),
+  refund: (id: number, amount: number) =>
+    api.post<any, ApiResponse<Bill>>(`/api/admin/bills/${id}/refund`, { amount }),
+  chargeBack: (id: number, amount: number) =>
+    api.post<any, ApiResponse<Bill>>(`/api/admin/bills/${id}/charge-back`, { amount }),
+  statistics: (params?: StatisticsParams) =>
+    api.get<any, ApiResponse<BillStatistics>>('/api/admin/bills/statistics', { params }),
+  dailyTrend: () => api.get<any, ApiResponse<BillTrendData[]>>('/api/admin/bills/trends/daily'),
+  monthlyTrend: () => api.get<any, ApiResponse<BillTrendData[]>>('/api/admin/bills/trends/monthly'),
+  categoryRanking: () => api.get<any, ApiResponse<CategoryRankingItem[]>>('/api/admin/bills/trends/category-ranking'),
+};
+
+// ===========================================
+// 分类 API
+// ===========================================
+
+export const categoryApi = {
+  list: () => api.get<any, ApiResponse<Category[]>>('/api/admin/categories'),
+  create: (data: CreateCategoryRequest) =>
+    api.post<any, ApiResponse<Category>>('/api/admin/categories', data),
+  delete: (id: number) => api.delete(`/api/admin/categories/${id}`),
 };
 
 export default api;

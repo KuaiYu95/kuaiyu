@@ -21,6 +21,7 @@ import crossAnimation from '@/assets/icons/system-regular-29-cross-hover-cross-1
 import checkAnimation from '@/assets/icons/system-regular-31-check-hover-pinch.json';
 import trashAnimation from '@/assets/icons/system-regular-39-trash-hover-trash-empty.json';
 import chatAnimation from '@/assets/icons/system-regular-47-chat-hover-chat.json';
+import walletAnimation from '@/assets/icons/system-regular-5-wallet-hover-wallet.json';
 import fileAnimation from '@/assets/icons/system-regular-50-file-hover-file-1.json';
 import arrowLeftAnimation from '@/assets/icons/system-regular-507-arrow-left-hover-pinch.json';
 import clockAnimation from '@/assets/icons/system-regular-67-clock-hover-clock.json';
@@ -484,6 +485,31 @@ export function ForumIcon({ size = 24, sx, hover = false, color, title = '', onC
     >
       <Lottie
         animationData={forumAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 钱包图标
+export function WalletIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={walletAnimation}
         width={size}
         height={size}
         loop={hover ? isHovered : false}

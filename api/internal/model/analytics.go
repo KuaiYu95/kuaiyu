@@ -129,6 +129,13 @@ type PopularVO struct {
 	Lifes []PopularContentVO `json:"lifes"`
 }
 
+// PostViewStatsVO 博客阅读量统计
+type PostViewStatsVO struct {
+	PostID    uint   `json:"post_id"`
+	Title     string `json:"title"`
+	ViewCount int64  `json:"view_count"`
+}
+
 // RealtimeVisitVO 实时访问
 type RealtimeVisitVO struct {
 	Time       time.Time `json:"time"`

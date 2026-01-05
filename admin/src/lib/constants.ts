@@ -23,6 +23,10 @@ export const ROUTES = {
   LIFE_EDIT: (id: number | string) => `/life/${id}`,
   COMMENTS: '/comments',
   TAGS: '/tags',
+  BILLS: '/bills',
+  BILL_NEW: '/bills/new',
+  BILL_EDIT: (id: number | string) => `/bills/${id}`,
+  BILL_CATEGORIES: '/bills/categories',
 } as const;
 
 // 侧边栏菜单
@@ -32,6 +36,7 @@ export const MENU_ITEMS = [
   { key: 'life', path: ROUTES.LIFE, icon: 'PhotoCamera', label: '生活记录' },
   { key: 'comments', path: ROUTES.COMMENTS, icon: 'Comment', label: '评论管理' },
   { key: 'tags', path: ROUTES.TAGS, icon: 'Label', label: '标签管理' },
+  { key: 'bills', path: ROUTES.BILLS, icon: 'File', label: '记账管理' },
 ] as const;
 
 // 状态
