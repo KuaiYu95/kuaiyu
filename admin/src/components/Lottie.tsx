@@ -33,6 +33,10 @@ interface LottieProps {
    */
   speed?: number;
   /**
+   * 颜色（用于 colorize 属性，修改动画颜色）
+   */
+  color?: string;
+  /**
    * 自定义样式
    */
   style?: CSSProperties;
@@ -57,6 +61,7 @@ export default function LottieAnimation({
   loop = false,
   autoplay = true,
   speed = 1,
+  color,
   style,
   sx,
   onComplete,
@@ -105,6 +110,7 @@ export default function LottieAnimation({
         ref={playerRef}
         icon={animationData}
         size={sizeValue}
+        colorize={color}
         onComplete={handleComplete}
       />
     </Box>

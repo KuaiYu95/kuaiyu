@@ -265,9 +265,9 @@ export default function Analytics() {
                       }}
                     >
                       {card.trend > 0 ? (
-                        <TrendingUpIcon size={12} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                        <TrendingUpIcon size={12} color={colors.secondary} sx={{ fontSize: { xs: 10, sm: 12 } }} />
                       ) : (
-                        <TrendingDownIcon size={12} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                        <TrendingDownIcon size={12} color={colors.red} sx={{ fontSize: { xs: 10, sm: 12 } }} />
                       )}
                       {Math.abs(card.trend).toFixed(1)}%
                     </Box>

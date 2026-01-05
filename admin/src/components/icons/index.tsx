@@ -55,7 +55,8 @@ export function CalendarIcon({ size = 24, sx, hover = false, color }: IconProps)
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -77,7 +78,8 @@ export function VisibilityIcon({ size = 24, sx, hover = false, color }: IconProp
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -99,7 +101,8 @@ export function ReplyIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -121,7 +124,8 @@ export function CloseIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -143,7 +147,8 @@ export function ArrowBackIcon({ size = 24, sx, hover = false, color }: IconProps
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -165,7 +170,8 @@ export function ArticleIcon({ size = 24, sx, hover = false, color }: IconProps) 
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -187,7 +193,8 @@ export function LabelIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -209,7 +216,8 @@ export function PhotoCameraIcon({ size = 24, sx, hover = false, color }: IconPro
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -231,7 +239,8 @@ export function ChatIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -253,7 +262,8 @@ export function ClockIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -275,7 +285,8 @@ export function ContactsIcon({ size = 24, sx, hover = false, color }: IconProps)
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -297,7 +308,8 @@ export function TrendingUpIcon({ size = 24, sx, hover = false, color }: IconProp
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -319,7 +331,8 @@ export function TrendingDownIcon({ size = 24, sx, hover = false, color }: IconPr
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -341,7 +354,8 @@ export function TrashIcon({ size = 24, sx, hover = false, color }: IconProps) {
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
@@ -363,7 +377,8 @@ export function UpgradeIcon({ size = 24, sx, hover = false, color }: IconProps) 
         loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
-        sx={{ color }}
+        color={color}
+        sx={sx}
       />
     </Box>
   );
