@@ -3,7 +3,7 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
-import { CalendarIcon } from '@/components/icons';
+import { CalendarIcon, TrashIcon } from '@/components/icons';
 import { lifeApi, type LifeRecord } from '@/lib/api';
 import { ROUTES, STATUS_LABELS } from '@/lib/constants';
 import { Add, EditNote } from '@mui/icons-material';
@@ -338,31 +338,33 @@ export default function Life() {
                         }}
                       />
                     )}
-                    <Button
-                      size="small"
+                    <Box
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(record.id);
                       }}
                       sx={{
-                        minWidth: 'auto',
-                        px: 1,
-                        height: 24,
-                        fontSize: '0.75rem',
-                        textTransform: 'none',
-                        lineHeight: 1,
+                        width: 28,
+                        height: 28,
+                        bgcolor: 'background.paper',
+                        boxShadow: 1,
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
                         color: 'text.secondary',
                         opacity: hoveredId === record.id ? 1 : 0,
                         visibility: hoveredId === record.id ? 'visible' : 'hidden',
                         transition: 'opacity 0.2s ease, visibility 0.2s ease',
                         '&:hover': {
-                          color: 'error.main',
-                          bgcolor: 'transparent',
+                          bgcolor: 'error.main',
                         },
                       }}
+                      title="删除"
                     >
-                      删除
-                    </Button>
+                      <TrashIcon size={16} hover={true} />
+                    </Box>
                   </Stack>
                   {record.published_at && (
                     <Stack direction="row" spacing={0.5} alignItems="center">

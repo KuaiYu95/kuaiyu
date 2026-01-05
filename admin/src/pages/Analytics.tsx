@@ -1,7 +1,6 @@
+import { ArticleIcon, ContactsIcon, LabelIcon, PhotoCameraIcon, TrendingDownIcon, TrendingUpIcon, VisibilityIcon } from '@/components/icons';
 import { analyticsApi, type Overview, type PopularContentVO } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { ArrowUpward, Person, TrendingUp } from '@mui/icons-material';
-import { ArticleIcon, LabelIcon, PhotoCameraIcon, VisibilityIcon } from '@/components/icons';
 import {
   Box,
   CircularProgress,
@@ -95,7 +94,6 @@ export default function Analytics() {
     {
       label: '总访问量',
       value: overview?.total_pv || 0,
-      todayValue: overview?.today_pv || 0,
       icon: <VisibilityIcon />,
       color: colors.primary,
       gradient: gradientColors[0],
@@ -105,8 +103,7 @@ export default function Analytics() {
     {
       label: '总访客数',
       value: overview?.total_uv || 0,
-      todayValue: overview?.today_uv || 0,
-      icon: <Person />,
+      icon: <ContactsIcon />,
       color: colors.secondary,
       gradient: gradientColors[1],
       trend: calculateTrend(overview?.today_uv || 0, overview?.avg_uv_30_days || 0),
@@ -133,7 +130,7 @@ export default function Analytics() {
     {
       label: '评论数',
       value: overview?.comment_count || 0,
-      icon: <TrendingUp />,
+      icon: <TrendingUpIcon />,
       color: colors.pink,
       gradient: gradientColors[3],
       trend: 0,
@@ -227,39 +224,21 @@ export default function Analytics() {
                       color: 'white',
                       boxShadow: `0px 2px 8px ${card.color}50`,
                       flexShrink: 0,
-                      '& svg': {
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                      },
                     }}
                   >
                     {card.icon}
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                    {card.todayValue !== undefined && (
-                      <Typography
-                        component="span"
-                        sx={{
-                          color: 'text.secondary',
-                          fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
-                          fontWeight: 500,
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {card.todayValue.toLocaleString()}/
-                      </Typography>
-                    )}
-                    <Typography
-                      variant="h4"
-                      fontWeight="bold"
-                      sx={{
-                        color: 'text.primary',
-                        fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem' },
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {card.value.toLocaleString()}
-                    </Typography>
-                  </Box>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{
+                      color: 'text.primary',
+                      fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem' },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {card.value.toLocaleString()}
+                  </Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -285,12 +264,11 @@ export default function Analytics() {
                         fontWeight: 600,
                       }}
                     >
-                      <ArrowUpward
-                        sx={{
-                          fontSize: { xs: 10, sm: 12 },
-                          transform: card.trend < 0 ? 'rotate(180deg)' : 'none',
-                        }}
-                      />
+                      {card.trend > 0 ? (
+                        <TrendingUpIcon size={12} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                      ) : (
+                        <TrendingDownIcon size={12} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                      )}
                       {Math.abs(card.trend).toFixed(1)}%
                     </Box>
                   )}
@@ -521,7 +499,7 @@ export default function Analytics() {
         <Grid item xs={12} lg={4} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <ReactECharts
-              style={{ height: '100%', width: '100%' }}
+              style={{ height: '100%', width: '100%', minHeight: 250 }}
               option={{
                 tooltip: {
                   trigger: 'item',

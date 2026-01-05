@@ -3,11 +3,11 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
-import { CalendarIcon, CloseIcon, ReplyIcon } from '@/components/icons';
+import { CalendarIcon, CloseIcon, ReplyIcon, TrashIcon, UpgradeIcon } from '@/components/icons';
 import { useToast } from '@/components/Toast';
 import { commentApi, type Comment } from '@/lib/api';
 import { STATUS_LABELS } from '@/lib/constants';
-import { Check, Delete, PushPin } from '@mui/icons-material';
+import { Check } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -348,8 +348,7 @@ export default function Comments() {
                       gap: 0.5,
                     }}
                   >
-                    <IconButton
-                      size="small"
+                    <Box
                       onClick={(e) => {
                         e.stopPropagation();
                         setReplyId(comment.id);
@@ -359,18 +358,21 @@ export default function Comments() {
                         height: 28,
                         bgcolor: 'background.paper',
                         boxShadow: 1,
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
                         '&:hover': {
                           bgcolor: 'primary.main',
-                          color: 'white',
                         },
                       }}
                       title="回复"
                     >
-                      <ReplyIcon size={16} />
-                    </IconButton>
+                      <ReplyIcon size={16} hover={true} />
+                    </Box>
                     {!comment.parent_id && comment.status === 'approved' && (
-                      <IconButton
-                        size="small"
+                      <Box
                         onClick={(e) => {
                           e.stopPropagation();
                           handleTogglePin(comment.id);
@@ -380,19 +382,22 @@ export default function Comments() {
                           height: 28,
                           bgcolor: 'background.paper',
                           boxShadow: 1,
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
                           color: comment.is_pinned ? 'warning.main' : 'text.secondary',
                           '&:hover': {
                             bgcolor: comment.is_pinned ? 'warning.main' : 'primary.main',
-                            color: 'white',
                           },
                         }}
                         title={comment.is_pinned ? '取消置顶' : '置顶'}
                       >
-                        <PushPin sx={{ fontSize: 16 }} />
-                      </IconButton>
+                        <UpgradeIcon size={16} hover={true} sx={{ color: comment.is_pinned ? 'warning.main' : 'inherit' }} />
+                      </Box>
                     )}
-                    <IconButton
-                      size="small"
+                    <Box
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(comment.id);
@@ -402,19 +407,20 @@ export default function Comments() {
                         height: 28,
                         bgcolor: 'background.paper',
                         boxShadow: 1,
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
                         color: 'text.secondary',
                         '&:hover': {
                           bgcolor: 'error.main',
-                          color: 'white',
-                        },
-                        '& svg': {
-                          fontSize: 16,
                         },
                       }}
                       title="删除"
                     >
-                      <Delete />
-                    </IconButton>
+                      <TrashIcon size={16} hover={true} />
+                    </Box>
                   </Box>
 
                   <CardContent
@@ -538,7 +544,7 @@ export default function Comments() {
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
                           {formatDate(comment.created_at)}
                         </Typography>
                       </Stack>

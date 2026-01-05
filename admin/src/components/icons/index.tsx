@@ -11,8 +11,13 @@ import { useState } from 'react';
 import cameraAnimation from '../../assets/icons/system-regular-123-camera-hover-camera-1.json';
 import articleAnimation from '../../assets/icons/system-regular-14-article-hover-article.json';
 import labelAnimation from '../../assets/icons/system-regular-146-label-hover-label.json';
+import trendingDownAnimation from '../../assets/icons/system-regular-159-trending-down-hover-trend-down.json';
+import trendingUpAnimation from '../../assets/icons/system-regular-160-trending-up-hover-trend-up.json';
+import upgradeAnimation from '../../assets/icons/system-regular-163-upgrade-hover-upgrade.json';
+import contactsAnimation from '../../assets/icons/system-regular-187-contacts-hover-contacts.json';
 import calendarAnimation from '../../assets/icons/system-regular-23-calendar-hover-calendar.json';
 import crossAnimation from '../../assets/icons/system-regular-29-cross-hover-cross-1.json';
+import trashAnimation from '../../assets/icons/system-regular-39-trash-hover-trash-empty.json';
 import chatAnimation from '../../assets/icons/system-regular-47-chat-hover-chat.json';
 import arrowLeftAnimation from '../../assets/icons/system-regular-507-arrow-left-hover-pinch.json';
 import clockAnimation from '../../assets/icons/system-regular-67-clock-hover-clock.json';
@@ -26,6 +31,14 @@ interface IconProps {
   color?: string;
 }
 
+const defaultSx = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  height: '100%',
+}
+
 // 日历图标
 export function CalendarIcon({ size = 24, sx, hover = false, color }: IconProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -33,7 +46,7 @@ export function CalendarIcon({ size = 24, sx, hover = false, color }: IconProps)
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={calendarAnimation}
@@ -55,7 +68,7 @@ export function VisibilityIcon({ size = 24, sx, hover = false, color }: IconProp
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={visibilityAnimation}
@@ -77,7 +90,7 @@ export function ReplyIcon({ size = 24, sx, hover = false, color }: IconProps) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={replyAnimation}
@@ -99,7 +112,7 @@ export function CloseIcon({ size = 24, sx, hover = false, color }: IconProps) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={crossAnimation}
@@ -121,7 +134,7 @@ export function ArrowBackIcon({ size = 24, sx, hover = false, color }: IconProps
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={arrowLeftAnimation}
@@ -143,7 +156,7 @@ export function ArticleIcon({ size = 24, sx, hover = false, color }: IconProps) 
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={articleAnimation}
@@ -165,7 +178,7 @@ export function LabelIcon({ size = 24, sx, hover = false, color }: IconProps) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={labelAnimation}
@@ -187,7 +200,7 @@ export function PhotoCameraIcon({ size = 24, sx, hover = false, color }: IconPro
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={cameraAnimation}
@@ -209,7 +222,7 @@ export function ChatIcon({ size = 24, sx, hover = false, color }: IconProps) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={chatAnimation}
@@ -231,10 +244,120 @@ export function ClockIcon({ size = 24, sx, hover = false, color }: IconProps) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={sx}
+      sx={{ ...defaultSx, ...sx }}
     >
       <Lottie
         animationData={clockAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        sx={{ color }}
+      />
+    </Box>
+  );
+}
+
+// 联系人/用户图标
+export function ContactsIcon({ size = 24, sx, hover = false, color }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+    >
+      <Lottie
+        animationData={contactsAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        sx={{ color }}
+      />
+    </Box>
+  );
+}
+
+// 趋势上升图标
+export function TrendingUpIcon({ size = 24, sx, hover = false, color }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+    >
+      <Lottie
+        animationData={trendingUpAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        sx={{ color }}
+      />
+    </Box>
+  );
+}
+
+// 趋势下降图标
+export function TrendingDownIcon({ size = 24, sx, hover = false, color }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+    >
+      <Lottie
+        animationData={trendingDownAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        sx={{ color }}
+      />
+    </Box>
+  );
+}
+
+// 垃圾桶/删除图标
+export function TrashIcon({ size = 24, sx, hover = false, color }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+    >
+      <Lottie
+        animationData={trashAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        sx={{ color }}
+      />
+    </Box>
+  );
+}
+
+// 升级/置顶图标
+export function UpgradeIcon({ size = 24, sx, hover = false, color }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+    >
+      <Lottie
+        animationData={upgradeAnimation}
         width={size}
         height={size}
         loop={hover ? isHovered : false}
