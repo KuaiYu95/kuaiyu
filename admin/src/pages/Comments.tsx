@@ -3,11 +3,10 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
-import { CalendarIcon, CloseIcon, ReplyIcon, TrashIcon, UpgradeIcon } from '@/components/icons';
+import { CalendarIcon, CheckIcon, CloseIcon, ForumIcon, ReplyIcon, TrashIcon, UpgradeIcon } from '@/components/icons';
 import { useToast } from '@/components/Toast';
 import { commentApi, type Comment } from '@/lib/api';
-import { STATUS_LABELS } from '@/lib/constants';
-import { Check } from '@mui/icons-material';
+import { COLORS, STATUS_LABELS } from '@/lib/constants';
 import {
   Avatar,
   Box,
@@ -23,7 +22,6 @@ import {
   DialogTitle,
   FormControlLabel,
   Grid,
-  IconButton,
   Stack,
   TextField,
   Typography,
@@ -345,84 +343,45 @@ export default function Comments() {
                       right: 16,
                       zIndex: 1,
                       display: 'flex',
-                      gap: 0.5,
+                      gap: 1.5,
                     }}
                   >
-                    <Box
+                    <ReplyIcon
                       onClick={(e) => {
                         e.stopPropagation();
                         setReplyId(comment.id);
                       }}
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          bgcolor: 'primary.main',
-                        },
-                      }}
                       title="回复"
-                    >
-                      <ReplyIcon size={16} hover={true} />
-                    </Box>
+                      size={18}
+                      hover={true}
+                      color={theme.palette.text.secondary}
+                      hoverColor={COLORS.blue}
+                    />
                     {!comment.parent_id && comment.status === 'approved' && (
-                      <Box
+                      <UpgradeIcon
                         onClick={(e) => {
                           e.stopPropagation();
                           handleTogglePin(comment.id);
                         }}
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          bgcolor: 'background.paper',
-                          boxShadow: 1,
-                          borderRadius: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          color: comment.is_pinned ? 'warning.main' : 'text.secondary',
-                          '&:hover': {
-                            bgcolor: comment.is_pinned ? 'warning.main' : 'primary.main',
-                          },
-                        }}
                         title={comment.is_pinned ? '取消置顶' : '置顶'}
-                      >
-                        <UpgradeIcon size={16} hover={true} sx={{ color: comment.is_pinned ? 'warning.main' : 'inherit' }} />
-                      </Box>
+                        size={18}
+                        hover={true}
+                        color={comment.is_pinned ? COLORS.yellow : theme.palette.text.secondary}
+                        hoverColor={COLORS.yellow}
+                      />
                     )}
-                    <Box
+                    <TrashIcon
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(comment.id);
                       }}
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: 'text.secondary',
-                        '&:hover': {
-                          bgcolor: 'error.main',
-                        },
-                      }}
                       title="删除"
-                    >
-                      <TrashIcon size={16} hover={true} />
-                    </Box>
+                      size={18}
+                      hover={true}
+                      color={theme.palette.text.secondary}
+                      hoverColor={COLORS.red}
+                    />
                   </Box>
-
                   <CardContent
                     sx={{
                       p: 2,
@@ -500,50 +459,40 @@ export default function Comments() {
                         borderColor: 'divider',
                       }}
                     >
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" gap={1} alignItems="center">
                         {comment.status !== 'approved' && (
-                          <Chip
-                            label={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.label}
-                            color={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color as any}
-                            size="small"
-                            sx={{
-                              height: 24,
-                              borderRadius: 1.5,
-                              fontSize: '0.75rem',
-                            }}
-                          />
+                          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
+                            <ForumIcon size={14} color={STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color} />
+                            <Box sx={{ color: STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.color, fontSize: 13, flexShrink: 0 }}>{STATUS_LABELS[comment.status as keyof typeof STATUS_LABELS]?.label}</Box>
+                          </Stack>
                         )}
                         {comment.status === 'pending' && (
                           <>
-                            <IconButton
-                              size="small"
-                              color="success"
+                            <CheckIcon
+                              size={18}
+                              hover={true}
+                              color={theme.palette.success.main}
+                              title="通过"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStatusChange(comment.id, 'approved');
                               }}
-                              sx={{ width: 24, height: 24 }}
-                              title="通过"
-                            >
-                              <Check sx={{ fontSize: 14 }} />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              color="warning"
+                            />
+                            <CloseIcon
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStatusChange(comment.id, 'spam');
                               }}
-                              sx={{ width: 24, height: 24 }}
                               title="标记为垃圾"
-                            >
-                              <CloseIcon size={14} />
-                            </IconButton>
+                              size={18}
+                              hover={true}
+                              color={theme.palette.error.main}
+                            />
                           </>
                         )}
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
+                        <CalendarIcon size={14} color={theme.palette.text.secondary} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
                           {formatDate(comment.created_at)}
                         </Typography>

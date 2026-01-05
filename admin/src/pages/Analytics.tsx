@@ -1,6 +1,6 @@
 import { ArticleIcon, ContactsIcon, LabelIcon, PhotoCameraIcon, TrendingDownIcon, TrendingUpIcon, VisibilityIcon } from '@/components/icons';
 import { analyticsApi, type Overview, type PopularContentVO } from '@/lib/api';
-import { ROUTES } from '@/lib/constants';
+import { COLORS, GRADIENT_COLORS, ROUTES } from '@/lib/constants';
 import {
   Box,
   CircularProgress,
@@ -11,21 +11,6 @@ import {
 import ReactECharts from 'echarts-for-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-const colors = {
-  primary: '#667eea',
-  secondary: '#34d399',
-  accent: '#a78bfa',
-  pink: '#f472b6',
-  yellow: '#fbbf24',
-  red: '#fb7185',
-};
-
-const gradientColors = [
-  { start: '#667eea', end: '#764ba2' },
-  { start: '#34d399', end: '#10b981' },
-  { start: '#a78bfa', end: '#8b5cf6' },
-  { start: '#f472b6', end: '#ec4899' },
-];
 
 export default function Analytics() {
   const navigate = useNavigate();
@@ -95,8 +80,8 @@ export default function Analytics() {
       label: '总访问量',
       value: overview?.total_pv || 0,
       icon: <VisibilityIcon />,
-      color: colors.primary,
-      gradient: gradientColors[0],
+      color: COLORS.primary,
+      gradient: GRADIENT_COLORS[0],
       trend: calculateTrend(overview?.today_pv || 0, overview?.avg_pv_30_days || 0),
       onClick: undefined,
     },
@@ -104,8 +89,8 @@ export default function Analytics() {
       label: '总访客数',
       value: overview?.total_uv || 0,
       icon: <ContactsIcon />,
-      color: colors.secondary,
-      gradient: gradientColors[1],
+      color: COLORS.secondary,
+      gradient: GRADIENT_COLORS[1],
       trend: calculateTrend(overview?.today_uv || 0, overview?.avg_uv_30_days || 0),
       onClick: undefined,
     },
@@ -113,8 +98,8 @@ export default function Analytics() {
       label: '文章数',
       value: overview?.post_count || 0,
       icon: <ArticleIcon />,
-      color: colors.accent,
-      gradient: gradientColors[2],
+      color: COLORS.accent,
+      gradient: GRADIENT_COLORS[2],
       trend: 0,
       onClick: () => navigate(ROUTES.POSTS),
     },
@@ -122,7 +107,7 @@ export default function Analytics() {
       label: '生活记录',
       value: overview?.life_count || 0,
       icon: <PhotoCameraIcon />,
-      color: colors.yellow,
+      color: COLORS.yellow,
       gradient: { start: '#fbbf24', end: '#f59e0b' },
       trend: 0,
       onClick: () => navigate(ROUTES.LIFE),
@@ -131,8 +116,8 @@ export default function Analytics() {
       label: '评论数',
       value: overview?.comment_count || 0,
       icon: <TrendingUpIcon />,
-      color: colors.pink,
-      gradient: gradientColors[3],
+      color: COLORS.pink,
+      gradient: GRADIENT_COLORS[3],
       trend: 0,
       onClick: () => navigate(ROUTES.COMMENTS),
     },
@@ -140,7 +125,7 @@ export default function Analytics() {
       label: '标签数',
       value: overview?.tag_count || 0,
       icon: <LabelIcon />,
-      color: colors.accent,
+      color: COLORS.accent,
       gradient: { start: '#8b5cf6', end: '#7c3aed' },
       trend: 0,
       onClick: () => navigate(ROUTES.TAGS),
@@ -148,9 +133,9 @@ export default function Analytics() {
   ];
 
   const pieData = [
-    { name: '博客文章', value: overview?.post_count || 0, color: colors.accent },
-    { name: '生活记录', value: overview?.life_count || 0, color: colors.yellow },
-    { name: '评论', value: overview?.comment_count || 0, color: colors.pink },
+    { name: '博客文章', value: overview?.post_count || 0, color: COLORS.accent },
+    { name: '生活记录', value: overview?.life_count || 0, color: COLORS.yellow },
+    { name: '评论', value: overview?.comment_count || 0, color: COLORS.pink },
   ].filter((item) => item.value > 0);
 
   const maxPV = visits.length > 0 ? Math.max(...visits.map((v) => v.pv)) : 0;
@@ -259,15 +244,15 @@ export default function Analytics() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 0.25,
-                        color: card.trend > 0 ? colors.secondary : colors.red,
+                        color: card.trend > 0 ? COLORS.secondary : COLORS.red,
                         fontSize: { xs: '0.65rem', sm: '0.7rem' },
                         fontWeight: 600,
                       }}
                     >
                       {card.trend > 0 ? (
-                        <TrendingUpIcon size={12} color={colors.secondary} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                        <TrendingUpIcon size={12} color={COLORS.secondary} sx={{ fontSize: { xs: 10, sm: 12 } }} />
                       ) : (
-                        <TrendingDownIcon size={12} color={colors.red} sx={{ fontSize: { xs: 10, sm: 12 } }} />
+                        <TrendingDownIcon size={12} color={COLORS.red} sx={{ fontSize: { xs: 10, sm: 12 } }} />
                       )}
                       {Math.abs(card.trend).toFixed(1)}%
                     </Box>
@@ -299,7 +284,7 @@ export default function Analytics() {
                     text: `访问量近 30 天最大值：${maxPV}，今日访问量：${todayPV}`,
                     fontSize: 11,
                     fontWeight: 'normal',
-                    fill: colors.primary,
+                    fill: COLORS.primary,
                     lineHeight: 16,
                   },
                 },
@@ -336,7 +321,7 @@ export default function Analytics() {
                   smooth: true,
                   symbol: 'none',
                   lineStyle: {
-                    color: colors.primary,
+                    color: COLORS.primary,
                     width: 2,
                   },
                   areaStyle: {
@@ -347,8 +332,8 @@ export default function Analytics() {
                       x2: 0,
                       y2: 1,
                       colorStops: [
-                        { offset: 0, color: `${colors.primary}66` },
-                        { offset: 1, color: `${colors.primary}00` },
+                        { offset: 0, color: `${COLORS.primary}66` },
+                        { offset: 1, color: `${COLORS.primary}00` },
                       ],
                     },
                   },
@@ -377,7 +362,7 @@ export default function Analytics() {
                     text: `访客数近 30 天最大值：${maxUV}，今日访客数：${todayUV}`,
                     fontSize: 11,
                     fontWeight: 'normal',
-                    fill: colors.secondary,
+                    fill: COLORS.secondary,
                     lineHeight: 16,
                   },
                 },
@@ -414,7 +399,7 @@ export default function Analytics() {
                   smooth: true,
                   symbol: 'none',
                   lineStyle: {
-                    color: colors.secondary,
+                    color: COLORS.secondary,
                     width: 2,
                   },
                   areaStyle: {
@@ -425,8 +410,8 @@ export default function Analytics() {
                       x2: 0,
                       y2: 1,
                       colorStops: [
-                        { offset: 0, color: `${colors.secondary}66` },
-                        { offset: 1, color: `${colors.secondary}00` },
+                        { offset: 0, color: `${COLORS.secondary}66` },
+                        { offset: 1, color: `${COLORS.secondary}00` },
                       ],
                     },
                   },
@@ -461,7 +446,7 @@ export default function Analytics() {
                       justifyContent: 'center',
                       fontSize: 12,
                       fontWeight: 500,
-                      color: index < 3 ? gradientColors[index].start : 'text.secondary',
+                      color: index < 3 ? GRADIENT_COLORS[index].start : 'text.secondary',
                       flexShrink: 0,
                     }}
                   >
@@ -596,7 +581,7 @@ export default function Analytics() {
                       justifyContent: 'center',
                       fontSize: 12,
                       fontWeight: 500,
-                      color: index < 3 ? gradientColors[index].start : 'text.secondary',
+                      color: index < 3 ? GRADIENT_COLORS[index].start : 'text.secondary',
                       flexShrink: 0,
                     }}
                   >

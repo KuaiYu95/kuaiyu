@@ -3,10 +3,10 @@
 // ===========================================
 
 import FilterBar from '@/components/FilterBar';
-import { CalendarIcon, TrashIcon, VisibilityIcon } from '@/components/icons';
+import { CalendarIcon, FileIcon, TrashIcon, VisibilityIcon } from '@/components/icons';
 import { postApi, type Post } from '@/lib/api';
-import { ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add, EditNote } from '@mui/icons-material';
+import { COLORS, ROUTES, STATUS_LABELS } from '@/lib/constants';
+import { Add } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -357,65 +357,29 @@ export default function Posts() {
                     alignItems: 'center',
                   }}
                 >
-                  <Stack direction="row" spacing={1} alignItems="center">
+                  <Stack direction="row" gap={2} alignItems="center">
                     {post.status !== 'published' && (
-                      <Chip
-                        icon={
-                          post.status === 'draft' ? (
-                            <EditNote sx={{ fontSize: 14 }} />
-                          ) : undefined
-                        }
-                        label={STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.label}
-                        color={STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.color as any}
-                        size="small"
-                        sx={{
-                          height: 24,
-                          borderRadius: 1.5,
-                          fontWeight: 500,
-                          fontSize: '0.75rem',
-                          ...(post.status === 'draft' && {
-                            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                            color: 'white',
-                            border: 'none',
-                            '& .MuiChip-icon': {
-                              color: 'white',
-                            },
-                          }),
-                        }}
-                      />
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <FileIcon size={14} color={STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.color} />
+                        <Box sx={{ color: STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.color, fontSize: 13, flexShrink: 0 }}>{STATUS_LABELS[post.status as keyof typeof STATUS_LABELS]?.label}</Box>
+                      </Stack>
                     )}
-                    <Box
+                    {hoveredId === post.id && <TrashIcon
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(post.id);
                       }}
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: 'text.secondary',
-                        opacity: hoveredId === post.id ? 1 : 0,
-                        visibility: hoveredId === post.id ? 'visible' : 'hidden',
-                        transition: 'opacity 0.2s ease, visibility 0.2s ease',
-                        '&:hover': {
-                          bgcolor: 'error.main',
-                        },
-                      }}
                       title="删除"
-                    >
-                      <TrashIcon size={16} hover={true} />
-                    </Box>
+                      size={16}
+                      hover={true}
+                      color={theme.palette.text.secondary}
+                      hoverColor={COLORS.red}
+                    />}
                   </Stack>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
                     {post.view_count > 0 && (
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <VisibilityIcon size={14} sx={{ color: 'text.secondary' }} />
+                        <VisibilityIcon size={14} color={theme.palette.text.secondary} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                           {post.view_count}
                         </Typography>
@@ -423,7 +387,7 @@ export default function Posts() {
                     )}
                     {post.published_at && (
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <CalendarIcon size={14} sx={{ color: 'text.secondary' }} />
+                        <CalendarIcon size={14} color={theme.palette.text.secondary} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                           {formatDate(post.published_at)}
                         </Typography>

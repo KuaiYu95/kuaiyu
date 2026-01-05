@@ -46,12 +46,30 @@ export const COMMENT_STATUS = {
   SPAM: 'spam',
 } as const;
 
-// 状态标签
-export const STATUS_LABELS = {
-  draft: { label: '草稿', color: 'warning' },
-  published: { label: '已发布', color: 'success' },
-  pending: { label: '待审核', color: 'warning' },
-  approved: { label: '已通过', color: 'success' },
-  spam: { label: '垃圾', color: 'error' },
+// 颜色常量
+export const COLORS = {
+  primary: '#667eea',
+  secondary: '#34d399',
+  accent: '#a78bfa',
+  pink: '#f472b6',
+  yellow: '#fbbf24',
+  red: '#fb7185',
+  blue: '#3b82f6',
 } as const;
 
+// 渐变色
+export const GRADIENT_COLORS = [
+  { start: '#667eea', end: '#764ba2' },
+  { start: '#34d399', end: '#10b981' },
+  { start: '#a78bfa', end: '#8b5cf6' },
+  { start: '#f472b6', end: '#ec4899' },
+] as const;
+
+// 状态标签
+export const STATUS_LABELS = {
+  draft: { label: '草稿', color: COLORS.yellow },
+  published: { label: '已发布', color: COLORS.secondary },
+  pending: { label: '待审核', color: COLORS.yellow },
+  approved: { label: '已通过', color: COLORS.secondary },
+  spam: { label: '垃圾', color: COLORS.red },
+} as const;
