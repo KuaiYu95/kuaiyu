@@ -2,8 +2,10 @@
 // 分类管理页面
 // ===========================================
 
+import Empty from '@/components/Empty';
+import { PlusIcon } from '@/components/icons';
 import { categoryApi, type Category } from '@/lib/api';
-import { Add, Delete } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -15,7 +17,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -31,6 +37,7 @@ export default function BillCategories() {
   // 表单数据
   const [name, setName] = useState('');
   const [key, setKey] = useState('');
+  const [type, setType] = useState<'expense' | 'income'>('expense');
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -51,6 +58,7 @@ export default function BillCategories() {
   const openDialog = () => {
     setName('');
     setKey('');
+    setType('expense');
     setDialogOpen(true);
   };
 
@@ -60,7 +68,7 @@ export default function BillCategories() {
     }
 
     try {
-      await categoryApi.create({ name: name.trim(), key: key.trim() });
+      await categoryApi.create({ name: name.trim(), key: key.trim(), type });
       setDialogOpen(false);
       fetchCategories();
     } catch (err: any) {
@@ -89,12 +97,15 @@ export default function BillCategories() {
         </Typography>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<PlusIcon size={18} hover />}
           onClick={openDialog}
           size="small"
           sx={{
             minWidth: { xs: 'auto', sm: 100 },
             px: { xs: 1, sm: 2 },
+            '& .MuiButton-startIcon': {
+              margin: { xs: 0, sm: '0 8px 0 0' },
+            },
           }}
         >
           <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -139,18 +150,25 @@ export default function BillCategories() {
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 500,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          mb: 0.5,
-                        }}
-                      >
-                        {category.name}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {category.name}
+                        </Typography>
+                        <Chip
+                          label={category.type === 'expense' ? '支出' : '收入'}
+                          size="small"
+                          color={category.type === 'expense' ? 'error' : 'success'}
+                          sx={{ height: 20, fontSize: '0.65rem' }}
+                        />
+                      </Box>
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -203,11 +221,9 @@ export default function BillCategories() {
           ))}
           {categories.length === 0 && !loading && (
             <Grid item xs={12}>
-              <Card>
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">暂无分类</Typography>
-                </CardContent>
-              </Card>
+              <Box sx={{ py: 2 }}>
+                <Empty text="暂无分类" />
+              </Box>
             </Grid>
           )}
         </Grid>
@@ -217,13 +233,24 @@ export default function BillCategories() {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>新建分类</DialogTitle>
         <DialogContent>
+          <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
+            <InputLabel>分类类型</InputLabel>
+            <Select
+              value={type}
+              onChange={(e) => setType(e.target.value as 'expense' | 'income')}
+              label="分类类型"
+            >
+              <MenuItem value="expense">支出</MenuItem>
+              <MenuItem value="income">收入</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             label="分类名称"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            sx={{ mt: 1, mb: 2 }}
+            sx={{ mb: 2 }}
             autoFocus
             placeholder="如：餐饮、购物"
           />

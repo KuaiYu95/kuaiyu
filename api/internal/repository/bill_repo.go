@@ -2,6 +2,7 @@
 package repository
 
 import (
+	"regexp"
 	"time"
 	"kuaiyu/internal/model"
 )
@@ -69,8 +70,40 @@ func (r *BillRepository) FindAll(page, limit int, filters map[string]interface{}
 		query = query.Where("is_consumed = ?", isConsumed)
 	}
 	
-	if hasChargeBack, ok := filters["has_charge_back"].(bool); ok {
-		query = query.Where("has_charge_back = ?", hasChargeBack)
+	if refundType, ok := filters["refund_type"].(int); ok {
+		query = query.Where("refund_type = ?", refundType)
+	}
+	
+	// 搜索：模糊匹配 amount、desc、date
+	if search, ok := filters["search"].(string); ok && search != "" {
+		searchPattern := "%" + search + "%"
+		
+		// 提取纯数字，用于匹配日期的多种格式（如 0104、1.4、1月4日 等）
+		digits := regexp.MustCompile(`\D+`).ReplaceAllString(search, "")
+		
+		if digits != "" {
+			digitsPattern := "%" + digits + "%"
+			// 说明：
+			// - CAST(date AS CHAR)  匹配 YYYY-MM-DD
+			// - DATE_FORMAT(date, '%m%d')  匹配 0104 这种
+			// - DATE_FORMAT(date, '%c%e')  匹配 14（1月4日）这种
+			query = query.Where(
+				"(CAST(amount AS CHAR) LIKE ? OR `desc` LIKE ? OR CAST(date AS CHAR) LIKE ? OR " +
+					"DATE_FORMAT(date, '%m%d') LIKE ? OR DATE_FORMAT(date, '%c%e') LIKE ?)",
+				searchPattern,
+				searchPattern,
+				searchPattern,
+				digitsPattern,
+				digitsPattern,
+			)
+		} else {
+			query = query.Where(
+				"CAST(amount AS CHAR) LIKE ? OR `desc` LIKE ? OR CAST(date AS CHAR) LIKE ?",
+				searchPattern,
+				searchPattern,
+				searchPattern,
+			)
+		}
 	}
 	
 	// 计数
@@ -112,13 +145,13 @@ func (r *BillRepository) UpdateRefund(id uint, refundAmount float64) error {
 		Update("refund", refundAmount).Error
 }
 
-// UpdateChargeBack 更新代付信息
-func (r *BillRepository) UpdateChargeBack(id uint, hasChargeBack bool, chargeBackAmount float64) error {
+// UpdateRefund 更新退款/代付信息
+func (r *BillRepository) UpdateRefundInfo(id uint, refundAmount float64, refundType int) error {
 	return r.db.Model(&model.Bill{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
-			"has_charge_back":    hasChargeBack,
-			"charge_back_amount": chargeBackAmount,
+			"refund":      refundAmount,
+			"refund_type": refundType,
 		}).Error
 }
 
@@ -157,9 +190,9 @@ func (r *BillRepository) GetStatistics(startDate, endDate string, filters map[st
 		query = query.Where("type = ?", typeVal)
 	}
 	
-	// 总支出
+	// 总支出（只统计已消费的）
 	var totalExpense float64
-	expenseQuery := r.db.Model(&model.Bill{}).Where("type = ?", "expense")
+	expenseQuery := r.db.Model(&model.Bill{}).Where("type = ? AND is_consumed = ?", "expense", true)
 	if startDate != "" {
 		expenseQuery = expenseQuery.Where("date >= ?", startDate)
 	}
@@ -169,7 +202,7 @@ func (r *BillRepository) GetStatistics(startDate, endDate string, filters map[st
 	if typeVal, ok := filters["type"].(string); ok && typeVal != "" && typeVal == "expense" {
 		// 已经在type筛选中了
 	}
-	expenseQuery.Select("COALESCE(SUM(amount - refund - COALESCE(charge_back_amount, 0)), 0)").Scan(&totalExpense)
+	expenseQuery.Select("COALESCE(SUM(amount - refund), 0)").Scan(&totalExpense)
 	stats.TotalExpense = totalExpense
 	
 	// 总收入
@@ -194,8 +227,8 @@ func (r *BillRepository) GetStatistics(startDate, endDate string, filters map[st
 	
 	var monthExpense float64
 	r.db.Model(&model.Bill{}).
-		Where("date >= ? AND date <= ? AND type = ?", monthStart.Format("2006-01-02"), monthEnd.Format("2006-01-02"), "expense").
-		Select("COALESCE(SUM(amount - refund - COALESCE(charge_back_amount, 0)), 0)").
+		Where("date >= ? AND date <= ? AND type = ? AND is_consumed = ?", monthStart.Format("2006-01-02"), monthEnd.Format("2006-01-02"), "expense", true).
+		Select("COALESCE(SUM(amount - refund), 0)").
 		Scan(&monthExpense)
 	stats.MonthExpense = monthExpense
 	
@@ -212,8 +245,8 @@ func (r *BillRepository) GetStatistics(startDate, endDate string, filters map[st
 	
 	var yearExpense float64
 	r.db.Model(&model.Bill{}).
-		Where("date >= ? AND date <= ? AND type = ?", yearStart.Format("2006-01-02"), yearEnd.Format("2006-01-02"), "expense").
-		Select("COALESCE(SUM(amount - refund - COALESCE(charge_back_amount, 0)), 0)").
+		Where("date >= ? AND date <= ? AND type = ? AND is_consumed = ?", yearStart.Format("2006-01-02"), yearEnd.Format("2006-01-02"), "expense", true).
+		Select("COALESCE(SUM(amount - refund), 0)").
 		Scan(&yearExpense)
 	stats.YearExpense = yearExpense
 	
@@ -231,9 +264,9 @@ func (r *BillRepository) GetStatistics(startDate, endDate string, filters map[st
 	}
 	var expenseByCategory []CategoryExpense
 	expenseCategoryQuery := r.db.Model(&model.Bill{}).
-		Select("categories.name as category_name, COALESCE(SUM(bills.amount - bills.refund - COALESCE(bills.charge_back_amount, 0)), 0) as total").
+		Select("categories.name as category_name, COALESCE(SUM(bills.amount - bills.refund), 0) as total").
 		Joins("JOIN categories ON categories.id = bills.category_id").
-		Where("bills.type = ?", "expense")
+		Where("bills.type = ? AND bills.is_consumed = ?", "expense", true)
 	if startDate != "" {
 		expenseCategoryQuery = expenseCategoryQuery.Where("bills.date >= ?", startDate)
 	}
@@ -285,7 +318,7 @@ func (r *BillRepository) GetDailyTrend() ([]model.BillTrendData, error) {
 	var trendItems []TrendItem
 	r.db.Model(&model.Bill{}).
 		Select("DATE(bills.date) as date, "+
-			"COALESCE(SUM(CASE WHEN bills.type = 'expense' THEN bills.amount - bills.refund - COALESCE(bills.charge_back_amount, 0) ELSE 0 END), 0) as expense, "+
+			"COALESCE(SUM(CASE WHEN bills.type = 'expense' THEN bills.amount - bills.refund ELSE 0 END), 0) as expense, "+
 			"COALESCE(SUM(CASE WHEN bills.type = 'income' THEN bills.amount ELSE 0 END), 0) as income").
 		Where("bills.date >= ? AND bills.date <= ?", startDate, endDate).
 		Group("DATE(bills.date)").
@@ -321,7 +354,7 @@ func (r *BillRepository) GetMonthlyTrend() ([]model.BillTrendData, error) {
 		}
 		var trendItem MonthTrendItem
 		r.db.Model(&model.Bill{}).
-			Select("COALESCE(SUM(CASE WHEN bills.type = 'expense' THEN bills.amount - bills.refund - COALESCE(bills.charge_back_amount, 0) ELSE 0 END), 0) as expense, "+
+			Select("COALESCE(SUM(CASE WHEN bills.type = 'expense' THEN bills.amount - bills.refund ELSE 0 END), 0) as expense, "+
 				"COALESCE(SUM(CASE WHEN bills.type = 'income' THEN bills.amount ELSE 0 END), 0) as income").
 			Where("bills.date >= ? AND bills.date <= ?", monthStart.Format("2006-01-02"), monthEnd.Format("2006-01-02")).
 			Scan(&trendItem)
@@ -348,7 +381,7 @@ func (r *BillRepository) GetCategoryRanking() ([]model.CategoryRankingItem, erro
 	}
 	var rankItems []CategoryRankItem
 	r.db.Model(&model.Bill{}).
-		Select("categories.name as category_name, COALESCE(SUM(bills.amount - bills.refund - COALESCE(bills.charge_back_amount, 0)), 0) as total").
+		Select("categories.name as category_name, COALESCE(SUM(bills.amount - bills.refund), 0) as total").
 		Joins("JOIN categories ON categories.id = bills.category_id").
 		Where("bills.type = ? AND bills.date >= ?", "expense", monthStart.Format("2006-01-02")).
 		Group("categories.id, categories.name").

@@ -2,11 +2,11 @@
 // 博客管理页面
 // ===========================================
 
+import Empty from '@/components/Empty';
 import FilterBar from '@/components/FilterBar';
-import { CalendarIcon, FileIcon, TrashIcon, VisibilityIcon } from '@/components/icons';
+import { CalendarIcon, FileIcon, PlusIcon, TrashIcon, VisibilityIcon } from '@/components/icons';
 import { postApi, type Post } from '@/lib/api';
 import { COLORS, ROUTES, STATUS_LABELS } from '@/lib/constants';
-import { Add } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -22,7 +22,6 @@ import {
   Grid,
   Stack,
   Typography,
-  useMediaQuery,
   useTheme
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
@@ -31,7 +30,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 export default function Posts() {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isPC = useMediaQuery(theme.breakpoints.up('sm'));
   const [searchParams, setSearchParams] = useSearchParams();
 
   const statusFromUrl = searchParams.get('status') || '';
@@ -46,6 +44,12 @@ export default function Posts() {
   const [search, setSearch] = useState(searchFromUrl);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+
+  // 使用 ref 存储最新的筛选条件，用于滚动加载
+  const filtersRef = useRef({ status, search });
+  useEffect(() => {
+    filtersRef.current = { status, search };
+  }, [status, search]);
 
   const limit = 20;
 
@@ -93,11 +97,13 @@ export default function Posts() {
 
     try {
       const currentPage = reset ? 1 : pageRef.current;
+      // 使用 ref 中的最新筛选条件
+      const filters = filtersRef.current;
       const res = await postApi.list({
         page: currentPage,
         limit: limit,
-        status: status || undefined,
-        search: search || undefined,
+        status: filters.status || undefined,
+        search: filters.search || undefined,
       });
 
       if (reset) {
@@ -200,33 +206,29 @@ export default function Posts() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <FilterBar
-            status={status}
-            searchValue={search}
-            onStatusChange={(newStatus) => {
-              setStatus(newStatus);
-              updateSearchParams({ status: newStatus });
-            }}
-            onSearchChange={(value) => {
-              setSearch(value);
-              updateSearchParams({ search: value });
-            }}
-            statusOptions={[
-              { value: '', label: '全部' },
-              { value: 'draft', label: '草稿' },
-              { value: 'published', label: '已发布' },
-            ]}
-            showSearch={isPC}
-          />
-        </Box>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <FilterBar
+          status={status}
+          searchValue={search}
+          onStatusChange={(newStatus) => {
+            setStatus(newStatus);
+            updateSearchParams({ status: newStatus });
+          }}
+          onSearchChange={(value) => {
+            setSearch(value);
+            updateSearchParams({ search: value });
+          }}
+          statusOptions={[
+            { value: '', label: '草稿' },
+          ]}
+        />
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<PlusIcon size={18} hover />}
           onClick={() => navigate(ROUTES.POST_NEW)}
           size="small"
           sx={{
+            flexShrink: 0,
             minWidth: { xs: 'auto', sm: 100 },
             px: { xs: 1, sm: 2 },
             '& .MuiButton-startIcon': {
@@ -401,8 +403,8 @@ export default function Posts() {
         ))}
         {posts.length === 0 && !loading && (
           <Grid item xs={12}>
-            <Box sx={{ py: 2, textAlign: 'center' }}>
-              <Typography color="text.secondary" sx={{ fontSize: '12px' }}>暂无文章</Typography>
+            <Box sx={{ py: 2 }}>
+              <Empty text="暂无文章" />
             </Box>
           </Grid>
         )}

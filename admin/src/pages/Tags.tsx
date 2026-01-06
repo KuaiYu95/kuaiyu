@@ -2,8 +2,10 @@
 // 标签管理页面
 // ===========================================
 
+import Empty from '@/components/Empty';
+import { PlusIcon } from '@/components/icons';
 import { tagApi, type Tag } from '@/lib/api';
-import { Add, Edit } from '@mui/icons-material';
+import { Edit } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -94,7 +96,7 @@ export default function Tags() {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<PlusIcon size={18} hover />}
           onClick={() => openDialog()}
           size="small"
           sx={{
@@ -235,11 +237,9 @@ export default function Tags() {
           ))}
           {tags.length === 0 && !loading && (
             <Grid item xs={12}>
-              <Card>
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">暂无标签</Typography>
-                </CardContent>
-              </Card>
+              <Box sx={{ py: 2 }}>
+                <Empty text="暂无标签" />
+              </Box>
             </Grid>
           )}
         </Grid>

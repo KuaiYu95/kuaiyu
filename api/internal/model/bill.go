@@ -19,9 +19,8 @@ type Bill struct {
 	Date             time.Time  `gorm:"type:date;not null" json:"date"`
 	PeriodType       string     `gorm:"type:enum('month','year');default:'month'" json:"period_type"` // month | year
 	IsConsumed       bool       `gorm:"default:true" json:"is_consumed"`
-	HasChargeBack    bool       `gorm:"default:false" json:"has_charge_back"`
-	ChargeBackAmount float64    `gorm:"type:decimal(10,2);default:0" json:"charge_back_amount"`
-	Refund            float64    `gorm:"type:decimal(10,2);default:0" json:"refund"`
+	Refund           float64    `gorm:"type:decimal(10,2);default:0" json:"refund"`
+	RefundType       int        `gorm:"type:tinyint(1);default:0" json:"refund_type"` // 0-无，1-退款，2-代付
 	
 	// 关联
 	Category Category `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
@@ -45,8 +44,8 @@ type CreateBillRequest struct {
 	Date             string  `json:"date" binding:"required"`
 	PeriodType       string  `json:"period_type" binding:"omitempty,oneof=month year"`
 	IsConsumed       *bool   `json:"is_consumed"`
-	HasChargeBack    *bool   `json:"has_charge_back"`
-	ChargeBackAmount float64 `json:"charge_back_amount"`
+	Refund           float64 `json:"refund"`
+	RefundType       int     `json:"refund_type" binding:"omitempty,oneof=0 1 2"` // 0-无，1-退款，2-代付
 }
 
 // UpdateBillRequest 更新账单请求
@@ -58,8 +57,8 @@ type UpdateBillRequest struct {
 	Date             string  `json:"date"`
 	PeriodType       string  `json:"period_type" binding:"omitempty,oneof=month year"`
 	IsConsumed       *bool   `json:"is_consumed"`
-	HasChargeBack    *bool   `json:"has_charge_back"`
-	ChargeBackAmount float64 `json:"charge_back_amount"`
+	Refund           float64 `json:"refund"`
+	RefundType       int     `json:"refund_type" binding:"omitempty,oneof=0 1 2"` // 0-无，1-退款，2-代付
 }
 
 // RefundRequest 退款请求
@@ -82,9 +81,8 @@ type BillVO struct {
 	Date             string    `json:"date"`
 	PeriodType       string    `json:"period_type"`
 	IsConsumed       bool      `json:"is_consumed"`
-	HasChargeBack    bool      `json:"has_charge_back"`
-	ChargeBackAmount float64   `json:"charge_back_amount"`
-	Refund            float64   `json:"refund"`
+	Refund           float64   `json:"refund"`
+	RefundType       int       `json:"refund_type"` // 0-无，1-退款，2-代付
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 	Category          *CategoryVO `json:"category,omitempty"`
@@ -100,9 +98,8 @@ type BillListVO struct {
 	Date             string    `json:"date"`
 	PeriodType       string    `json:"period_type"`
 	IsConsumed       bool      `json:"is_consumed"`
-	HasChargeBack    bool      `json:"has_charge_back"`
-	ChargeBackAmount float64   `json:"charge_back_amount"`
-	Refund            float64   `json:"refund"`
+	Refund           float64   `json:"refund"`
+	RefundType       int       `json:"refund_type"` // 0-无，1-退款，2-代付
 	CreatedAt         time.Time `json:"created_at"`
 	Category          *CategoryVO `json:"category,omitempty"`
 }
@@ -147,9 +144,8 @@ func (b *Bill) ToVO() BillVO {
 		Date:             b.Date.Format("2006-01-02"),
 		PeriodType:       b.PeriodType,
 		IsConsumed:       b.IsConsumed,
-		HasChargeBack:    b.HasChargeBack,
-		ChargeBackAmount: b.ChargeBackAmount,
-		Refund:            b.Refund,
+		Refund:           b.Refund,
+		RefundType:       b.RefundType,
 		CreatedAt:         b.CreatedAt,
 		UpdatedAt:         b.UpdatedAt,
 	}
@@ -174,9 +170,8 @@ func (b *Bill) ToListVO() BillListVO {
 		Date:             b.Date.Format("2006-01-02"),
 		PeriodType:       b.PeriodType,
 		IsConsumed:       b.IsConsumed,
-		HasChargeBack:    b.HasChargeBack,
-		ChargeBackAmount: b.ChargeBackAmount,
-		Refund:            b.Refund,
+		Refund:           b.Refund,
+		RefundType:       b.RefundType,
 		CreatedAt:         b.CreatedAt,
 	}
 	

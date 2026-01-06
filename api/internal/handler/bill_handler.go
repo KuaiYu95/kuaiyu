@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"fmt"
 	"time"
 	"github.com/gin-gonic/gin"
 	"kuaiyu/internal/model"
@@ -64,8 +65,15 @@ func (h *BillHandler) List(c *gin.Context) {
 		filters["is_consumed"] = isConsumedStr == "true"
 	}
 	
-	if hasChargeBackStr := c.Query("has_charge_back"); hasChargeBackStr != "" {
-		filters["has_charge_back"] = hasChargeBackStr == "true"
+	if refundTypeStr := c.Query("refund_type"); refundTypeStr != "" {
+		var refundType int
+		if _, err := fmt.Sscanf(refundTypeStr, "%d", &refundType); err == nil {
+			filters["refund_type"] = refundType
+		}
+	}
+	
+	if search := c.Query("search"); search != "" {
+		filters["search"] = search
 	}
 	
 	bills, total, err := h.repo.FindAll(page, limit, filters)
@@ -133,32 +141,35 @@ func (h *BillHandler) Create(c *gin.Context) {
 		isConsumed = *req.IsConsumed
 	}
 	
-	hasChargeBack := false
-	if req.HasChargeBack != nil {
-		hasChargeBack = *req.HasChargeBack
-	}
+	// 处理退款/代付信息
+	refund := req.Refund
+	refundType := req.RefundType
 	
-	// 验证代付金额
-	if hasChargeBack && req.ChargeBackAmount <= 0 {
-		response.BadRequest(c, "代付金额必须大于0")
+	// 验证退款/代付金额
+	if refund > 0 && refundType == 0 {
+		response.BadRequest(c, "退款/代付金额大于0时，必须指定退款类型")
 		return
 	}
 	
-	if !hasChargeBack {
-		req.ChargeBackAmount = 0
+	if refund > 0 && (refundType != 1 && refundType != 2) {
+		response.BadRequest(c, "退款类型必须为1（退款）或2（代付）")
+		return
+	}
+	
+	if refund == 0 {
+		refundType = 0
 	}
 	
 	bill := &model.Bill{
-		Type:             req.Type,
-		CategoryID:       req.CategoryID,
-		Amount:           req.Amount,
-		Desc:             req.Desc,
-		Date:             date,
-		PeriodType:       periodType,
-		IsConsumed:       isConsumed,
-		HasChargeBack:    hasChargeBack,
-		ChargeBackAmount: req.ChargeBackAmount,
-		Refund:            0,
+		Type:       req.Type,
+		CategoryID: req.CategoryID,
+		Amount:     req.Amount,
+		Desc:       req.Desc,
+		Date:       date,
+		PeriodType: periodType,
+		IsConsumed: isConsumed,
+		Refund:     refund,
+		RefundType: refundType,
 	}
 	bill.Category = *category
 	
@@ -234,20 +245,27 @@ func (h *BillHandler) Update(c *gin.Context) {
 		bill.IsConsumed = *req.IsConsumed
 	}
 	
-	if req.HasChargeBack != nil {
-		bill.HasChargeBack = *req.HasChargeBack
-		if !bill.HasChargeBack {
-			bill.ChargeBackAmount = 0
-		} else if req.ChargeBackAmount > 0 {
-			bill.ChargeBackAmount = req.ChargeBackAmount
+	// 更新退款/代付信息
+	if req.Refund > 0 {
+		if req.RefundType == 0 {
+			response.BadRequest(c, "退款/代付金额大于0时，必须指定退款类型")
+			return
 		}
-	} else if req.ChargeBackAmount > 0 {
-		bill.ChargeBackAmount = req.ChargeBackAmount
+		if req.RefundType != 1 && req.RefundType != 2 {
+			response.BadRequest(c, "退款类型必须为1（退款）或2（代付）")
+			return
+		}
+		bill.Refund = req.Refund
+		bill.RefundType = req.RefundType
+	} else if req.RefundType > 0 {
+		// 如果只设置了类型但没有金额，清空
+		bill.Refund = 0
+		bill.RefundType = 0
 	}
 	
-	// 验证退款金额不能超过原金额
+	// 验证退款/代付金额不能超过原金额
 	if bill.Refund > bill.Amount {
-		response.BadRequest(c, "退款金额不能超过原金额")
+		response.BadRequest(c, "退款/代付金额不能超过原金额")
 		return
 	}
 	
@@ -292,6 +310,13 @@ func (h *BillHandler) Statistics(c *gin.Context) {
 	filters := make(map[string]interface{})
 	if typeVal := c.Query("type"); typeVal != "" {
 		filters["type"] = typeVal
+	}
+	if isConsumedStr := c.Query("is_consumed"); isConsumedStr != "" {
+		if isConsumedStr == "true" {
+			filters["is_consumed"] = true
+		} else if isConsumedStr == "false" {
+			filters["is_consumed"] = false
+		}
 	}
 	
 	stats, err := h.repo.GetStatistics(startDate, endDate, filters)
@@ -367,7 +392,8 @@ func (h *BillHandler) Refund(c *gin.Context) {
 		return
 	}
 	
-	if err := h.repo.UpdateRefund(id, newRefund); err != nil {
+	// 更新退款信息，类型设为1（退款）
+	if err := h.repo.UpdateRefundInfo(id, newRefund, 1); err != nil {
 		response.InternalError(c, "")
 		return
 	}
@@ -404,7 +430,8 @@ func (h *BillHandler) ChargeBack(c *gin.Context) {
 		return
 	}
 	
-	if err := h.repo.UpdateChargeBack(id, true, req.Amount); err != nil {
+	// 更新代付信息，类型设为2（代付）
+	if err := h.repo.UpdateRefundInfo(id, req.Amount, 2); err != nil {
 		response.InternalError(c, "")
 		return
 	}

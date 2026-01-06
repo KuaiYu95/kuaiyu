@@ -2,25 +2,25 @@
 // 评论管理页面
 // ===========================================
 
+import Empty from '@/components/Empty';
 import FilterBar from '@/components/FilterBar';
 import { CalendarIcon, CheckIcon, CloseIcon, ForumIcon, ReplyIcon, TrashIcon, UpgradeIcon } from '@/components/icons';
 import { useToast } from '@/components/Toast';
 import { commentApi, type Comment } from '@/lib/api';
 import { COLORS, STATUS_LABELS } from '@/lib/constants';
+import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import {
   Avatar,
   Box,
   Button,
   Card,
   CardContent,
-  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Grid,
   Stack,
   TextField,
@@ -35,7 +35,6 @@ export default function Comments() {
   const toast = useToast();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isPC = useMediaQuery(theme.breakpoints.up('sm'));
   const [searchParams, setSearchParams] = useSearchParams();
 
   const statusFromUrl = searchParams.get('status') || '';
@@ -52,6 +51,12 @@ export default function Comments() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [replyId, setReplyId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
+
+  // 使用 ref 存储最新的筛选条件，用于滚动加载
+  const filtersRef = useRef({ status, isPinned });
+  useEffect(() => {
+    filtersRef.current = { status, isPinned };
+  }, [status, isPinned]);
 
   const limit = 20;
 
@@ -99,16 +104,18 @@ export default function Comments() {
 
     try {
       const currentPage = reset ? 1 : pageRef.current;
+      // 使用 ref 中的最新筛选条件
+      const filters = filtersRef.current;
       const params: any = {
         page: currentPage,
         limit: limit,
       };
 
-      if (status) {
-        params.status = status;
+      if (filters.status) {
+        params.status = filters.status;
       }
 
-      if (isPinned === true) {
+      if (filters.isPinned === true) {
         params.is_pinned = true;
       }
 
@@ -296,29 +303,33 @@ export default function Comments() {
             updateSearchParams({ status: newStatus });
           }
         }}
-        statusOptions={[
-          { value: '', label: '全部' },
-          { value: 'pending', label: '待审核' },
-          { value: 'approved', label: '已通过' },
-          { value: 'spam', label: '垃圾' },
-        ]}
-        showSearch={isPC}
+        statusFilterValue="pending"
+        statusLabel="待审核"
+        showSearch
         additionalFilters={
           (status === '' || status === 'approved') ? (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  size='small'
-                  checked={isPinned === true}
-                  onChange={(e) => {
-                    const newIsPinned = e.target.checked ? true : undefined;
-                    setIsPinned(newIsPinned);
-                    updateSearchParams({ isPinned: newIsPinned });
-                  }}
-                />
-              }
-              label={<Typography variant="body2" color="text.secondary" >置顶</Typography>}
-            />
+            <Button
+              variant={isPinned === true ? 'contained' : 'outlined'}
+              startIcon={isPinned === true ? <CheckBox /> : <CheckBoxOutlineBlank />}
+              onClick={() => {
+                const newIsPinned = isPinned === true ? undefined : true;
+                setIsPinned(newIsPinned);
+                updateSearchParams({ isPinned: newIsPinned });
+              }}
+              size="small"
+              sx={{
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                ...(isPinned === true
+                  ? {}
+                  : {
+                    color: 'text.secondary',
+                    borderColor: 'divider',
+                  }),
+              }}
+            >
+              置顶
+            </Button>
           ) : undefined
         }
       />
@@ -505,8 +516,8 @@ export default function Comments() {
           })}
           {comments.length === 0 && !loading && (
             <Grid item xs={12}>
-              <Box sx={{ py: 2, textAlign: 'center' }}>
-                <Typography color="text.secondary" sx={{ fontSize: '12px' }}>暂无评论</Typography>
+              <Box sx={{ py: 2 }}>
+                <Empty text="暂无评论" />
               </Box>
             </Grid>
           )}

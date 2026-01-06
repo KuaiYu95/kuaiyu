@@ -183,10 +183,11 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL COMMENT '分类名称，如"餐饮"、"购物"',
   `key` varchar(50) NOT NULL COMMENT '分类键，用于程序识别，如"food"、"shopping"',
+  `type` enum('expense','income') NOT NULL DEFAULT 'expense' COMMENT '分类类型：支出/收入',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_categories_key` (`key`),
-  UNIQUE KEY `idx_categories_name` (`name`)
+  UNIQUE KEY `idx_categories_name_type` (`name`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===========================================
@@ -201,9 +202,8 @@ CREATE TABLE IF NOT EXISTS `bills` (
   `date` date NOT NULL COMMENT '账单日期',
   `period_type` enum('month','year') DEFAULT 'month' COMMENT '周期类型：当月/当年',
   `is_consumed` tinyint(1) DEFAULT 1 COMMENT '是否已消费',
-  `has_charge_back` tinyint(1) DEFAULT 0 COMMENT '是否存在代付',
-  `charge_back_amount` decimal(10,2) DEFAULT 0 COMMENT '代付金额',
-  `refund` decimal(10,2) DEFAULT 0 COMMENT '退款金额，仅支出类型',
+  `refund` decimal(10,2) DEFAULT 0 COMMENT '退款/代付金额',
+  `refund_type` tinyint(1) DEFAULT 0 COMMENT '退款类型：0-无，1-退款，2-代付',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL COMMENT '软删除',
@@ -226,18 +226,23 @@ CREATE TABLE IF NOT EXISTS `bills` (
 INSERT IGNORE INTO `users` (`username`, `password`, `email`) VALUES 
 ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.xLRVc.X/fRJjRXcXKi', 'admin@kcat.site');
 
--- 插入初始分类数据
-INSERT IGNORE INTO `categories` (`name`, `key`, `created_at`) VALUES
-('餐饮', 'food', NOW()),
-('购物', 'shopping', NOW()),
-('交通', 'transport', NOW()),
-('预/充值', 'prepaid', NOW()),
-('工资', 'salary', NOW()),
-('娱乐', 'entertainment', NOW()),
-('医疗', 'medical', NOW()),
-('教育', 'education', NOW()),
-('住房', 'housing', NOW()),
-('其他', 'other', NOW());
+-- 插入初始分类数据（支出类型）
+INSERT IGNORE INTO `categories` (`name`, `key`, `type`, `created_at`) VALUES
+('餐饮', 'food', 'expense', NOW()),
+('购物', 'shopping', 'expense', NOW()),
+('交通', 'transport', 'expense', NOW()),
+('预/充值', 'prepaid', 'expense', NOW()),
+('娱乐', 'entertainment', 'expense', NOW()),
+('医疗', 'medical', 'expense', NOW()),
+('教育', 'education', 'expense', NOW()),
+('住房', 'housing', 'expense', NOW()),
+('其他', 'other', 'expense', NOW());
+
+-- 插入初始分类数据（收入类型）
+INSERT IGNORE INTO `categories` (`name`, `key`, `type`, `created_at`) VALUES
+('工资', 'salary', 'income', NOW()),
+('奖金', 'bonus', 'income', NOW()),
+('其他', 'other', 'income', NOW());
 
 SET FOREIGN_KEY_CHECKS = 1;
 

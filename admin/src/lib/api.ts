@@ -279,9 +279,8 @@ export interface Bill {
   date: string;
   period_type: 'month' | 'year';
   is_consumed: boolean;
-  has_charge_back: boolean;
-  charge_back_amount: number;
   refund: number;
+  refund_type: 0 | 1 | 2; // 0-无，1-退款，2-代付
   created_at: string;
   updated_at: string;
   category?: Category;
@@ -291,6 +290,7 @@ export interface Category {
   id: number;
   name: string;
   key: string;
+  type: 'expense' | 'income';
   created_at: string;
   bill_count?: number;
 }
@@ -321,7 +321,8 @@ export interface BillListParams {
   end_date?: string;
   period_type?: 'month' | 'year';
   is_consumed?: boolean;
-  has_charge_back?: boolean;
+  refund_type?: 0 | 1 | 2;
+  search?: string;
 }
 
 export interface CreateBillRequest {
@@ -332,8 +333,8 @@ export interface CreateBillRequest {
   date: string;
   period_type?: 'month' | 'year';
   is_consumed?: boolean;
-  has_charge_back?: boolean;
-  charge_back_amount?: number;
+  refund?: number;
+  refund_type?: 0 | 1 | 2;
 }
 
 export interface UpdateBillRequest {
@@ -344,19 +345,21 @@ export interface UpdateBillRequest {
   date?: string;
   period_type?: 'month' | 'year';
   is_consumed?: boolean;
-  has_charge_back?: boolean;
-  charge_back_amount?: number;
+  refund?: number;
+  refund_type?: 0 | 1 | 2;
 }
 
 export interface CreateCategoryRequest {
   name: string;
   key: string;
+  type: 'expense' | 'income';
 }
 
 export interface StatisticsParams {
   start_date?: string;
   end_date?: string;
   type?: 'expense' | 'income';
+  is_consumed?: boolean;
 }
 
 // ===========================================
@@ -385,8 +388,6 @@ export const billApi = {
   delete: (id: number) => api.delete(`/api/admin/bills/${id}`),
   refund: (id: number, amount: number) =>
     api.post<any, ApiResponse<Bill>>(`/api/admin/bills/${id}/refund`, { amount }),
-  chargeBack: (id: number, amount: number) =>
-    api.post<any, ApiResponse<Bill>>(`/api/admin/bills/${id}/charge-back`, { amount }),
   statistics: (params?: StatisticsParams) =>
     api.get<any, ApiResponse<BillStatistics>>('/api/admin/bills/statistics', { params }),
   dailyTrend: () => api.get<any, ApiResponse<BillTrendData[]>>('/api/admin/bills/trends/daily'),

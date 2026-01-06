@@ -8,8 +8,10 @@ import { Box, SxProps, Theme } from '@mui/material';
 import { useState } from 'react';
 
 // 导入图标数据
+import editAnimation from '@/assets/icons/system-regular-114-edit-pencil-rename-hover-pinch.json';
 import cameraAnimation from '@/assets/icons/system-regular-123-camera-hover-camera-1.json';
 import articleAnimation from '@/assets/icons/system-regular-14-article-hover-article.json';
+import historyAnimation from '@/assets/icons/system-regular-141-history-hover-history.json';
 import labelAnimation from '@/assets/icons/system-regular-146-label-hover-label.json';
 import trendingDownAnimation from '@/assets/icons/system-regular-159-trending-down-hover-trend-down.json';
 import trendingUpAnimation from '@/assets/icons/system-regular-160-trending-up-hover-trend-up.json';
@@ -17,9 +19,12 @@ import upgradeAnimation from '@/assets/icons/system-regular-163-upgrade-hover-up
 import contactsAnimation from '@/assets/icons/system-regular-187-contacts-hover-contacts.json';
 import forumAnimation from '@/assets/icons/system-regular-192-forum-hover-forum.json';
 import calendarAnimation from '@/assets/icons/system-regular-23-calendar-hover-calendar.json';
+import infoAnimation from '@/assets/icons/system-regular-28-info-hover-info.json';
 import crossAnimation from '@/assets/icons/system-regular-29-cross-hover-cross-1.json';
 import checkAnimation from '@/assets/icons/system-regular-31-check-hover-pinch.json';
+import plusAnimation from '@/assets/icons/system-regular-314-plus-hover-pinch.json';
 import trashAnimation from '@/assets/icons/system-regular-39-trash-hover-trash-empty.json';
+import searchAnimation from '@/assets/icons/system-regular-42-search-hover-pinch.json';
 import chatAnimation from '@/assets/icons/system-regular-47-chat-hover-chat.json';
 import walletAnimation from '@/assets/icons/system-regular-5-wallet-hover-wallet.json';
 import fileAnimation from '@/assets/icons/system-regular-50-file-hover-file-1.json';
@@ -32,6 +37,7 @@ interface IconProps {
   size?: number;
   sx?: SxProps<Theme>;
   hover?: boolean;
+  loop?: boolean;
   color?: string;
   hoverColor?: string;
   title?: string;
@@ -85,6 +91,31 @@ export function CheckIcon({ size = 24, sx, hover = false, color, title = '', onC
     >
       <Lottie
         animationData={checkAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 搜索图标
+export function SearchIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx, cursor: onClick ? 'pointer' : 'default' }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={searchAnimation}
         width={size}
         height={size}
         loop={hover ? isHovered : false}
@@ -160,6 +191,31 @@ export function CloseIcon({ size = 24, sx, hover = false, color, title = '', onC
     >
       <Lottie
         animationData={crossAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 新建/加号图标
+export function PlusIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={plusAnimation}
         width={size}
         height={size}
         loop={hover ? isHovered : false}
@@ -513,6 +569,81 @@ export function WalletIcon({ size = 24, sx, hover = false, color, title = '', on
         width={size}
         height={size}
         loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 编辑图标
+export function EditIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={editAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 历史记录图标
+export function HistoryIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={historyAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 信息图标
+export function InfoIcon({ size = 24, sx, hover = false, loop = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={infoAnimation}
+        width={size}
+        height={size}
+        loop={loop || (hover ? isHovered : false)}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
         color={hover && isHovered ? (hoverColor || color) : color}

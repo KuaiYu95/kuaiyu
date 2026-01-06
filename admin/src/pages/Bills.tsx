@@ -2,46 +2,31 @@
 // 账单列表页面
 // ===========================================
 
+import Empty from '@/components/Empty';
+import { CloseIcon, PlusIcon, SearchIcon } from '@/components/icons';
 import { billApi, categoryApi, type Bill, type Category } from '@/lib/api';
 import { COLORS, ROUTES } from '@/lib/constants';
-import { Add, Delete, Edit, MoneyOff, Payment } from '@mui/icons-material';
+import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
+  InputAdornment,
+  Paper,
   Stack,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
 
 export default function Bills() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 默认筛选：近30天、当月、已消费、无代付
-  const defaultEndDate = new Date().toISOString().split('T')[0];
-  const defaultStartDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-  const typeFromUrl = searchParams.get('type') || '';
-  const startDateFromUrl = searchParams.get('start_date') || defaultStartDate;
-  const endDateFromUrl = searchParams.get('end_date') || defaultEndDate;
-  const periodTypeFromUrl = searchParams.get('period_type') || 'month';
-  const isConsumedFromUrl = searchParams.get('is_consumed') !== null ? searchParams.get('is_consumed') === 'true' : true;
-  const hasChargeBackFromUrl = searchParams.get('has_charge_back') !== null ? searchParams.get('has_charge_back') === 'true' : false;
+  const isConsumedFromUrl = searchParams.get('is_consumed') !== null ? searchParams.get('is_consumed') === 'true' : null;
+  const searchFromUrl = searchParams.get('search') || '';
 
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,19 +35,14 @@ export default function Bills() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   // 筛选条件
-  const [type, setType] = useState(typeFromUrl);
-  const [startDate, setStartDate] = useState(startDateFromUrl);
-  const [endDate, setEndDate] = useState(endDateFromUrl);
-  const [periodType, setPeriodType] = useState(periodTypeFromUrl);
   const [isConsumed, setIsConsumed] = useState<boolean | null>(isConsumedFromUrl);
-  const [hasChargeBack, setHasChargeBack] = useState<boolean | null>(hasChargeBackFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
 
-  // 对话框状态
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [refundId, setRefundId] = useState<number | null>(null);
-  const [chargeBackId, setChargeBackId] = useState<number | null>(null);
-  const [refundAmount, setRefundAmount] = useState<number>(0);
-  const [chargeBackAmount, setChargeBackAmount] = useState<number>(0);
+  // 使用 ref 存储最新的筛选条件，用于滚动加载
+  const filtersRef = useRef({ isConsumed, search });
+  useEffect(() => {
+    filtersRef.current = { isConsumed, search };
+  }, [isConsumed, search]);
 
   const limit = 20;
   const pageRef = useRef(1);
@@ -104,18 +84,18 @@ export default function Bills() {
 
     try {
       const currentPage = reset ? 1 : pageRef.current;
+      // 使用 ref 中的最新筛选条件
+      const filters = filtersRef.current;
       const params: any = {
         page: currentPage,
         limit: limit,
-        start_date: startDate,
-        end_date: endDate,
-        period_type: periodType,
-        is_consumed: isConsumed,
-        has_charge_back: hasChargeBack,
       };
 
-      if (type) {
-        params.type = type;
+      if (filters.isConsumed !== null) {
+        params.is_consumed = filters.isConsumed;
+      }
+      if (filters.search) {
+        params.search = filters.search;
       }
 
       const res = await billApi.list(params);
@@ -141,42 +121,8 @@ export default function Bills() {
 
   useEffect(() => {
     fetchBills(true);
-  }, [type, startDate, endDate, periodType, isConsumed, hasChargeBack]);
+  }, [isConsumed]);
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    try {
-      await billApi.delete(deleteId);
-      setBills((prev) => prev.filter((b) => b.id !== deleteId));
-      setDeleteId(null);
-    } catch (err) {
-      console.error('Failed to delete bill:', err);
-    }
-  };
-
-  const handleRefund = async () => {
-    if (!refundId || refundAmount <= 0) return;
-    try {
-      await billApi.refund(refundId, refundAmount);
-      await fetchBills(true);
-      setRefundId(null);
-      setRefundAmount(0);
-    } catch (err) {
-      console.error('Failed to refund:', err);
-    }
-  };
-
-  const handleChargeBack = async () => {
-    if (!chargeBackId || chargeBackAmount <= 0) return;
-    try {
-      await billApi.chargeBack(chargeBackId, chargeBackAmount);
-      await fetchBills(true);
-      setChargeBackId(null);
-      setChargeBackAmount(0);
-    } catch (err) {
-      console.error('Failed to charge back:', err);
-    }
-  };
 
   const handleScroll = () => {
     if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
@@ -196,6 +142,46 @@ export default function Bills() {
     return category?.name || '未知';
   };
 
+  // 按日期分组账单
+  const groupedBills = bills.reduce((acc, bill) => {
+    const date = bill.date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(bill);
+    return acc;
+  }, {} as Record<string, Bill[]>);
+
+  // 格式化日期显示
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const isToday = date.toDateString() === today.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    if (isToday) {
+      return '今天';
+    } else if (isYesterday) {
+      return '昨天';
+    } else {
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      const weekday = weekdays[date.getDay()];
+      return `${month}月${day}日 周${weekday}`;
+    }
+  };
+
+  // 计算日期总金额
+  const getDateTotal = (bills: Bill[]) => {
+    const expense = bills.filter((b) => b.type === 'expense').reduce((sum, b) => sum + b.amount - b.refund, 0);
+    const income = bills.filter((b) => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
+    return { expense, income };
+  };
+
   if (loading && bills.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -205,225 +191,259 @@ export default function Bills() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+    <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
-        <Box sx={{ flex: 1, minWidth: { xs: '100%', sm: 300 } }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-            {/* 时间范围 */}
-            <TextField
-              label="开始日期"
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                updateSearchParams({ start_date: e.target.value });
-              }}
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: { xs: '100%', sm: 150 } }}
-            />
-            <TextField
-              label="结束日期"
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                updateSearchParams({ end_date: e.target.value });
-              }}
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: { xs: '100%', sm: 150 } }}
-            />
-
-            {/* 账单类型 */}
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
-              <InputLabel>账单类型</InputLabel>
-              <Select
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  updateSearchParams({ type: e.target.value || null });
-                }}
-                label="账单类型"
-              >
-                <MenuItem value="">全部</MenuItem>
-                <MenuItem value="expense">支出</MenuItem>
-                <MenuItem value="income">收入</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 周期类型 */}
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
-              <InputLabel>周期类型</InputLabel>
-              <Select
-                value={periodType}
-                onChange={(e) => {
-                  setPeriodType(e.target.value);
-                  updateSearchParams({ period_type: e.target.value });
-                }}
-                label="周期类型"
-              >
-                <MenuItem value="">全部</MenuItem>
-                <MenuItem value="month">当月</MenuItem>
-                <MenuItem value="year">当年</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 是否已消费 */}
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
-              <InputLabel>是否已消费</InputLabel>
-              <Select
-                value={isConsumed === null ? '' : String(isConsumed)}
-                onChange={(e) => {
-                  const value = e.target.value === '' ? null : e.target.value === 'true';
-                  setIsConsumed(value);
-                  updateSearchParams({ is_consumed: value === null ? null : String(value) });
-                }}
-                label="是否已消费"
-              >
-                <MenuItem value="">全部</MenuItem>
-                <MenuItem value="true">已消费</MenuItem>
-                <MenuItem value="false">未消费</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 是否存在代付 */}
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
-              <InputLabel>是否存在代付</InputLabel>
-              <Select
-                value={hasChargeBack === null ? '' : String(hasChargeBack)}
-                onChange={(e) => {
-                  const value = e.target.value === '' ? null : e.target.value === 'true';
-                  setHasChargeBack(value);
-                  updateSearchParams({ has_charge_back: value === null ? null : String(value) });
-                }}
-                label="是否存在代付"
-              >
-                <MenuItem value="">全部</MenuItem>
-                <MenuItem value="true">有代付</MenuItem>
-                <MenuItem value="false">无代付</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </Box>
+        <TextField
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const value = (e.target as HTMLInputElement).value;
+              updateSearchParams({ search: value || null });
+              fetchBills(true);
+            }
+          }}
+          size="small"
+          placeholder="搜索金额、描述、日期..."
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon size={18} hover={true} />
+              </InputAdornment>
+            ),
+            endAdornment: search ? (
+              <InputAdornment position="end">
+                <CloseIcon size={16} hover={true} onClick={() => {
+                  setSearch('');
+                  setTimeout(() => {
+                    updateSearchParams({ search: null });
+                    fetchBills(true);
+                  }, 0);
+                }} />
+              </InputAdornment>
+            ) : null,
+          }}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
+        <Button
+          variant={isConsumed === false ? 'contained' : 'outlined'}
+          startIcon={isConsumed === false ? <CheckBox /> : <CheckBoxOutlineBlank />}
+          onClick={() => {
+            const newValue = isConsumed === false ? null : false;
+            setIsConsumed(newValue);
+            updateSearchParams({ is_consumed: newValue === null ? null : String(newValue) });
+          }}
+          size="small"
+          sx={{
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            ...(isConsumed === false
+              ? {}
+              : {
+                color: 'text.secondary',
+                borderColor: 'divider',
+              }),
+          }}
+        >
+          未消费
+        </Button>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<PlusIcon size={18} hover />}
           onClick={() => navigate(ROUTES.BILL_NEW)}
           size="small"
-          sx={{ minWidth: { xs: 'auto', sm: 100 } }}
+          sx={{
+            minWidth: { xs: 'auto', sm: 100 },
+            '& .MuiButton-startIcon': {
+              margin: { xs: 0, sm: '0 8px 0 0' },
+            },
+          }}
         >
           <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
             新建
           </Box>
         </Button>
       </Box>
-
       {bills.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography color="text.secondary">暂无账单</Typography>
+        <Box sx={{ py: 8 }}>
+          <Empty text="暂无账单" />
         </Box>
       ) : (
         <>
-          <Grid container spacing={2}>
-            {bills.map((bill) => (
-              <Grid item xs={12} sm={6} md={4} key={bill.id}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <CardContent sx={{ flex: 1, p: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                      <Chip
-                        label={bill.type === 'expense' ? '支出' : '收入'}
-                        size="small"
-                        color={bill.type === 'expense' ? 'error' : 'success'}
-                        sx={{ fontWeight: 600 }}
+          <Box sx={{ mt: 2, position: 'relative' }}>
+            {Object.entries(groupedBills)
+              .sort(([a], [b]) => b.localeCompare(a))
+              .map(([date, dateBills], index, allDates) => {
+                const total = getDateTotal(dateBills);
+                const isLast = index === allDates.length - 1;
+                return (
+                  <Box key={date} sx={{ position: 'relative' }}>
+                    {/* 日期标题 */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        ml: { xs: 1.5, sm: 2 },
+                        position: 'relative',
+                        top: 0,
+                        zIndex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        backdropFilter: 'blur(10px)',
+                        py: 1,
+                        pl: 1.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: { xs: -10, sm: -12 },
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: { xs: 12, sm: 14 },
+                          height: { xs: 12, sm: 14 },
+                          borderRadius: '50%',
+                          border: '2px solid',
+                          borderColor: COLORS.primary,
+                          backgroundColor: 'transparent',
+                          zIndex: 2,
+                        }}
                       />
-                      <Typography variant="h6" fontWeight="bold" color={bill.type === 'expense' ? COLORS.red : COLORS.secondary}>
-                        {bill.type === 'expense' ? '-' : '+'}¥{bill.amount.toFixed(2)}
-                      </Typography>
+                      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.95)' }}>
+                          {formatDate(date)}
+                        </Typography>
+                        {(total.income > 0 || total.expense > 0) && (
+                          <Typography
+                            variant="caption"
+                            fontWeight="bold"
+                            sx={{
+                              fontSize: '0.875rem',
+                              color: total.income - total.expense > 0 ? 'rgba(52, 211, 153, 0.9)' : 'rgba(251, 113, 133, 0.9)'
+                            }}
+                          >
+                            <Box
+                              component="span"
+                              sx={{
+                                fontSize: '0.75rem',
+                                mr: 0.25,
+                              }}
+                            >
+                              ¥
+                            </Box>
+                            {Math.abs((total.income - total.expense)).toFixed(2)}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {getCategoryName(bill.category_id)}
-                    </Typography>
-
-                    {bill.desc && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        {bill.desc}
-                      </Typography>
+                    {/* 从圆圈向下连接的虚线 - 从日期标题容器中间开始 */}
+                    {!isLast && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: { xs: 7.5, sm: 10 },
+                          top: { xs: '24px', sm: '28px' },
+                          bottom: -10,
+                          width: 0,
+                          borderLeft: '1px dashed',
+                          borderColor: 'rgba(255, 255, 255, 0.2)',
+                          zIndex: 1,
+                        }}
+                      />
                     )}
 
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                      {bill.date} · {bill.period_type === 'month' ? '当月' : '当年'}
-                    </Typography>
+                    {/* 该日期的账单列表 */}
+                    <Box sx={{ ml: { xs: 1.5, sm: 2 }, position: 'relative' }}>
+                      <Stack>
+                        {dateBills.map((bill) => (
+                          <Paper
+                            key={bill.id}
+                            onClick={() => navigate(ROUTES.BILL_EDIT(bill.id))}
+                            sx={{
+                              pl: { xs: 1, sm: 1.5 },
+                              py: { xs: 0.75, sm: 1 },
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              position: 'relative',
+                              backgroundColor: 'transparent',
+                              boxShadow: 'none',
+                              border: 'none',
+                            }}
+                          >
+                            {/* 前置类型圆点 */}
+                            <Box
+                              sx={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                backgroundColor: bill.type === 'expense' ? COLORS.red : COLORS.secondary,
+                                flexShrink: 0,
+                                mr: { xs: 1, sm: 1.5 },
+                                ml: { xs: 0.5, sm: 1 }, // 和左侧竖线保持一定距离
+                              }}
+                            />
 
-                    <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-                      {bill.is_consumed && (
-                        <Chip label="已消费" size="small" variant="outlined" />
-                      )}
-                      {bill.has_charge_back && (
-                        <Chip label="有代付" size="small" variant="outlined" />
-                      )}
-                      {bill.refund > 0 && (
-                        <Chip label={`退款¥${bill.refund.toFixed(2)}`} size="small" variant="outlined" color="warning" />
-                      )}
-                    </Stack>
-
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                      <Button
-                        size="small"
-                        startIcon={<Edit />}
-                        onClick={() => navigate(ROUTES.BILL_EDIT(bill.id))}
-                        sx={{ minWidth: 'auto', px: 1 }}
-                      >
-                        修改
-                      </Button>
-                      {bill.type === 'expense' && (
-                        <Button
-                          size="small"
-                          startIcon={<MoneyOff />}
-                          onClick={() => {
-                            setRefundId(bill.id);
-                            setRefundAmount(0);
-                          }}
-                          sx={{ minWidth: 'auto', px: 1 }}
-                        >
-                          退款
-                        </Button>
-                      )}
-                      {bill.has_charge_back && (
-                        <Button
-                          size="small"
-                          startIcon={<Payment />}
-                          onClick={() => {
-                            setChargeBackId(bill.id);
-                            setChargeBackAmount(bill.charge_back_amount || 0);
-                          }}
-                          sx={{ minWidth: 'auto', px: 1 }}
-                        >
-                          代付
-                        </Button>
-                      )}
-                      <Button
-                        size="small"
-                        startIcon={<Delete />}
-                        color="error"
-                        onClick={() => setDeleteId(bill.id)}
-                        sx={{ minWidth: 'auto', px: 1 }}
-                      >
-                        删除
-                      </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                            <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  minWidth: { xs: 60, sm: 80 },
+                                  fontSize: '0.75rem',
+                                  color: 'rgba(255, 255, 255, 0.9)',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {getCategoryName(bill.category_id)}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  flex: 1,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  minWidth: 0,
+                                  fontSize: '0.75rem',
+                                  color: 'rgba(255, 255, 255, 0.7)',
+                                }}
+                              >
+                                {bill.desc || ''}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  minWidth: { xs: 70, sm: 100 },
+                                  textAlign: 'right',
+                                  fontSize: '0.75rem',
+                                  color: bill.type === 'expense'
+                                    ? 'rgba(251, 113, 133, 0.95)'
+                                    : 'rgba(52, 211, 153, 0.95)',
+                                }}
+                              >
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    fontSize: '0.75rem',
+                                    mr: 0.25,
+                                  }}
+                                >
+                                  ¥
+                                </Box>
+                                {bill.amount.toFixed(2)}
+                              </Typography>
+                            </Box>
+                          </Paper>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Box>
+                );
+              })}
+          </Box>
 
           {loadingMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -433,63 +453,6 @@ export default function Bills() {
         </>
       )}
 
-      {/* 删除确认对话框 */}
-      <Dialog open={deleteId !== null} onClose={() => setDeleteId(null)}>
-        <DialogTitle>确认删除</DialogTitle>
-        <DialogContent>
-          <Typography>确定要删除这条账单吗？此操作不可恢复。</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>取消</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            删除
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* 退款对话框 */}
-      <Dialog open={refundId !== null} onClose={() => setRefundId(null)}>
-        <DialogTitle>退款</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="退款金额"
-            type="number"
-            value={refundAmount || ''}
-            onChange={(e) => setRefundAmount(Number(e.target.value))}
-            fullWidth
-            margin="normal"
-            inputProps={{ min: 0, step: 0.01 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRefundId(null)}>取消</Button>
-          <Button onClick={handleRefund} variant="contained" disabled={refundAmount <= 0}>
-            确认退款
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* 代付对话框 */}
-      <Dialog open={chargeBackId !== null} onClose={() => setChargeBackId(null)}>
-        <DialogTitle>代付</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="代付金额"
-            type="number"
-            value={chargeBackAmount || ''}
-            onChange={(e) => setChargeBackAmount(Number(e.target.value))}
-            fullWidth
-            margin="normal"
-            inputProps={{ min: 0, step: 0.01 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setChargeBackId(null)}>取消</Button>
-          <Button onClick={handleChargeBack} variant="contained" disabled={chargeBackAmount <= 0}>
-            确认代付
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

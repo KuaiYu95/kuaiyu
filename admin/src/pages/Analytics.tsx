@@ -32,7 +32,7 @@ export default function Analytics() {
           analyticsApi.overview(),
           analyticsApi.visits(),
           analyticsApi.postViewStats(),
-          billApi.statistics(),
+          billApi.statistics({ is_consumed: true }),
           billApi.dailyTrend(),
           billApi.monthlyTrend(),
           billApi.categoryRanking(),

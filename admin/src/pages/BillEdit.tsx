@@ -11,6 +11,10 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -35,6 +39,8 @@ export default function BillEdit() {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -46,11 +52,11 @@ export default function BillEdit() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [periodType, setPeriodType] = useState<'month' | 'year'>('month');
   const [isConsumed, setIsConsumed] = useState(true);
-  const [hasChargeBack, setHasChargeBack] = useState(false);
-  const [chargeBackAmount, setChargeBackAmount] = useState<number>(0);
+  const [refund, setRefund] = useState<number>(0);
+  const [refundType, setRefundType] = useState<0 | 1 | 2>(0);
 
-  // 根据类型筛选分类（目前返回所有分类，可根据需要进一步筛选）
-  const filteredCategories = categories;
+  // 根据类型筛选分类
+  const filteredCategories = categories.filter((cat) => cat.type === type);
 
   useEffect(() => {
     // 获取分类列表
@@ -70,8 +76,8 @@ export default function BillEdit() {
           setDate(bill.date);
           setPeriodType(bill.period_type);
           setIsConsumed(bill.is_consumed);
-          setHasChargeBack(bill.has_charge_back);
-          setChargeBackAmount(bill.charge_back_amount);
+          setRefund(bill.refund || 0);
+          setRefundType(bill.refund_type || 0);
         })
         .catch(() => {
           setError('加载账单失败');
@@ -93,8 +99,8 @@ export default function BillEdit() {
       setError('金额必须大于0');
       return;
     }
-    if (hasChargeBack && chargeBackAmount <= 0) {
-      setError('代付金额必须大于0');
+    if (refundType > 0 && refund <= 0) {
+      setError('退款/代付金额必须大于0');
       return;
     }
 
@@ -108,8 +114,8 @@ export default function BillEdit() {
       date,
       period_type: periodType,
       is_consumed: isConsumed,
-      has_charge_back: hasChargeBack,
-      charge_back_amount: hasChargeBack ? chargeBackAmount : 0,
+      refund: refundType > 0 ? refund : 0,
+      refund_type: refundType,
     };
 
     try {
@@ -123,6 +129,21 @@ export default function BillEdit() {
       setError(err.response?.data?.message || '保存失败');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!isEdit || !id) return;
+    setDeleting(true);
+    setError('');
+    try {
+      await billApi.delete(parseInt(id));
+      navigate(ROUTES.BILLS);
+    } catch (err: any) {
+      setError(err.response?.data?.message || '删除失败');
+      setShowDeleteDialog(false);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -256,31 +277,36 @@ export default function BillEdit() {
               label="是否已消费"
             />
 
-            {/* 是否存在代付 */}
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={hasChargeBack}
-                  onChange={(e) => {
-                    setHasChargeBack(e.target.checked);
-                    if (!e.target.checked) {
-                      setChargeBackAmount(0);
-                    }
-                  }}
-                  size={isMobile ? 'medium' : 'small'}
-                />
-              }
-              label="是否存在代付"
-            />
+            {/* 退款类型 */}
+            <FormControl fullWidth>
+              <InputLabel>退款类型</InputLabel>
+              <Select
+                value={refundType}
+                onChange={(e) => {
+                  const value = e.target.value as '0' | '1' | '2';
+                  setRefundType(Number(value) as 0 | 1 | 2);
+                  if (value === '0') {
+                    setRefund(0);
+                  }
+                }}
+                label="退款类型"
+                size={isMobile ? 'medium' : 'small'}
+              >
+                <MenuItem value={0}>无</MenuItem>
+                <MenuItem value={1}>退款</MenuItem>
+                <MenuItem value={2}>代付</MenuItem>
+              </Select>
+            </FormControl>
 
-            {/* 代付金额（条件显示） */}
-            {hasChargeBack && (
+            {/* 退款/代付金额（条件显示） */}
+            {refundType > 0 && (
               <TextField
-                label="代付金额"
+                label={refundType === 1 ? '退款金额' : '代付金额'}
                 type="number"
-                value={chargeBackAmount || ''}
-                onChange={(e) => setChargeBackAmount(Number(e.target.value))}
+                value={refund || ''}
+                onChange={(e) => setRefund(Number(e.target.value))}
                 fullWidth
+                required
                 inputProps={{ min: 0, step: 0.01 }}
                 size={isMobile ? 'medium' : 'small'}
               />
@@ -289,6 +315,17 @@ export default function BillEdit() {
         </Paper>
 
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          {isEdit && (
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => setShowDeleteDialog(true)}
+              size={isMobile ? 'large' : 'medium'}
+              sx={{ minWidth: { xs: 100, sm: 80 }, mr: 'auto' }}
+            >
+              删除
+            </Button>
+          )}
           <Button
             variant="outlined"
             onClick={() => navigate(ROUTES.BILLS)}
@@ -309,6 +346,28 @@ export default function BillEdit() {
           </Button>
         </Box>
       </form>
+
+      {/* 删除确认对话框 */}
+      <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)}>
+        <DialogTitle>确认删除</DialogTitle>
+        <DialogContent>
+          <Typography>确定要删除这条账单吗？此操作不可恢复。</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteDialog(false)} disabled={deleting}>
+            取消
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} /> : null}
+          >
+            {deleting ? '删除中...' : '删除'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
