@@ -375,9 +375,17 @@ export default function Bills() {
                               alignItems: 'center',
                               justifyContent: 'space-between',
                               position: 'relative',
+                              cursor: 'pointer',
                               backgroundColor: 'transparent',
                               boxShadow: 'none',
                               border: 'none',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                              },
+                              '&:focus-visible': {
+                                outline: 'none',
+                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                              },
                             }}
                           >
                             {/* 前置类型圆点 */}
