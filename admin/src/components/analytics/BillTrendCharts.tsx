@@ -13,6 +13,41 @@ interface BillTrendChartsProps {
 
 export default function BillTrendCharts({ dailyTrend, monthlyTrend }: BillTrendChartsProps) {
 
+  const normalizedDailyTrend: BillTrendData[] = (() => {
+    if (!dailyTrend || dailyTrend.length === 0) {
+      const days: BillTrendData[] = [];
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        days.push({ date: dateStr, expense: 0, income: 0 });
+      }
+      return days;
+    }
+
+    const today = new Date();
+    const map = new Map<string, BillTrendData>();
+    dailyTrend.forEach((item) => {
+      const key = item.date.split('T')[0];
+      map.set(key, item);
+    });
+
+    const result: BillTrendData[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const existing = map.get(dateStr);
+      if (existing) {
+        result.push(existing);
+      } else {
+        result.push({ date: dateStr, expense: 0, income: 0 });
+      }
+    }
+    return result;
+  })();
+
   return (
     <Grid container spacing={2} mb={2}>
       <Grid item xs={12} lg={6}>
@@ -32,17 +67,17 @@ export default function BillTrendCharts({ dailyTrend, monthlyTrend }: BillTrendC
                 left: 10,
                 top: 10,
                 style: {
-                  text: `近30天最大支出：¥${Math.max(...dailyTrend.map(item => item.expense), 0).toFixed(2)}，今日支出：¥${dailyTrend[dailyTrend.length - 1]?.expense.toFixed(2) || '0.00'}`,
+                  text: `近30天最大支出：¥${Math.max(...normalizedDailyTrend.map(item => item.expense), 0).toFixed(2)}，今日支出：¥${normalizedDailyTrend[normalizedDailyTrend.length - 1]?.expense.toFixed(2) || '0.00'}`,
                   fontSize: 11,
                   fontWeight: 'normal',
-                  fill: '#f97316', // 橙色
+                  fill: '#f97316',
                   lineHeight: 16,
                 },
               },
             ],
             xAxis: {
               type: 'category',
-              data: dailyTrend.map(item => {
+              data: normalizedDailyTrend.map(item => {
                 const date = new Date(item.date);
                 return `${date.getMonth() + 1}-${date.getDate()}`;
               }),
@@ -79,7 +114,7 @@ export default function BillTrendCharts({ dailyTrend, monthlyTrend }: BillTrendC
                 type: 'line',
                 smooth: true,
                 symbol: 'none',
-                data: dailyTrend.map(item => item.expense),
+                data: normalizedDailyTrend.map(item => item.expense),
                 lineStyle: {
                   color: '#f97316', // 橙色
                   width: 2,

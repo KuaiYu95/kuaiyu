@@ -103,13 +103,13 @@ export default function LifeEdit() {
     <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Button
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBackIcon size={14} />}
           onClick={() => navigate(ROUTES.LIFE)}
           sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
         >
           返回
         </Button>
-        <Typography variant="h4" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
           {isEdit ? '编辑记录' : '新建记录'}
         </Typography>
       </Box>

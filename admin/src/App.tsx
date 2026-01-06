@@ -1,7 +1,6 @@
 import Layout from '@/components/Layout';
 import { ToastProvider } from '@/components/Toast';
 import Analytics from '@/pages/Analytics';
-import BillCategories from '@/pages/BillCategories';
 import BillEdit from '@/pages/BillEdit';
 import Bills from '@/pages/Bills';
 import Comments from '@/pages/Comments';
@@ -60,7 +59,6 @@ export default function App() {
                     <Route path="/bills" element={<Bills />} />
                     <Route path="/bills/new" element={<BillEdit />} />
                     <Route path="/bills/:id" element={<BillEdit />} />
-                    <Route path="/bills/categories" element={<BillCategories />} />
                   </Routes>
                 </Layout>
               </PrivateRoute>

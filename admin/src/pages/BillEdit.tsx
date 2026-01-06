@@ -165,13 +165,13 @@ export default function BillEdit() {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Button
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBackIcon size={14} />}
           onClick={() => navigate(ROUTES.BILLS)}
           sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
         >
           返回
         </Button>
-        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
           {isEdit ? '编辑账单' : '新建账单'}
         </Typography>
       </Box>
