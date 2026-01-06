@@ -53,31 +53,37 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		response.BadRequest(c, err.Error())
 		return
 	}
-	
+
+	// 如果没有显式传递类型，默认设置为 expense（与数据库默认值一致）
+	if req.Type == "" {
+		req.Type = "expense"
+	}
+
 	// 检查 key 是否已存在
 	existing, _ := h.repo.FindByKey(req.Key)
 	if existing != nil {
 		response.BadRequest(c, "分类键已存在")
 		return
 	}
-	
+
 	// 检查 name 是否已存在
 	var existingByName model.Category
-	if err := h.repo.DB().Where("name = ?", req.Name).First(&existingByName).Error; err == nil {
+	if err := h.repo.DB().Where("name = ? AND type = ?", req.Name, req.Type).First(&existingByName).Error; err == nil {
 		response.BadRequest(c, "分类名称已存在")
 		return
 	}
-	
+
 	category := &model.Category{
 		Name: req.Name,
 		Key:  req.Key,
+		Type: req.Type,
 	}
-	
+
 	if err := h.repo.Create(category); err != nil {
 		response.InternalError(c, "")
 		return
 	}
-	
+
 	response.Success(c, category.ToVO())
 }
 

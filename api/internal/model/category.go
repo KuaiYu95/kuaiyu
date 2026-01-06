@@ -12,8 +12,9 @@ import (
 // Category 分类模型
 type Category struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	Name      string    `gorm:"uniqueIndex;size:50;not null" json:"name"`
+	Name      string    `gorm:"uniqueIndex:idx_categories_name_type;size:50;not null" json:"name"`
 	Key       string    `gorm:"uniqueIndex;size:50;not null" json:"key"`
+	Type      string    `gorm:"type:enum('expense','income');not null;default:'expense'" json:"type"` // expense | income
 	CreatedAt time.Time `json:"created_at"`
 	
 	// 关联
@@ -33,6 +34,7 @@ func (Category) TableName() string {
 type CreateCategoryRequest struct {
 	Name string `json:"name" binding:"required,max=50"`
 	Key  string `json:"key" binding:"required,max=50"`
+	Type string `json:"type" binding:"required,oneof=expense income"`
 }
 
 // CategoryVO 分类视图对象
@@ -40,6 +42,7 @@ type CategoryVO struct {
 	ID        uint   `json:"id"`
 	Name      string `json:"name"`
 	Key       string `json:"key"`
+	Type      string `json:"type"`
 	CreatedAt string `json:"created_at"`
 	BillCount int64  `json:"bill_count,omitempty"`
 }
@@ -54,6 +57,7 @@ func (c *Category) ToVO() CategoryVO {
 		ID:        c.ID,
 		Name:      c.Name,
 		Key:       c.Key,
+		Type:      c.Type,
 		CreatedAt: c.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }

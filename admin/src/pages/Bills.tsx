@@ -177,7 +177,13 @@ export default function Bills() {
 
   // 计算日期总金额
   const getDateTotal = (bills: Bill[]) => {
-    const expense = bills.filter((b) => b.type === 'expense').reduce((sum, b) => sum + b.amount - b.refund, 0);
+    const expense = bills
+      .filter((b) => b.type === 'expense')
+      .reduce((sum, b) => {
+        // 退款 / 代付金额都要从支出中扣除
+        const actualAmount = b.amount - b.refund;
+        return sum + actualAmount;
+      }, 0);
     const income = bills.filter((b) => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
     return { expense, income };
   };
@@ -422,8 +428,35 @@ export default function Bills() {
                                   color: bill.type === 'expense'
                                     ? 'rgba(251, 113, 133, 0.95)'
                                     : 'rgba(52, 211, 153, 0.95)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'flex-end',
                                 }}
                               >
+                                {bill.refund_type > 0 && bill.refund > 0 && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 0.25,
+                                      px: 0.5,
+                                      py: 0.1,
+                                      mr: 1,
+                                      borderRadius: 0.75,
+                                      fontSize: '0.65rem',
+                                      lineHeight: 1.4,
+                                      border: '1px solid',
+                                      borderColor: 'rgba(52, 211, 153, 0.8)',
+                                      color: 'rgba(52, 211, 153, 0.9)',
+                                    }}
+                                  >
+                                    <Box component="span">
+                                      {bill.refund_type === 1 ? '退' : '代'}
+                                    </Box>
+                                    <Box component="span">¥{bill.refund.toFixed(2)}</Box>
+                                  </Box>
+                                )}
                                 <Box
                                   component="span"
                                   sx={{

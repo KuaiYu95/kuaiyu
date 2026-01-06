@@ -3,6 +3,7 @@
 // ===========================================
 
 import { ArrowBackIcon } from '@/components/icons';
+import { OptionGroup } from '@/components/OptionGroup';
 import { billApi, categoryApi, type Category } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
 import { Save } from '@mui/icons-material';
@@ -15,13 +16,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Switch,
   TextField,
   Typography,
   useMediaQuery,
@@ -43,6 +37,7 @@ export default function BillEdit() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   // 表单数据
   const [type, setType] = useState<'expense' | 'income'>('expense');
@@ -60,7 +55,11 @@ export default function BillEdit() {
 
   useEffect(() => {
     // 获取分类列表
-    categoryApi.list().then((res) => setCategories(res.data));
+    setCategoriesLoading(true);
+    categoryApi
+      .list()
+      .then((res) => setCategories(res.data))
+      .finally(() => setCategoriesLoading(false));
 
     // 如果是编辑模式，获取账单详情
     if (isEdit) {
@@ -99,7 +98,8 @@ export default function BillEdit() {
       setError('金额必须大于0');
       return;
     }
-    if (refundType > 0 && refund <= 0) {
+    // 仅在编辑模式下验证退款相关字段
+    if (isEdit && refundType > 0 && refund <= 0) {
       setError('退款/代付金额必须大于0');
       return;
     }
@@ -114,8 +114,8 @@ export default function BillEdit() {
       date,
       period_type: periodType,
       is_consumed: isConsumed,
-      refund: refundType > 0 ? refund : 0,
-      refund_type: refundType,
+      refund: isEdit && refundType > 0 ? refund : 0,
+      refund_type: isEdit ? refundType : 0,
     };
 
     try {
@@ -158,7 +158,7 @@ export default function BillEdit() {
   return (
     <Box
       sx={{
-        p: { xs: 2, sm: 3, md: 4 },
+        p: 2,
         maxWidth: { xs: '100%', sm: 800 },
         mx: 'auto',
       }}
@@ -183,145 +183,323 @@ export default function BillEdit() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* 账单类型 */}
-            <FormControl fullWidth>
-              <InputLabel>账单类型</InputLabel>
-              <Select
-                value={type}
-                onChange={(e) => setType(e.target.value as 'expense' | 'income')}
-                label="账单类型"
-                size={isMobile ? 'medium' : 'small'}
-              >
-                <MenuItem value="expense">支出</MenuItem>
-                <MenuItem value="income">收入</MenuItem>
-              </Select>
-            </FormControl>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+          {/* 账单类型 - 平铺按钮 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              账单类型
+            </Typography>
+            <OptionGroup
+              value={type}
+              onChange={(v) => setType(v)}
+              options={[
+                { label: '支出', value: 'expense' },
+                { label: '收入', value: 'income' },
+              ]}
+              dense
+              sx={{ flex: 1 }}
+            />
+          </Box>
 
-            {/* 分类 */}
-            <FormControl fullWidth>
-              <InputLabel>分类</InputLabel>
-              <Select
+          {/* 分类 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+                mt: 0.5,
+              }}
+            >
+              分类
+            </Typography>
+            {filteredCategories.length > 0 ? (
+              <OptionGroup
                 value={categoryId}
-                onChange={(e) => setCategoryId(Number(e.target.value))}
-                label="分类"
-                size={isMobile ? 'medium' : 'small'}
-              >
-                {filteredCategories.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                onChange={(v) => setCategoryId(Number(v))}
+                options={filteredCategories.map((cat) => ({
+                  label: cat.name,
+                  value: cat.id,
+                }))}
+                dense
+                sx={{ flex: 1 }}
+              />
+            ) : categoriesLoading ? (
+              <Typography variant="body2" color="text.secondary">
+                分类加载中...
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                暂无可用分类，请先在分类管理中创建。
+              </Typography>
+            )}
+          </Box>
 
-            {/* 金额 */}
+          {/* 金额 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              金额
+            </Typography>
             <TextField
-              label="金额"
+              placeholder="请输入金额"
               type="number"
               value={amount || ''}
               onChange={(e) => setAmount(Number(e.target.value))}
               fullWidth
               required
               inputProps={{ min: 0, step: 0.01 }}
-              size={isMobile ? 'medium' : 'small'}
+              size="small"
+              sx={{ flex: 1 }}
             />
+          </Box>
 
-            {/* 描述 */}
+          {/* 描述 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              描述
+            </Typography>
             <TextField
-              label="描述"
+              placeholder="可填写备注信息"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               fullWidth
               multiline
               rows={3}
-              size={isMobile ? 'medium' : 'small'}
+              size="small"
+              sx={{ flex: 1 }}
             />
+          </Box>
 
-            {/* 账单日期 */}
+          {/* 账单日期 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              账单日期
+            </Typography>
             <TextField
-              label="账单日期"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               fullWidth
               required
+              size="small"
               InputLabelProps={{ shrink: true }}
-              size={isMobile ? 'medium' : 'small'}
+              sx={{ flex: 1 }}
             />
-
-            {/* 周期类型 */}
-            <FormControl fullWidth>
-              <InputLabel>周期类型</InputLabel>
-              <Select
-                value={periodType}
-                onChange={(e) => setPeriodType(e.target.value as 'month' | 'year')}
-                label="周期类型"
-                size={isMobile ? 'medium' : 'small'}
-              >
-                <MenuItem value="month">当月</MenuItem>
-                <MenuItem value="year">当年</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 是否已消费 */}
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isConsumed}
-                  onChange={(e) => setIsConsumed(e.target.checked)}
-                  size={isMobile ? 'medium' : 'small'}
-                />
-              }
-              label="是否已消费"
-            />
-
-            {/* 退款类型 */}
-            <FormControl fullWidth>
-              <InputLabel>退款类型</InputLabel>
-              <Select
-                value={refundType}
-                onChange={(e) => {
-                  const value = e.target.value as '0' | '1' | '2';
-                  setRefundType(Number(value) as 0 | 1 | 2);
-                  if (value === '0') {
-                    setRefund(0);
-                  }
-                }}
-                label="退款类型"
-                size={isMobile ? 'medium' : 'small'}
-              >
-                <MenuItem value={0}>无</MenuItem>
-                <MenuItem value={1}>退款</MenuItem>
-                <MenuItem value={2}>代付</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 退款/代付金额（条件显示） */}
-            {refundType > 0 && (
-              <TextField
-                label={refundType === 1 ? '退款金额' : '代付金额'}
-                type="number"
-                value={refund || ''}
-                onChange={(e) => setRefund(Number(e.target.value))}
-                fullWidth
-                required
-                inputProps={{ min: 0, step: 0.01 }}
-                size={isMobile ? 'medium' : 'small'}
-              />
-            )}
           </Box>
-        </Paper>
 
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          {/* 周期类型 - 平铺按钮 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              周期类型
+            </Typography>
+            <OptionGroup
+              value={periodType}
+              onChange={(v) => setPeriodType(v as 'month' | 'year')}
+              options={[
+                { label: '当月', value: 'month' },
+                { label: '当年', value: 'year' },
+              ]}
+              dense
+              sx={{ flex: 1 }}
+            />
+          </Box>
+
+          {/* 是否已消费 - 平铺按钮 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              variant="subtitle2"
+              sx={{
+                minWidth: 72,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              是否已消费
+            </Typography>
+            <OptionGroup
+              value={isConsumed ? 'true' : 'false'}
+              onChange={(v) => setIsConsumed(v === 'true')}
+              options={[
+                { label: '已消费', value: 'true' },
+                { label: '未消费', value: 'false' },
+              ]}
+              dense
+              sx={{ flex: 1 }}
+            />
+          </Box>
+
+          {/* 退款类型 - 平铺按钮（仅编辑模式显示） */}
+          {isEdit && (
+            <>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 1.5,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    minWidth: 72,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  退款类型
+                </Typography>
+                <OptionGroup
+                  value={refundType}
+                  onChange={(v) => {
+                    const val = Number(v) as 0 | 1 | 2;
+                    setRefundType(val);
+                    if (val === 0) {
+                      setRefund(0);
+                    }
+                  }}
+                  options={[
+                    { label: '无', value: 0 },
+                    { label: '退款', value: 1 },
+                    { label: '代付', value: 2 },
+                  ]}
+                  dense
+                  sx={{ flex: 1 }}
+                />
+              </Box>
+
+              {/* 退款/代付金额（条件显示） */}
+              {refundType > 0 && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1.5,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      minWidth: 72,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {refundType === 1 ? '退款金额' : '代付金额'}
+                  </Typography>
+                  <TextField
+                    placeholder="请输入金额"
+                    type="number"
+                    value={refund || ''}
+                    onChange={(e) => setRefund(Number(e.target.value))}
+                    fullWidth
+                    required
+                    inputProps={{ min: 0, step: 0.01 }}
+                    size="small"
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            mt: 2,
+            flexDirection: 'row',
+            flexWrap: isMobile ? 'wrap' : 'nowrap',
+          }}
+        >
           {isEdit && (
             <Button
               variant="outlined"
               color="error"
               onClick={() => setShowDeleteDialog(true)}
               size={isMobile ? 'large' : 'medium'}
-              sx={{ minWidth: { xs: 100, sm: 80 }, mr: 'auto' }}
+              sx={{
+                minWidth: { xs: 100, sm: 80 },
+                flex: 1,
+              }}
             >
               删除
             </Button>
@@ -330,7 +508,10 @@ export default function BillEdit() {
             variant="outlined"
             onClick={() => navigate(ROUTES.BILLS)}
             size={isMobile ? 'large' : 'medium'}
-            sx={{ minWidth: { xs: 100, sm: 80 } }}
+            sx={{
+              minWidth: { xs: 100, sm: 80 },
+              flex: 1,
+            }}
           >
             取消
           </Button>
@@ -340,7 +521,10 @@ export default function BillEdit() {
             startIcon={saving ? <CircularProgress size={20} /> : <Save />}
             disabled={saving}
             size={isMobile ? 'large' : 'medium'}
-            sx={{ minWidth: { xs: 100, sm: 80 } }}
+            sx={{
+              minWidth: { xs: 100, sm: 80 },
+              flex: 1,
+            }}
           >
             {saving ? '保存中...' : '保存'}
           </Button>
