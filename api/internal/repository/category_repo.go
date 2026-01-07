@@ -52,6 +52,16 @@ func (r *CategoryRepository) FindByKey(key string) (*model.Category, error) {
 	return &category, nil
 }
 
+// FindByNameAndType 根据名称和类型查找分类
+func (r *CategoryRepository) FindByNameAndType(name, categoryType string) (*model.Category, error) {
+	var category model.Category
+	err := r.db.Where("name = ? AND type = ?", name, categoryType).First(&category).Error
+	if err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
 // ===========================================
 // 创建方法
 // ===========================================

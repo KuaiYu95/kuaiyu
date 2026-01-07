@@ -38,7 +38,8 @@ func (Bill) TableName() string {
 // CreateBillRequest 创建账单请求
 type CreateBillRequest struct {
 	Type             string  `json:"type" binding:"required,oneof=expense income"`
-	CategoryID       uint    `json:"category_id" binding:"required"`
+	CategoryID       uint    `json:"category_id"` // 可选，如果传了 category_name 则不需要
+	CategoryName     string  `json:"category_name"` // 可选，如果传了 category_id 则不需要
 	Amount           float64 `json:"amount" binding:"required,gt=0"`
 	Desc             string  `json:"desc" binding:"max=500"`
 	Date             string  `json:"date" binding:"required"`

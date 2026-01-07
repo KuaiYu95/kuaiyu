@@ -3,6 +3,7 @@ package handler
 
 import (
 	"fmt"
+	"math"
 	"time"
 	"github.com/gin-gonic/gin"
 	"kuaiyu/internal/model"
@@ -116,11 +117,34 @@ func (h *BillHandler) Create(c *gin.Context) {
 		return
 	}
 	
-	// 验证分类是否存在
-	category, err := h.categoryRepo.FindByID(req.CategoryID)
-	if err != nil {
-		response.BadRequest(c, "分类不存在")
+	// 根据 category_id 或 category_name 查找分类
+	var category *model.Category
+	var err error
+	
+	if req.CategoryID > 0 {
+		// 优先使用 category_id
+		category, err = h.categoryRepo.FindByID(req.CategoryID)
+		if err != nil {
+			response.BadRequest(c, "分类不存在")
+			return
+		}
+	} else if req.CategoryName != "" {
+		// 如果传了 category_name，根据名称和账单类型查找
+		category, err = h.categoryRepo.FindByNameAndType(req.CategoryName, req.Type)
+		if err != nil {
+			response.BadRequest(c, "分类不存在或名称与类型不匹配")
+			return
+		}
+	} else {
+		// 两个都没传
+		response.BadRequest(c, "必须提供 category_id 或 category_name")
 		return
+	}
+	
+	// 处理金额：如果为负数，转换为绝对值
+	amount := req.Amount
+	if amount < 0 {
+		amount = math.Abs(amount)
 	}
 	
 	// 解析日期
@@ -163,7 +187,7 @@ func (h *BillHandler) Create(c *gin.Context) {
 	bill := &model.Bill{
 		Type:       req.Type,
 		CategoryID: req.CategoryID,
-		Amount:     req.Amount,
+		Amount:     amount,
 		Desc:       req.Desc,
 		Date:       date,
 		PeriodType: periodType,

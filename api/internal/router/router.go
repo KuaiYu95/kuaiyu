@@ -64,6 +64,15 @@ func setupPublicRoutes(api *gin.RouterGroup) {
 		life.GET("/:id", lifeHandler.Get)
 	}
 
+	// 快捷记账 Webhook（iPhone 快捷指令等）
+	billHandler := handler.NewBillHandler()
+	bills := api.Group("/bills")
+	bills.Use(middleware.PublicRateLimit())
+	{
+		// 公开的快速记账接口，通过 Webhook 签名保护
+		bills.POST("/quick", middleware.BillWebhookAuth(), billHandler.Create)
+	}
+
 	// 标签
 	tagHandler := handler.NewTagHandler()
 	tags := api.Group("/tags")

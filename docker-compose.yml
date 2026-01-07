@@ -49,6 +49,7 @@ services:
       - DB_PASSWORD=${MYSQL_PASSWORD:-kuaiyu_pass_2024}
       - DB_NAME=${MYSQL_DATABASE:-kuaiyu_db}
       - JWT_SECRET=${JWT_SECRET:-kuaiyu_jwt_secret_2024}
+      - BILL_WEBHOOK_SECRET=${BILL_WEBHOOK_SECRET:-change_me_bill_webhook_secret}
       - COS_SECRET_ID=${COS_SECRET_ID:-}
       - COS_SECRET_KEY=${COS_SECRET_KEY:-}
       - COS_BUCKET=${COS_BUCKET:-}
