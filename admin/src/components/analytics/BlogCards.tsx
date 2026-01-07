@@ -22,7 +22,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '总访问量',
       value: overview?.total_pv || 0,
       icon: <VisibilityIcon />,
-      color: '#3b82f6', // 蓝色
+      color: '#3b82f6',
       gradient: { start: '#60a5fa', end: '#2563eb' },
       trend: calculateTrend(overview?.today_pv || 0, overview?.avg_pv_30_days || 0),
       onClick: undefined,
@@ -31,7 +31,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '文章数',
       value: overview?.post_count || 0,
       icon: <ArticleIcon />,
-      color: '#8b5cf6', // 紫色
+      color: '#8b5cf6',
       gradient: { start: '#a78bfa', end: '#7c3aed' },
       trend: 0,
       onClick: () => navigate(ROUTES.POSTS),
@@ -40,7 +40,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '生活记录',
       value: overview?.life_count || 0,
       icon: <PhotoCameraIcon />,
-      color: '#06b6d4', // 青色
+      color: '#06b6d4',
       gradient: { start: '#22d3ee', end: '#0891b2' },
       trend: 0,
       onClick: () => navigate(ROUTES.LIFE),
@@ -49,7 +49,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '总访客数',
       value: overview?.total_uv || 0,
       icon: <ContactsIcon />,
-      color: '#6366f1', // 靛蓝色
+      color: '#6366f1',
       gradient: { start: '#818cf8', end: '#4f46e5' },
       trend: calculateTrend(overview?.today_uv || 0, overview?.avg_uv_30_days || 0),
       onClick: undefined,
@@ -58,7 +58,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '评论数',
       value: overview?.comment_count || 0,
       icon: <TrendingUpIcon />,
-      color: '#ec4899', // 粉紫色
+      color: '#ec4899',
       gradient: { start: '#f472b6', end: '#db2777' },
       trend: 0,
       onClick: () => navigate(ROUTES.COMMENTS),
@@ -67,7 +67,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
       label: '标签数',
       value: overview?.tag_count || 0,
       icon: <LabelIcon />,
-      color: '#7c3aed', // 深紫色
+      color: '#7c3aed',
       gradient: { start: '#9333ea', end: '#6d28d9' },
       trend: 0,
       onClick: () => navigate(ROUTES.TAGS),
@@ -76,11 +76,34 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
 
   return (
     <Grid container spacing={2} mb={2}>
-      {blogCards.map((card) => (
-        <Grid item xs={6} md={4} key={card.label}>
-          <StatCard {...card} />
-        </Grid>
-      ))}
+      {blogCards.map((card, index) => {
+        const isTotalPV = card.label === '总访问量'; // 
+        const isTotalUV = card.label === '总访客数';
+        let mobileOrder = index;
+        if (isTotalPV) {
+          mobileOrder = 0;
+        } else if (isTotalUV) {
+          mobileOrder = 1;
+        } else if (index < 3) {
+          mobileOrder = index + 2;
+        } else {
+          mobileOrder = index + 2;
+        }
+
+        return (
+          <Grid
+            item
+            xs={6}
+            md={4}
+            key={card.label}
+            sx={{
+              order: { xs: mobileOrder, md: index }
+            }}
+          >
+            <StatCard {...card} />
+          </Grid>
+        );
+      })}
     </Grid>
   );
 }

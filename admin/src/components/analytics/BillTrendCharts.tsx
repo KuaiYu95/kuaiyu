@@ -48,6 +48,9 @@ export default function BillTrendCharts({ dailyTrend, monthlyTrend }: BillTrendC
     return result;
   })();
 
+  const maxExpense = Math.max(...normalizedDailyTrend.map(item => item.expense), 0);
+  const maxIncome = Math.max(...normalizedDailyTrend.map(item => item.income), 0);
+
   return (
     <Grid container spacing={2} mb={2}>
       <Grid item xs={12} lg={6}>
@@ -67,7 +70,7 @@ export default function BillTrendCharts({ dailyTrend, monthlyTrend }: BillTrendC
                 left: 10,
                 top: 10,
                 style: {
-                  text: `近30天最大支出：¥${Math.max(...normalizedDailyTrend.map(item => item.expense), 0).toFixed(2)}，今日支出：¥${normalizedDailyTrend[normalizedDailyTrend.length - 1]?.expense.toFixed(2) || '0.00'}`,
+                  text: `近30天统计：最大日支出：¥${maxExpense.toFixed(2)}，最大日收入：¥${maxIncome.toFixed(2)}`,
                   fontSize: 11,
                   fontWeight: 'normal',
                   fill: '#f97316',

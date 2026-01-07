@@ -14,7 +14,6 @@ export default function Layout({ children }: LayoutProps) {
       component="main"
       sx={{
         width: '100%',
-        minHeight: '100vh',
         bgcolor: 'background.default',
       }}
     >
