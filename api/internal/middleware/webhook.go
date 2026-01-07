@@ -2,10 +2,8 @@
 package middleware
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"io"
 	"os"
 	"strconv"
 	"time"
@@ -14,10 +12,6 @@ import (
 	"kuaiyu/pkg/constants"
 	"kuaiyu/pkg/response"
 )
-
-// ===========================================
-// 账单 Webhook 鉴权
-// ===========================================
 
 const (
 	// BillWebhookSecretEnv 环境变量名：账单 Webhook 密钥
@@ -33,7 +27,7 @@ const (
 // BillWebhookAuth 账单 Webhook 鉴权中间件
 //
 // 签名算法：
-//   raw = secret + "\n" + timestamp + "\n" + body
+//   raw = secret + "\n" + timestamp
 //   signature = HEX( SHA256(raw) )
 //
 // Header:
@@ -80,18 +74,8 @@ func BillWebhookAuth() gin.HandlerFunc {
 			return
 		}
 
-		// 读取请求 Body 并恢复，以便后续处理使用
-		bodyBytes, err := c.GetRawData()
-		if err != nil {
-			response.BadRequest(c, "读取请求体失败")
-			c.Abort()
-			return
-		}
-		// 重新放回 Body
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
 		// 计算签名
-		raw := secret + "\n" + tsStr + "\n" + string(bodyBytes)
+		raw := secret + "\n" + tsStr
 		sum := sha256.Sum256([]byte(raw))
 		expectedSig := hex.EncodeToString(sum[:])
 
@@ -116,5 +100,3 @@ func secureCompare(a, b string) bool {
 	}
 	return res == 0
 }
-
-
