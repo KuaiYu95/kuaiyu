@@ -198,7 +198,7 @@ export default function CommentSection({
       className={`${isReply ? 'ml-12 mt-4' : 'mb-6'} transition-all duration-300`}
     >
       <div className="flex gap-4">
-        <Avatar name={comment.nickname} src={comment.avatar} isAdmin={comment.is_admin} size='lg' />
+        <Avatar name={comment.nickname} src={comment.avatar} isAdmin={comment.is_admin} size='md' />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             {!isReply && comment.is_pinned && (
@@ -327,11 +327,11 @@ export default function CommentSection({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-2 mb-4">
         <Lottie
           animationData={chatAnimation}
-          width={16}
-          height={16}
+          width={18}
+          height={18}
           autoplay={true}
         />
         <h3 className="text-xl font-bold text-white">
@@ -349,13 +349,13 @@ export default function CommentSection({
 
       <Card className="mb-8" hoverable={false}>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-2 md:mb-4">
             <input
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder={t('nicknamePlaceholder')}
-              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               required
               disabled={hasStoredUserInfo}
             />
@@ -364,7 +364,7 @@ export default function CommentSection({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('emailPlaceholder')}
-              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               required
               disabled={hasStoredUserInfo}
             />
@@ -373,14 +373,14 @@ export default function CommentSection({
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder={t('websitePlaceholder')}
-              className="px-4 py-2 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
             />
           </div>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('contentPlaceholder')}
-            className="w-full px-4 py-3 bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-4"
+            className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-transparent border border-gray-700/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 resize-none mb-2 md:mb-4"
             rows={2}
             required
           />
@@ -397,7 +397,7 @@ export default function CommentSection({
       ) : comments.length > 0 ? (
         <div>{comments.map((comment) => renderComment(comment))}</div>
       ) : (
-        <Empty title={t('noComments')} />
+        <Empty text={t('noComments')} />
       )}
     </div>
   );

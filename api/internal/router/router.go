@@ -62,6 +62,7 @@ func setupPublicRoutes(api *gin.RouterGroup) {
 	{
 		life.GET("", lifeHandler.List)
 		life.GET("/:id", lifeHandler.Get)
+		life.POST("/:id/views", lifeHandler.IncrementViews)
 	}
 
 	// 快捷记账 Webhook（iPhone 快捷指令等）

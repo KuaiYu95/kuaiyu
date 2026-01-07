@@ -220,18 +220,12 @@ func (h *AnalyticsHandler) Popular(c *gin.Context) {
 	// 获取热门生活记录
 	var lifeRecords []model.LifeRecord
 	db.Where("status = ?", constants.PostStatusPublished).
-		Order("created_at DESC").
+		Order("view_count DESC").
 		Limit(limit).
 		Find(&lifeRecords)
 
 	lifesResult := make([]model.PopularContentVO, len(lifeRecords))
 	for i, life := range lifeRecords {
-		// 生活记录没有 view_count，从 page_views 表统计
-		var viewCount int64
-		db.Model(&model.PageView{}).
-			Where("page_type = ? AND page_id = ?", "life", life.ID).
-			Count(&viewCount)
-
 		// 截取内容前50字符
 		content := life.Content
 		if len([]rune(content)) > 50 {
@@ -242,7 +236,7 @@ func (h *AnalyticsHandler) Popular(c *gin.Context) {
 			ID:          life.ID,
 			Title:       life.Title,
 			Content:     content,
-			ViewCount:   viewCount,
+			ViewCount:   int64(life.ViewCount),
 			PublishedAt: life.PublishedAt,
 			Type:        "life",
 		}

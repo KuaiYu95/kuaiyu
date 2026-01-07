@@ -3,13 +3,15 @@
 // ===========================================
 
 import CommentSection from '@/components/comment/CommentSection';
-import { RelativeTime } from '@/components/ui';
+import LifeViewCounter from '@/components/post/LifeViewCounter';
+import PostMeta from '@/components/post/PostMeta';
+import { BackButton } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 
 export async function generateMetadata({
@@ -55,18 +57,13 @@ export default async function LifeDetailPage({
   }
 
   return (
-    <main className="min-h-screen py-20">
+    <div>
+      {/* 阅读量计数器 */}
+      <LifeViewCounter lifeId={record.id} />
+
       <article className="max-w-3xl mx-auto">
         {/* 返回链接 */}
-        <Link
-          href={`/${locale}/life`}
-          className="inline-flex items-center text-gray-400 hover:text-primary-400 transition-colors mb-8"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          {t('backToList')}
-        </Link>
+        <BackButton href={`/${locale}/life`} text={t('backToList')} />
 
         {/* 封面图 */}
         {record.cover_image && (
@@ -79,25 +76,33 @@ export default async function LifeDetailPage({
           </div>
         )}
 
-        {/* 日期 */}
-        <div className="text-gray-400 text-sm mb-8">
-          <RelativeTime date={record.published_at || record.created_at} locale={locale} />
+        {/* 标题 */}
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">记录</h1>
+
+        {/* 元信息 */}
+        <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm mb-6">
+          <PostMeta
+            date={record.published_at || record.created_at}
+            viewCount={record.view_count || 0}
+            viewsText={t('views')}
+            locale={locale}
+          />
         </div>
 
         {/* 内容 */}
         <div className="prose prose-invert prose-lg max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
             {record.content}
           </ReactMarkdown>
         </div>
 
         {/* 分割线 */}
-        <hr className="border-dark-700 my-12" />
+        <hr className="border-border my-4" />
 
         {/* 评论区 */}
         <CommentSection lifeRecordId={record.id} locale={locale} />
       </article>
-    </main>
+    </div>
   );
 }
 

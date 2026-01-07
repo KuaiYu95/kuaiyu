@@ -16,14 +16,14 @@ export default function BackButton({ href, text }: BackButtonProps) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center text-gray-400 hover:text-primary-400 transition-colors mb-8"
+      className="inline-flex items-center text-gray-400 hover:text-primary-400 transition-colors my-4"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <Lottie
         animationData={arrowLeftAnimation}
-        width={22.4}
-        height={22.4}
+        width={18}
+        height={18}
         loop={isHovered}
         autoplay={true}
         key={isHovered ? 'hover' : 'normal'}

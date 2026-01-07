@@ -16,9 +16,10 @@ type LifeRecord struct {
 	Content     string     `gorm:"type:text" json:"content"`
 	CoverImage  string     `gorm:"size:500" json:"cover_image"`
 	Status      string     `gorm:"size:20;default:draft" json:"status"` // draft | published
+	ViewCount   int        `gorm:"default:0" json:"view_count"`         // 阅读量
 	AuthorID    uint       `gorm:"index" json:"author_id"`
 	PublishedAt *time.Time `json:"published_at"`
-	
+
 	// 关联
 	Author   User      `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
 	Comments []Comment `gorm:"foreignKey:LifeRecordID" json:"comments,omitempty"`
@@ -53,12 +54,13 @@ type LifeRecordVO struct {
 	Content     string    `json:"content"`
 	CoverImage  string    `json:"cover_image"`
 	Status      string    `json:"status"`
+	ViewCount   int       `json:"view_count"`
 	AuthorID    uint      `json:"author_id"`
 	PublishedAt *time.Time `json:"published_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Author      *UserVO   `json:"author,omitempty"`
-	IsExpanded  bool      `json:"is_expanded"` // 是否展开全文
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Author      *UserVO    `json:"author,omitempty"`
+	IsExpanded  bool       `json:"is_expanded"` // 是否展开全文
 }
 
 // LifeRecordListVO 生活记录列表视图对象
@@ -67,9 +69,10 @@ type LifeRecordListVO struct {
 	Content     string    `json:"content"`      // 可能是预览或全文
 	CoverImage  string    `json:"cover_image"`
 	Status      string    `json:"status"`
+	ViewCount   int       `json:"view_count"`
 	PublishedAt *time.Time `json:"published_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	HasMore     bool      `json:"has_more"` // 是否有更多内容
+	CreatedAt   time.Time  `json:"created_at"`
+	HasMore     bool       `json:"has_more"` // 是否有更多内容
 }
 
 // ===========================================
@@ -83,6 +86,7 @@ func (l *LifeRecord) ToVO() LifeRecordVO {
 		Content:     l.Content,
 		CoverImage:  l.CoverImage,
 		Status:      l.Status,
+		ViewCount:   l.ViewCount,
 		AuthorID:    l.AuthorID,
 		PublishedAt: l.PublishedAt,
 		CreatedAt:   l.CreatedAt,
@@ -117,6 +121,7 @@ func (l *LifeRecord) ToListVO(previewLen int) LifeRecordListVO {
 		Content:     content,
 		CoverImage:  l.CoverImage,
 		Status:      l.Status,
+		ViewCount:   l.ViewCount,
 		PublishedAt: l.PublishedAt,
 		CreatedAt:   l.CreatedAt,
 		HasMore:     hasMore,

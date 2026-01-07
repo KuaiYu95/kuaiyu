@@ -50,49 +50,47 @@ export default async function CategoriesPage({
   };
 
   return (
-    <main className="min-h-screen">
-      <div className="container-content py-12">
-        {/* 页面标题 */}
-        <section className="text-center py-12 animate-fade-up mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Lottie
-              animationData={labelAnimation}
-              width={24}
-              height={24}
-              autoplay={true}
-            />
-            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
-          </div>
-          <p className="text-text-secondary">
-            {t('totalTags', { count: tags.length })}
-          </p>
-        </section>
+    <div className="container-content py-12">
+      {/* 页面标题 */}
+      <section className="text-center py-12 animate-fade-up pb-4">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Lottie
+            animationData={labelAnimation}
+            width={24}
+            height={24}
+            autoplay={true}
+          />
+          <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+        </div>
+        <p className="text-text-secondary">
+          {t('totalTags', { count: tags.length })}
+        </p>
+      </section>
 
-        {/* 标签列表 */}
-        {tags.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tags.map((tag) => (
-              <Link key={tag.id} href={`/${locale}/blog?tag=${tag.slug}`}>
-                <Card className="group hover:border-primary-500/50 transition-all duration-300 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: tag.color || '#60a5fa' }}
-                    />
-                    <span className="text-white group-hover:text-primary-400 transition-colors">
-                      {tag.name}
-                    </span>
-                  </div>
-                  <span className="text-gray-500">
-                    {tag.post_count || 0} {t('posts')}
+      {/* 标签列表 */}
+      {tags.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tags.map((tag) => (
+            <Link key={tag.id} href={`/${locale}/blog?tag=${tag.slug}`}>
+              <Card className="group hover:border-primary-500/50 transition-all duration-300 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: tag.color || '#60a5fa' }}
+                  />
+                  <span className="text-white group-hover:text-primary-400 transition-colors">
+                    {tag.name}
                   </span>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+                </div>
+                <span className="text-gray-500">
+                  {tag.post_count || 0} {t('posts')}
+                </span>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

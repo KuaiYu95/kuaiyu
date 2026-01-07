@@ -44,6 +44,7 @@
   "life": {
     "title": "生活",
     "description": "记录生活点滴",
+    "views": "阅读",
     "noRecords": "暂无记录",
     "backToList": "返回列表",
     "contributionCalendar": "贡献日历"

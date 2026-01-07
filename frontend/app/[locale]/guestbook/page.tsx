@@ -28,26 +28,24 @@ export default async function GuestbookPage({
   const t = await getTranslations('guestbook');
 
   return (
-    <main className="min-h-screen">
-      <div className="container-content py-12">
-        {/* 页面标题 */}
-        <section className="text-center py-12 animate-fade-up mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Lottie
-              animationData={forumAnimation}
-              width={24}
-              height={24}
-              autoplay={true}
-            />
-            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
-          </div>
-          <p className="text-text-secondary">{t('description')}</p>
-        </section>
+    <div className="container-content py-12">
+      {/* 页面标题 */}
+      <section className="text-center py-12 animate-fade-up pb-4">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Lottie
+            animationData={forumAnimation}
+            width={24}
+            height={24}
+            autoplay={true}
+          />
+          <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+        </div>
+        <p className="text-text-secondary">{t('description')}</p>
+      </section>
 
-        {/* 留言区 */}
-        <CommentSection isGuestbook locale={locale} />
-      </div>
-    </main>
+      {/* 留言区 */}
+      <CommentSection isGuestbook locale={locale} />
+    </div>
   );
 }
 

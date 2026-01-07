@@ -49,80 +49,78 @@ export default async function BlogPage({
   }
 
   return (
-    <main className="min-h-screen">
-      <div className="container-content py-12">
-        {/* 页面标题 */}
-        <section className="text-center pt-12 pb-4 animate-fade-up">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Lottie
-              animationData={articleAnimation}
-              width={24}
-              height={24}
-              autoplay={true}
+    <div className="container-content py-12">
+      {/* 页面标题 */}
+      <section className="text-center pt-12 pb-4 animate-fade-up">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Lottie
+            animationData={articleAnimation}
+            width={24}
+            height={24}
+            autoplay={true}
+          />
+          <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
+        </div>
+        <p className="text-text-secondary">{t('description')}</p>
+        {tag && (
+          <div className="mt-4">
+            <span className="text-gray-500">{t('filterByTag')}: </span>
+            <Tag>{tag}</Tag>
+            <Link href={`/${locale}/blog`} className="ml-2 text-primary-400 hover:underline">
+              {t('clearFilter')}
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* 贡献日历 */}
+      <section className="animate-fade-up mb-4" style={{ animationDelay: '0.1s' }}>
+        <ContributionCalendar type="post" locale={locale} />
+      </section>
+
+      {/* 文章列表 */}
+      {posts.length > 0 ? (
+        <div>
+          {posts.map((post, index) => (
+            <BlogPostItem
+              key={post.id}
+              post={post}
+              locale={locale}
+              href={`/${locale}/blog/${post.slug}`}
+              showIndex={index}
+              viewsText={t('views')}
             />
-            <h1 className="text-3xl font-bold text-text-accent">{t('title')}</h1>
-          </div>
-          <p className="text-text-secondary">{t('description')}</p>
-          {tag && (
-            <div className="mt-4">
-              <span className="text-gray-500">{t('filterByTag')}: </span>
-              <Tag>{tag}</Tag>
-              <Link href={`/${locale}/blog`} className="ml-2 text-primary-400 hover:underline">
-                {t('clearFilter')}
-              </Link>
-            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty text={t('noPosts')} />
+      )}
+
+      {/* 分页 */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-12">
+          {page > 1 && (
+            <Link
+              href={`/${locale}/blog?page=${page - 1}${tag ? `&tag=${tag}` : ''}`}
+              className="px-4 py-2 bg-dark-800 text-gray-300 rounded-lg hover:bg-dark-700 transition-colors"
+            >
+              {t('prevPage')}
+            </Link>
           )}
-        </section>
-
-        {/* 贡献日历 */}
-        <section className="animate-fade-up mb-12" style={{ animationDelay: '0.1s' }}>
-          <ContributionCalendar type="post" locale={locale} />
-        </section>
-
-        {/* 文章列表 */}
-        {posts.length > 0 ? (
-          <div>
-            {posts.map((post, index) => (
-              <BlogPostItem
-                key={post.id}
-                post={post}
-                locale={locale}
-                href={`/${locale}/blog/${post.slug}`}
-                showIndex={index}
-                viewsText={t('views')}
-              />
-            ))}
-          </div>
-        ) : (
-          <Empty title={t('noPosts')} />
-        )}
-
-        {/* 分页 */}
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-12">
-            {page > 1 && (
-              <Link
-                href={`/${locale}/blog?page=${page - 1}${tag ? `&tag=${tag}` : ''}`}
-                className="px-4 py-2 bg-dark-800 text-gray-300 rounded-lg hover:bg-dark-700 transition-colors"
-              >
-                {t('prevPage')}
-              </Link>
-            )}
-            <span className="px-4 py-2 text-gray-400">
-              {page} / {totalPages}
-            </span>
-            {page < totalPages && (
-              <Link
-                href={`/${locale}/blog?page=${page + 1}${tag ? `&tag=${tag}` : ''}`}
-                className="px-4 py-2 bg-dark-800 text-gray-300 rounded-lg hover:bg-dark-700 transition-colors"
-              >
-                {t('nextPage')}
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
-    </main>
+          <span className="px-4 py-2 text-gray-400">
+            {page} / {totalPages}
+          </span>
+          {page < totalPages && (
+            <Link
+              href={`/${locale}/blog?page=${page + 1}${tag ? `&tag=${tag}` : ''}`}
+              className="px-4 py-2 bg-dark-800 text-gray-300 rounded-lg hover:bg-dark-700 transition-colors"
+            >
+              {t('nextPage')}
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

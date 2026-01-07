@@ -5,14 +5,14 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { postApi } from '@/lib/api';
+import { useEffect } from 'react';
 
-interface ViewCounterProps {
+interface PostViewCounterProps {
   postId: number;
 }
 
-export default function ViewCounter({ postId }: ViewCounterProps) {
+export default function PostViewCounter({ postId }: PostViewCounterProps) {
   useEffect(() => {
     // 使用 sessionStorage 防止同一会话重复计数
     const viewedKey = `viewed_post_${postId}`;

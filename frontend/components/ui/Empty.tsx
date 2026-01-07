@@ -12,41 +12,34 @@ import Lottie from './Lottie';
 
 interface EmptyProps {
   icon?: ReactNode;
-  title?: string;
-  description?: string;
-  action?: ReactNode;
+  text?: string;
   className?: string;
 }
 
 export default function Empty({
   icon,
-  title = '暂无数据',
-  description,
-  action,
+  text = '暂无数据',
   className,
 }: EmptyProps) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-12 text-center text-gray-400',
+        'flex items-center justify-center gap-1 text-gray-400',
         className
       )}
     >
       {icon || (
-        <div className="mb-2">
-          <Lottie
-            animationData={mailAnimation}
-            width={32}
-            height={32}
-            autoplay={true}
-          />
-        </div>
+        <Lottie
+          animationData={mailAnimation}
+          width={16}
+          height={16}
+          autoplay={true}
+          loop={true}
+        />
       )}
-      <h3 className="text-base font-medium mb-2">{title}</h3>
-      {description && (
-        <p className="text-sm max-w-sm">{description}</p>
-      )}
-      {action}
+      <span className="text-xs" style={{ fontSize: '12px' }}>
+        {text}
+      </span>
     </div>
   );
 }

@@ -4,8 +4,8 @@
 
 import CommentSection from '@/components/comment/CommentSection';
 import PostMeta from '@/components/post/PostMeta';
-import ViewCounter from '@/components/post/ViewCounter';
-import { Tag } from '@/components/ui';
+import PostViewCounter from '@/components/post/PostViewCounter';
+import { BackButton, Tag } from '@/components/ui';
 import { Post, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -14,7 +14,6 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
-import BackButton from './BackButton';
 
 export async function generateMetadata({
   params,
@@ -62,9 +61,9 @@ export default async function BlogDetailPage({
   }
 
   return (
-    <main className="min-h-screen py-2">
+    <div>
       {/* 阅读量计数器（同时记录页面访问） */}
-      <ViewCounter postId={post.id} />
+      <PostViewCounter postId={post.id} />
 
       <article className="max-w-3xl mx-auto">
         {/* 返回链接 */}
@@ -72,7 +71,7 @@ export default async function BlogDetailPage({
 
         {/* 封面图 */}
         {post.cover_image && (
-          <div className="w-full h-64 md:h-80 overflow-hidden rounded-2xl mb-8">
+          <div className="w-full h-64 md:h-80 overflow-hidden rounded-2xl my-4">
             <img
               src={post.cover_image}
               alt={post.title}
@@ -111,12 +110,12 @@ export default async function BlogDetailPage({
         </div>
 
         {/* 分割线 */}
-        <hr className="border-border my-12" />
+        <hr className="border-border my-4" />
 
         {/* 评论区 */}
         <CommentSection postId={post.id} locale={locale} />
       </article>
-    </main>
+    </div>
   );
 }
 

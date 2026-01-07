@@ -94,6 +94,7 @@ export interface LifeRecord {
   content: string;
   cover_image: string;
   status: string;
+  view_count: number;
   published_at: string | null;
   created_at: string;
   has_more?: boolean;
@@ -165,6 +166,10 @@ export const lifeApi = {
   // 获取详情
   get: (id: number) =>
     api.get<any, ApiResponse<LifeRecord>>(`/api/life/${id}`),
+
+  // 增加阅读量
+  incrementViews: (id: number) =>
+    api.post<any, ApiResponse<null>>(`/api/life/${id}/views`),
 };
 
 // 标签相关
@@ -273,7 +278,6 @@ export const publicApi = {
   posts: {
     list: postApi.list,
     get: postApi.getBySlug,
-    incrementViews: postApi.incrementViews,
   },
   life: {
     list: lifeApi.list,

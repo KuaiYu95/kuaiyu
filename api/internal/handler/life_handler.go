@@ -2,9 +2,11 @@
 package handler
 
 import (
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"kuaiyu/internal/database"
 	"kuaiyu/internal/middleware"
 	"kuaiyu/internal/model"
@@ -79,6 +81,62 @@ func (h *LifeHandler) Get(c *gin.Context) {
 	}
 	
 	response.Success(c, record.ToVO())
+}
+
+// IncrementViews 增加生活记录的阅读量，并记录到 page_views 表
+func (h *LifeHandler) IncrementViews(c *gin.Context) {
+	id, err := GetIDParam(c, "id")
+	if err != nil {
+		response.BadRequest(c, "无效的 ID")
+		return
+	}
+
+	ipAddress := c.ClientIP()
+	userAgent := c.GetHeader("User-Agent")
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
+
+	db := database.Get()
+
+	// 防重复：同一 IP + User-Agent + Life 在 1 小时内只计数一次
+	var existingView model.PageView
+	checkErr := db.Where(
+		"page_type = ? AND page_id = ? AND ip_address = ? AND user_agent = ? AND created_at > ?",
+		"life", id, ipAddress, userAgent, oneHourAgo,
+	).First(&existingView).Error
+
+	if checkErr == nil {
+		// 1 小时内已有记录，直接返回
+		response.Success(c, nil)
+		return
+	}
+
+	// 增加 life_records 表中的 view_count
+	if err := db.Model(&model.LifeRecord{}).
+		Where("id = ?", id).
+		UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).
+		Error; err != nil {
+		response.InternalError(c, "")
+		return
+	}
+
+	// 写入 page_views 表，用于 PV/UV 统计和热门内容分析
+	pv := model.PageView{
+		PageType:   "life",
+		PageID:     &id,
+		IPAddress:  ipAddress,
+		UserAgent:  userAgent,
+		Referer:    c.GetHeader("Referer"),
+		DeviceType: detectDeviceType(userAgent),
+		Browser:    detectBrowser(userAgent),
+		OS:         detectOS(userAgent),
+	}
+
+	if err := db.Create(&pv).Error; err != nil {
+		// 记录失败不影响主流程，仅打日志
+		log.Printf("Failed to record life page view: %v", err)
+	}
+
+	response.Success(c, nil)
 }
 
 // ===========================================
