@@ -3,23 +3,18 @@
 // ===========================================
 
 import MarkdownEditor from '@/components/MarkdownEditor';
-import { ArrowBackIcon } from '@/components/icons';
+import { ArrowBackIcon, ArticleIcon, PhotoIcon } from '@/components/icons';
 import { lifeApi, uploadApi } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { Save } from '@mui/icons-material';
+import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Typography,
+  Dialog,
+  Stack,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function LifeEdit() {
@@ -35,6 +30,8 @@ export default function LifeEdit() {
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [status, setStatus] = useState('draft');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isEdit) {
@@ -88,6 +85,11 @@ export default function LifeEdit() {
       setCoverImage(res.data.url);
     } catch (err) {
       setError('图片上传失败');
+    } finally {
+      // 重置 input，允许再次选择同一文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -100,95 +102,147 @@ export default function LifeEdit() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon size={14} />}
-          onClick={() => navigate(ROUTES.LIFE)}
-          sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
-        >
-          返回
-        </Button>
-        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
-          {isEdit ? '编辑记录' : '新建记录'}
-        </Typography>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 3,
-          }}
-        >
-          {/* 左侧主内容 */}
-          <Box sx={{ flex: 1, width: { xs: '100%', md: 'auto' } }}>
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                内容
-              </Typography>
-              <MarkdownEditor
-                value={content}
-                onChange={setContent}
-                height={500}
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: { xs: 1, sm: 2 }, flexShrink: 0 }}>
+          <Stack direction={'row'} alignItems={'center'}>
+            <Button
+              startIcon={<ArrowBackIcon size={14} />}
+              onClick={() => navigate(ROUTES.LIFE)}
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
+            >
+              返回
+            </Button>
+            <Box sx={{ fontWeight: 'bold' }}>生活记录</Box>
+          </Stack>
+          <Stack direction={'row'} alignItems={'center'} gap={{ xs: 1, sm: 2 }}>
+            <Button
+              variant={status === 'published' ? 'contained' : 'outlined'}
+              startIcon={status === 'published' ? <CheckBox /> : <CheckBoxOutlineBlank />}
+              onClick={() => setStatus(status === 'published' ? 'draft' : 'published')}
+              size="small"
+              sx={{
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '6px 8px', sm: '6px 12px' },
+                minWidth: { xs: 'auto', sm: 'auto' },
+                ...(status === 'published'
+                  ? {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                      boxShadow: '0px 8px 16px rgba(102, 126, 234, 0.4)',
+                    },
+                  }
+                  : {
+                    color: 'text.secondary',
+                    borderColor: 'divider',
+                  }),
+              }}
+            >
+              发布
+            </Button>
+            <Button
+              variant={coverImage ? 'contained' : 'outlined'}
+              startIcon={<PhotoIcon size={18} hover />}
+              component="label"
+              size="small"
+              sx={{
+                flexShrink: 0,
+                minWidth: { xs: 'auto', sm: 100 },
+                px: { xs: 1, sm: 2 },
+                '& .MuiButton-startIcon': {
+                  margin: { xs: 0, sm: '0 4px 0 -4px' },
+                },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                上传封面
+              </Box>
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleImageUpload}
               />
-            </Paper>
-          </Box>
-
-          {/* 右侧设置 */}
-          <Box sx={{ width: { xs: '100%', md: 300 } }}>
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                发布设置
-              </Typography>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>状态</InputLabel>
-                <Select
-                  value={status}
-                  label="状态"
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <MenuItem value="draft">草稿</MenuItem>
-                  <MenuItem value="published">发布</MenuItem>
-                </Select>
-              </FormControl>
+            </Button>
+            {coverImage && (
               <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                startIcon={<Save />}
-                disabled={saving}
+                variant="text"
+                size="small"
+                onClick={() => setPreviewOpen(true)}
+                sx={{ minWidth: 'auto' }}
               >
+                预览
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              startIcon={<ArticleIcon size={18} hover />}
+              disabled={saving}
+              onClick={handleSubmit}
+              size="small"
+              sx={{
+                flexShrink: 0,
+                minWidth: { xs: 'auto', sm: 100 },
+                px: { xs: 1, sm: 2 },
+                '& .MuiButton-startIcon': {
+                  margin: { xs: 0, sm: '0 4px 0 -4px' },
+                },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                 {saving ? '保存中...' : '保存'}
-              </Button>
-            </Paper>
-
-            <Paper sx={{ p: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                封面图
-              </Typography>
-              {coverImage && (
-                <Box
-                  component="img"
-                  src={coverImage}
-                  sx={{ width: '100%', borderRadius: 1, mb: 2 }}
-                />
-              )}
-              <Button variant="outlined" component="label" fullWidth>
-                上传图片
-                <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-              </Button>
-            </Paper>
-          </Box>
+              </Box>
+            </Button>
+          </Stack>
         </Box>
-      </form>
-    </Box>
+        <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            height={0} // 使用 flex 布局，不需要固定高度
+            fullscreen={true}
+          />
+        </Box>
+      </Box>
+      <Dialog
+        open={previewOpen}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+          },
+        }}
+        onClose={() => setPreviewOpen(false)}
+        onClick={() => setPreviewOpen(false)}
+      >
+        <Box
+          component="img"
+          src={coverImage}
+          alt="封面预览"
+          sx={{
+            maxWidth: '100%',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </Dialog>
+    </>
   );
 }

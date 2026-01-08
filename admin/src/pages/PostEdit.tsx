@@ -2,27 +2,21 @@
 // 文章编辑页面
 // ===========================================
 
-import { ArrowBackIcon } from '@/components/icons';
+import { ArrowBackIcon, ArticleIcon, PhotoIcon } from '@/components/icons';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import { postApi, tagApi, uploadApi, type Tag } from '@/lib/api';
 import { ROUTES } from '@/lib/constants';
-import { Save } from '@mui/icons-material';
+import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import {
-  Alert,
-  Autocomplete,
   Box,
   Button,
   Chip,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
+  Dialog,
+  Stack,
   TextField,
-  Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function PostEdit() {
@@ -37,12 +31,12 @@ export default function PostEdit() {
 
   // 表单数据
   const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
-  const [excerpt, setExcerpt] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [status, setStatus] = useState('draft');
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // 获取标签列表
@@ -56,9 +50,7 @@ export default function PostEdit() {
         .then((res) => {
           const post = res.data;
           setTitle(post.title);
-          setSlug(post.slug);
           setContent(post.content);
-          setExcerpt(post.excerpt);
           setCoverImage(post.cover_image);
           setStatus(post.status);
           setSelectedTags(post.tags || []);
@@ -77,9 +69,8 @@ export default function PostEdit() {
 
     const data = {
       title,
-      slug,
       content,
-      excerpt,
+      excerpt: '', // 摘要留空，由后端自动生成
       cover_image: coverImage,
       status,
       tag_ids: selectedTags.map((t) => t.id),
@@ -108,6 +99,11 @@ export default function PostEdit() {
       setCoverImage(res.data.url);
     } catch (err) {
       setError('图片上传失败');
+    } finally {
+      // 重置 input，允许再次选择同一文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -120,149 +116,193 @@ export default function PostEdit() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon size={14} />}
-          onClick={() => navigate(ROUTES.POSTS)}
-          sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
-        >
-          返回
-        </Button>
-        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
-          {isEdit ? '编辑文章' : '新建文章'}
-        </Typography>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit}>
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: { xs: 1, sm: 2 }, flexShrink: 0 }}>
+          <Stack direction={'row'} alignItems={'center'}>
+            <Button
+              startIcon={<ArrowBackIcon size={14} />}
+              onClick={() => navigate(ROUTES.POSTS)}
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
+            >
+              返回
+            </Button>
+            <TextField
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="点击此处填写标题"
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+              }}
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.125rem' },
+                fontWeight: 'bold',
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontWeight: 'bold',
+                  padding: 0,
+                },
+              }}
+            />
+          </Stack>
+          <Stack direction={'row'} alignItems={'center'} gap={{ xs: 1, sm: 2 }}>
+            <Button
+              variant={status === 'published' ? 'contained' : 'outlined'}
+              startIcon={status === 'published' ? <CheckBox /> : <CheckBoxOutlineBlank />}
+              onClick={() => setStatus(status === 'published' ? 'draft' : 'published')}
+              size="small"
+              sx={{
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '6px 8px', sm: '6px 12px' },
+                minWidth: { xs: 'auto', sm: 'auto' },
+                ...(status === 'published'
+                  ? {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                      boxShadow: '0px 8px 16px rgba(102, 126, 234, 0.4)',
+                    },
+                  }
+                  : {
+                    color: 'text.secondary',
+                    borderColor: 'divider',
+                  }),
+              }}
+            >
+              发布
+            </Button>
+            <Button
+              variant={coverImage ? "contained" : "outlined"}
+              startIcon={<PhotoIcon size={18} hover />}
+              onClick={() => navigate(ROUTES.POST_NEW)}
+              size="small"
+              sx={{
+                flexShrink: 0,
+                minWidth: { xs: 'auto', sm: 100 },
+                px: { xs: 1, sm: 2 },
+                '& .MuiButton-startIcon': {
+                  margin: { xs: 0, sm: '0 4px 0 -4px' },
+                },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                上传封面
+              </Box>
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<ArticleIcon size={18} hover />}
+              disabled={saving}
+              onClick={handleSubmit}
+              size="small"
+              sx={{
+                flexShrink: 0,
+                px: { xs: 1, sm: 2 },
+                '& .MuiButton-startIcon': {
+                  margin: { xs: 0, sm: '0 4px 0 -4px' },
+                },
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {saving ? '保存中...' : '保存'}
+              </Box>
+            </Button>
+          </Stack>
+        </Box>
+        <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            height={0} // 使用 flex 布局，不需要固定高度
+            fullscreen={true}
+          />
+        </Box>
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 3,
+            p: { xs: 1, sm: 2 },
+            flexShrink: 0,
           }}
         >
-          {/* 左侧主内容 */}
-          <Box sx={{ flex: 1, width: { xs: '100%', md: 'auto' } }}>
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <TextField
-                fullWidth
-                label="标题"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="URL 标识 (slug)"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="留空自动生成"
-                sx={{ mb: 2 }}
-              />
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                内容
-              </Typography>
-              <MarkdownEditor
-                value={content}
-                onChange={setContent}
-                height={500}
-              />
-            </Paper>
-          </Box>
-
-          {/* 右侧设置 */}
-          <Box sx={{ width: { xs: '100%', md: 300 } }}>
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                发布设置
-              </Typography>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>状态</InputLabel>
-                <Select
-                  value={status}
-                  label="状态"
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <MenuItem value="draft">草稿</MenuItem>
-                  <MenuItem value="published">发布</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                startIcon={<Save />}
-                disabled={saving}
-              >
-                {saving ? '保存中...' : '保存'}
-              </Button>
-            </Paper>
-
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                封面图
-              </Typography>
-              {coverImage && (
-                <Box
-                  component="img"
-                  src={coverImage}
-                  sx={{ width: '100%', borderRadius: 1, mb: 2 }}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.5, sm: 1 } }}>
+            {tags.map((tag) => {
+              const isSelected = selectedTags.some((selectedTag) => selectedTag.id === tag.id);
+              return (
+                <Chip
+                  key={tag.id}
+                  label={tag.name}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedTags(selectedTags.filter((t) => t.id !== tag.id));
+                    } else {
+                      setSelectedTags([...selectedTags, tag]);
+                    }
+                  }}
+                  size="small"
+                  sx={{
+                    cursor: 'pointer',
+                    ...(isSelected && {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                        boxShadow: '0px 4px 8px rgba(102, 126, 234, 0.4)',
+                      },
+                    }),
+                  }}
                 />
-              )}
-              <Button variant="outlined" component="label" fullWidth>
-                上传图片
-                <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-              </Button>
-            </Paper>
-
-            <Paper sx={{ p: 3, mb: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                标签
-              </Typography>
-              <Autocomplete
-                multiple
-                options={tags}
-                getOptionLabel={(option) => option.name}
-                value={selectedTags}
-                onChange={(_, value) => setSelectedTags(value)}
-                renderInput={(params) => <TextField {...params} placeholder="选择标签" />}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      label={option.name}
-                      {...getTagProps({ index })}
-                      size="small"
-                    />
-                  ))
-                }
-              />
-            </Paper>
-
-            <Paper sx={{ p: 3, border: 1, borderColor: 'divider' }} elevation={0}>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                摘要
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                placeholder="留空自动从内容生成"
-              />
-            </Paper>
+              );
+            })}
           </Box>
         </Box>
-      </form>
-    </Box>
+      </Box>
+      <input
+        ref={fileInputRef}
+        type="file"
+        hidden
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleImageUpload}
+      />
+      <Dialog
+        open={previewOpen}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+          },
+        }}
+        onClose={() => setPreviewOpen(false)}
+        onClick={() => setPreviewOpen(false)}
+      >
+        <Box
+          component="img"
+          src={coverImage}
+          alt="封面预览"
+          sx={{
+            maxWidth: '100%',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </Dialog>
+    </>
   );
 }
 

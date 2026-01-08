@@ -1,17 +1,35 @@
 // ===========================================
-// 博客阅读量饼图组件
+// 内容统计饼图组件
 // ===========================================
 
-import type { PostViewStatsVO } from '@/lib/api';
+import type { Overview } from '@/lib/api';
 import { Box, useTheme } from '@mui/material';
 import ReactECharts from 'echarts-for-react';
 
-interface PostViewStatsChartProps {
-  postViewStats: PostViewStatsVO[];
+interface ContentStatsChartProps {
+  overview: Overview | null;
 }
 
-export default function PostViewStatsChart({ postViewStats }: PostViewStatsChartProps) {
+export default function ContentStatsChart({ overview }: ContentStatsChartProps) {
   const theme = useTheme();
+
+  const data = [
+    {
+      name: '博客数量',
+      value: overview?.post_count || 0,
+      color: '#3b82f6', // 蓝色
+    },
+    {
+      name: '生活记录',
+      value: overview?.life_count || 0,
+      color: '#06b6d4', // 青色
+    },
+    {
+      name: '评论数量',
+      value: overview?.comment_count || 0,
+      color: '#8b5cf6', // 紫色
+    },
+  ].filter((item) => item.value > 0); // 过滤掉值为0的项
 
   return (
     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -28,12 +46,12 @@ export default function PostViewStatsChart({ postViewStats }: PostViewStatsChart
               color: '#fff',
             },
             formatter: (params: any) => {
-              return `${params.name}<br/>阅读量: ${params.value} (${params.percent}%)`;
+              return `${params.name}<br/>数量: ${params.value} (${params.percent}%)`;
             },
           },
           series: [
             {
-              name: '博客阅读量',
+              name: '内容统计',
               type: 'pie',
               radius: ['20%', '60%'],
               center: ['50%', '50%'],
@@ -85,25 +103,15 @@ export default function PostViewStatsChart({ postViewStats }: PostViewStatsChart
                   labelLinePoints: points,
                 };
               },
-              data: postViewStats.map((item, index) => {
-                // 博客专属冷色调
-                const color = [
-                  '#3b82f6', // 蓝色
-                  '#8b5cf6', // 紫色
-                  '#06b6d4', // 青色
-                  '#6366f1', // 靛蓝色
-                  '#ec4899', // 粉紫色
-                ][index % 5];
-                return {
-                  value: item.view_count,
-                  name: item.title,
-                  itemStyle: {
-                    color: color,
-                    shadowBlur: 4,
-                    shadowColor: 'rgba(0, 0, 0, 0.1)',
-                  },
-                };
-              }),
+              data: data.map((item) => ({
+                value: item.value,
+                name: item.name,
+                itemStyle: {
+                  color: item.color,
+                  shadowBlur: 4,
+                  shadowColor: 'rgba(0, 0, 0, 0.1)',
+                },
+              })),
               emphasis: {
                 disabled: true,
               },

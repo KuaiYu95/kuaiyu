@@ -13,6 +13,9 @@ interface CategoryRankingChartProps {
 export default function CategoryRankingChart({ categoryRanking }: CategoryRankingChartProps) {
   const theme = useTheme();
 
+  // 按金额排序（从高到低）
+  const sortedRanking = [...categoryRanking].sort((a, b) => a.total - b.total);
+
   return (
     <ReactECharts
       style={{ height: '100%', width: '100%', minHeight: 200 }}
@@ -84,7 +87,7 @@ export default function CategoryRankingChart({ categoryRanking }: CategoryRankin
                 labelLinePoints: points,
               };
             },
-            data: categoryRanking.map((item, index) => {
+            data: sortedRanking.map((item, index) => {
               // 账单专属暖色调
               const color = [
                 '#f97316', // 橙色
@@ -92,7 +95,12 @@ export default function CategoryRankingChart({ categoryRanking }: CategoryRankin
                 '#dc2626', // 深红色
                 '#d97706', // 深橙色
                 '#b45309', // 棕色
-              ][index % 5];
+                '#f59e0b', // 琥珀色
+                '#ea580c', // 橙红色
+                '#c2410c', // 红棕色
+                '#fb923c', // 浅橙色
+                '#fbbf24', // 浅金色
+              ][index % 10];
               return {
                 value: item.total,
                 name: item.category_name,

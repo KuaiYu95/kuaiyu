@@ -433,9 +433,7 @@ export default function Bills() {
                                   minWidth: { xs: 70, sm: 100 },
                                   textAlign: 'right',
                                   fontSize: '0.75rem',
-                                  color: bill.type === 'expense'
-                                    ? 'rgba(251, 113, 133, 0.95)'
-                                    : 'rgba(52, 211, 153, 0.95)',
+                                  color: 'text.secondary',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'flex-end',

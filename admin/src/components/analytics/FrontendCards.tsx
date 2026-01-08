@@ -1,5 +1,5 @@
 // ===========================================
-// 博客统计卡片组件
+// 前台统计卡片组件
 // ===========================================
 
 import { ArticleIcon, ContactsIcon, LabelIcon, PhotoCameraIcon, TrendingUpIcon, VisibilityIcon } from '@/components/icons';
@@ -9,15 +9,15 @@ import { Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import StatCard, { type StatCardProps } from './StatCard';
 
-interface BlogCardsProps {
+interface FrontendCardsProps {
   overview: Overview | null;
   calculateTrend: (current: number, average: number) => number;
 }
 
-export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) {
+export default function FrontendCards({ overview, calculateTrend }: FrontendCardsProps) {
   const navigate = useNavigate();
 
-  const blogCards: StatCardProps[] = [
+  const frontendCards: StatCardProps[] = [
     {
       label: '总访问量',
       value: overview?.total_pv || 0,
@@ -76,7 +76,7 @@ export default function BlogCards({ overview, calculateTrend }: BlogCardsProps) 
 
   return (
     <Grid container spacing={2} mb={2}>
-      {blogCards.map((card, index) => {
+      {frontendCards.map((card, index) => {
         const isTotalPV = card.label === '总访问量'; // 
         const isTotalUV = card.label === '总访客数';
         let mobileOrder = index;

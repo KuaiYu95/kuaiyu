@@ -5,12 +5,12 @@
 import {
   BillCards,
   BillTrendCharts,
-  BlogCards,
   CategoryRankingChart,
-  PostViewStatsChart,
+  ContentStatsChart,
+  FrontendCards,
   VisitCharts,
 } from '@/components/analytics';
-import { analyticsApi, billApi, type BillStatistics, type BillTrendData, type CategoryRankingItem, type Overview, type PostViewStatsVO } from '@/lib/api';
+import { analyticsApi, billApi, type BillStatistics, type BillTrendData, type CategoryRankingItem, type Overview } from '@/lib/api';
 import { Box, CircularProgress, Grid } from '@mui/material';
 import { useEffect, useState } from 'react';
 
@@ -18,7 +18,6 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [visits, setVisits] = useState<{ date: string; pv: number; uv: number }[]>([]);
-  const [postViewStats, setPostViewStats] = useState<PostViewStatsVO[]>([]);
   const [billStats, setBillStats] = useState<BillStatistics | null>(null);
   const [dailyTrend, setDailyTrend] = useState<BillTrendData[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<BillTrendData[]>([]);
@@ -28,10 +27,9 @@ export default function Analytics() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [overviewRes, visitsRes, postViewStatsRes, billStatsRes, dailyTrendRes, monthlyTrendRes, categoryRankingRes] = await Promise.all([
+        const [overviewRes, visitsRes, billStatsRes, dailyTrendRes, monthlyTrendRes, categoryRankingRes] = await Promise.all([
           analyticsApi.overview(),
           analyticsApi.visits(),
-          analyticsApi.postViewStats(),
           billApi.statistics({ is_consumed: true }),
           billApi.dailyTrend(),
           billApi.monthlyTrend(),
@@ -39,7 +37,6 @@ export default function Analytics() {
         ]);
         setOverview(overviewRes.data);
         setVisits(visitsRes.data);
-        setPostViewStats(postViewStatsRes.data);
         setBillStats(billStatsRes.data);
         setDailyTrend(dailyTrendRes.data);
         setMonthlyTrend(monthlyTrendRes.data);
@@ -85,9 +82,9 @@ export default function Analytics() {
           </Grid>
         </Grid>
 
-        {/* 右侧：博客相关 */}
+        {/* 右侧：前台相关 */}
         <Grid item xs={12} lg={6}>
-          <BlogCards overview={overview} calculateTrend={calculateTrend} />
+          <FrontendCards overview={overview} calculateTrend={calculateTrend} />
           <VisitCharts
             visits={visits}
             maxPV={maxPV}
@@ -98,7 +95,7 @@ export default function Analytics() {
             uvDomain={uvDomain}
           />
           <Grid item xs={12} lg={12}>
-            <PostViewStatsChart postViewStats={postViewStats} />
+            <ContentStatsChart overview={overview} />
           </Grid>
         </Grid>
       </Grid>

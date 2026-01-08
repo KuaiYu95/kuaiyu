@@ -1,7 +1,8 @@
+import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import App from './App';
+import './globals.css';
 
 // ===========================================
 // 暗黑主题配置

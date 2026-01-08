@@ -1,75 +1,56 @@
 // ===========================================
-// Markdown 编辑器组件 (react-markdown-editor-lite)
+// Markdown 编辑器组件 (@uiw/react-md-editor)
 // ===========================================
 
-import { uploadApi } from '@/lib/api';
 import { Box } from '@mui/material';
-import { useCallback } from 'react';
-import MdEditor from 'react-markdown-editor-lite';
-import 'react-markdown-editor-lite/lib/index.css';
+import MDEditor from '@uiw/react-md-editor';
+import '@uiw/react-md-editor/markdown-editor.css';
+import { useEffect, useState } from 'react';
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   height?: number;
+  fullscreen?: boolean;
 }
 
 export default function MarkdownEditor({
   value,
   onChange,
-  placeholder = '开始输入...',
   height = 500,
+  fullscreen = false,
 }: MarkdownEditorProps) {
-  const handleImageUpload = useCallback(async (file: File, callback: (url: string) => void) => {
-    try {
-      const res = await uploadApi.upload(file);
-      callback(res.data.url);
-    } catch (err) {
-      console.error('Image upload failed:', err);
-    }
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   return (
     <Box
       sx={{
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        overflow: 'hidden',
-        '& .rc-md-editor': {
-          border: 'none',
-          bgcolor: 'background.paper',
-        },
-        '& .rc-md-editor .editor-container .section-container': {
-          bgcolor: 'background.paper',
-        },
-        '& .rc-md-editor .editor-container .section-container .section': {
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-        },
-        '& .rc-md-editor .editor-container .section-container .section .input': {
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-        },
-        '& .rc-md-editor .editor-container .section-container .section .html-wrap': {
-          bgcolor: 'background.paper',
-          color: 'text.primary',
+        width: '100%',
+        height: fullscreen ? '100%' : `${height}px`,
+        '& .w-md-editor': {
+          height: '100%',
         },
       }}
+      data-color-mode="dark"
     >
-      <MdEditor
+      <MDEditor
         value={value}
-        style={{ height: `${height}px` }}
-        onChange={({ text }) => onChange(text)}
-        placeholder={placeholder}
-        onImageUpload={handleImageUpload}
-        renderHTML={(text) => {
-          // 简单的 markdown 渲染，可以后续集成更好的渲染器
-          return text;
-        }}
-        view={{ menu: true, md: true, html: true }}
-        canView={{ menu: true, md: true, html: true, fullScreen: true, hideMenu: false }}
+        onChange={(val) => onChange(val || '')}
+        preview={isMobile ? 'edit' : 'live'}
+        visibleDragbar={!isMobile}
+        height={fullscreen ? '100%' : height}
+        data-color-mode="dark"
       />
     </Box>
   );

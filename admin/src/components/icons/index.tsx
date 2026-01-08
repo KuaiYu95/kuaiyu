@@ -30,6 +30,7 @@ import walletAnimation from '@/assets/icons/system-regular-5-wallet-hover-wallet
 import fileAnimation from '@/assets/icons/system-regular-50-file-hover-file-1.json';
 import arrowLeftAnimation from '@/assets/icons/system-regular-507-arrow-left-hover-pinch.json';
 import clockAnimation from '@/assets/icons/system-regular-67-clock-hover-clock.json';
+import photoAnimation from '@/assets/icons/system-regular-72-photo-hover-pinch.json';
 import visibilityAnimation from '@/assets/icons/system-regular-92-visability-hover-pinch.json';
 import replyAnimation from '@/assets/icons/system-regular-97-reply-hover-reply.json';
 
@@ -644,6 +645,31 @@ export function InfoIcon({ size = 24, sx, hover = false, loop = false, color, ti
         width={size}
         height={size}
         loop={loop || (hover ? isHovered : false)}
+        autoplay={true}
+        key={hover && isHovered ? 'hover' : 'normal'}
+        color={hover && isHovered ? (hoverColor || color) : color}
+        sx={sx}
+      />
+    </Box>
+  );
+}
+
+// 照片图标
+export function PhotoIcon({ size = 24, sx, hover = false, color, title = '', onClick, hoverColor }: IconProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{ ...defaultSx, ...sx }}
+      title={title}
+      onClick={onClick}
+    >
+      <Lottie
+        animationData={photoAnimation}
+        width={size}
+        height={size}
+        loop={hover ? isHovered : false}
         autoplay={true}
         key={hover && isHovered ? 'hover' : 'normal'}
         color={hover && isHovered ? (hoverColor || color) : color}
