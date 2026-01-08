@@ -186,7 +186,13 @@ export default function PostEdit() {
             <Button
               variant={coverImage ? "contained" : "outlined"}
               startIcon={<PhotoIcon size={18} hover />}
-              onClick={() => navigate(ROUTES.POST_NEW)}
+              onClick={() => {
+                if (coverImage) {
+                  setPreviewOpen(true);
+                } else {
+                  fileInputRef.current?.click();
+                }
+              }}
               size="small"
               sx={{
                 flexShrink: 0,
@@ -281,26 +287,40 @@ export default function PostEdit() {
         maxWidth={false}
         PaperProps={{
           sx: {
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            maxWidth: '90vw',
-            maxHeight: '90vh',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           },
         }}
         onClose={() => setPreviewOpen(false)}
         onClick={() => setPreviewOpen(false)}
       >
         <Box
-          component="img"
-          src={coverImage}
-          alt="封面预览"
           sx={{
-            maxWidth: '100%',
-            maxHeight: '90vh',
-            objectFit: 'contain',
+            width: '95vw',
+            height: '95vh',
+            backgroundImage: `url(${coverImage})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           }}
-          onClick={(e) => e.stopPropagation()}
         />
+        <Button
+          variant="contained"
+          startIcon={<PhotoIcon size={18} hover />}
+          onClick={() => fileInputRef.current?.click()}
+          size="small"
+          sx={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: '20px',
+            zIndex: 1,
+          }}
+        >
+          更换封面
+        </Button>
       </Dialog>
     </>
   );

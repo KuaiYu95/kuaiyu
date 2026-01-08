@@ -120,7 +120,7 @@ export default function LifeEdit() {
             >
               返回
             </Button>
-            <Box sx={{ fontWeight: 'bold' }}>生活记录</Box>
+            <Box sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.125rem' } }}>生活记录</Box>
           </Stack>
           <Stack direction={'row'} alignItems={'center'} gap={{ xs: 1, sm: 2 }}>
             <Button
@@ -153,9 +153,15 @@ export default function LifeEdit() {
               发布
             </Button>
             <Button
-              variant={coverImage ? 'contained' : 'outlined'}
+              variant={coverImage ? "contained" : "outlined"}
               startIcon={<PhotoIcon size={18} hover />}
-              component="label"
+              onClick={() => {
+                if (coverImage) {
+                  setPreviewOpen(true);
+                } else {
+                  fileInputRef.current?.click();
+                }
+              }}
               size="small"
               sx={{
                 flexShrink: 0,
@@ -169,24 +175,7 @@ export default function LifeEdit() {
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                 上传封面
               </Box>
-              <input
-                ref={fileInputRef}
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
             </Button>
-            {coverImage && (
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => setPreviewOpen(true)}
-                sx={{ minWidth: 'auto' }}
-              >
-                预览
-              </Button>
-            )}
             <Button
               variant="contained"
               startIcon={<ArticleIcon size={18} hover />}
@@ -217,31 +206,63 @@ export default function LifeEdit() {
           />
         </Box>
       </Box>
+      <input
+        ref={fileInputRef}
+        type="file"
+        hidden
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleImageUpload}
+      />
       <Dialog
         open={previewOpen}
         maxWidth={false}
         PaperProps={{
           sx: {
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            maxWidth: '90vw',
-            maxHeight: '90vh',
+            m: 0,
+            position: 'relative',
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           },
         }}
         onClose={() => setPreviewOpen(false)}
         onClick={() => setPreviewOpen(false)}
       >
         <Box
-          component="img"
-          src={coverImage}
-          alt="封面预览"
           sx={{
-            maxWidth: '100%',
-            maxHeight: '90vh',
-            objectFit: 'contain',
+            backgroundImage: `url(${coverImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           }}
-          onClick={(e) => e.stopPropagation()}
         />
+        <Button
+          variant="contained"
+          startIcon={<PhotoIcon size={18} hover />}
+          onClick={(e) => {
+            e.stopPropagation();
+            setPreviewOpen(false);
+            fileInputRef.current?.click();
+          }}
+          size="small"
+          sx={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: '20px',
+            zIndex: 1,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+              boxShadow: '0px 8px 16px rgba(102, 126, 234, 0.4)',
+            },
+          }}
+        >
+          更换封面
+        </Button>
       </Dialog>
     </>
   );
