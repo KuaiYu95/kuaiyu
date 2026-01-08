@@ -65,13 +65,13 @@ export default async function BlogDetailPage({
       {/* 阅读量计数器（同时记录页面访问） */}
       <PostViewCounter postId={post.id} />
 
-      <article className="max-w-3xl mx-auto">
+      <article className="max-w-3xl mx-auto px-4 md:px-0">
         {/* 返回链接 */}
         <BackButton href={`/${locale}/blog`} text={t('backToList')} />
 
         {/* 封面图 */}
         {post.cover_image && (
-          <div className="w-full h-64 md:h-80 overflow-hidden rounded-2xl my-4">
+          <div className="w-full h-64 md:h-80 overflow-hidden rounded-2xl mb-4">
             <img
               src={post.cover_image}
               alt={post.title}

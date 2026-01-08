@@ -41,6 +41,9 @@ export default function MarkdownEditor({
         '& .w-md-editor': {
           height: '100%',
         },
+        '& .w-md-editor-text': {
+          minHeight: '100% !important',
+        },
       }}
       data-color-mode="dark"
     >

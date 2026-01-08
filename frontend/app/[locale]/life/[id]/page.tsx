@@ -61,7 +61,7 @@ export default async function LifeDetailPage({
       {/* 阅读量计数器 */}
       <LifeViewCounter lifeId={record.id} />
 
-      <article className="max-w-3xl mx-auto">
+      <article className="max-w-3xl mx-auto px-4 md:px-0">
         {/* 返回链接 */}
         <BackButton href={`/${locale}/life`} text={t('backToList')} />
 

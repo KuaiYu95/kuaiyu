@@ -26,7 +26,6 @@ export default function Header({ locale, config }: HeaderProps) {
   const tLang = useTranslations('language');
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isLangHovered, setIsLangHovered] = useState(false);
   const langMenuRef = useRef<HTMLDivElement>(null);
@@ -56,6 +55,7 @@ export default function Header({ locale, config }: HeaderProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isLangMenuOpen]);
+
 
   // 获取语言切换链接
   const getLanguageLink = (newLocale: string) => {
@@ -100,14 +100,13 @@ export default function Header({ locale, config }: HeaderProps) {
             <span>{config?.site_name || 'Yu.kuai'}</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.key}
                 href={`/${locale}${item.href}`}
                 className={cn(
-                  'relative text-sm font-medium transition-colors',
+                  'relative text-xs md:text-sm font-medium transition-colors whitespace-nowrap',
                   isActive(item.href)
                     ? 'text-accent-primary'
                     : 'text-text-secondary hover:text-text-primary'
@@ -125,7 +124,7 @@ export default function Header({ locale, config }: HeaderProps) {
           </div>
 
           {/* Language Switcher */}
-          <div className="hidden md:flex items-center">
+          <div className="flex items-center">
             <div className="relative" ref={langMenuRef}>
               <button
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
@@ -207,156 +206,8 @@ export default function Header({ locale, config }: HeaderProps) {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
         </div>
       </nav>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-
-            {/* Menu Panel */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className="fixed top-0 right-0 bottom-0 w-80 bg-bg-primary border-l border-border/30 shadow-2xl md:hidden z-50"
-            >
-              <div className="flex flex-col h-full">
-                {/* Header with close button */}
-                <div className="flex items-center justify-end p-4 border-b border-border/30">
-                  <button
-                    className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    aria-label="关闭菜单"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex-1 overflow-y-auto px-4 py-4">
-                  <nav className="flex flex-col gap-1">
-                    {NAV_ITEMS.map((item, index) => (
-                      <motion.div
-                        key={item.key}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.03, duration: 0.2 }}
-                      >
-                        <Link
-                          href={`/${locale}${item.href}`}
-                          className={cn(
-                            'relative flex items-center px-4 py-3 rounded-lg text-base transition-all duration-200',
-                            isActive(item.href)
-                              ? 'text-accent-primary bg-accent-primary/5'
-                              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                          )}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          {isActive(item.href) && (
-                            <motion.div
-                              layoutId="mobileActiveIndicator"
-                              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-primary rounded-r-full"
-                            />
-                          )}
-                          <span className="font-medium">{t(item.key)}</span>
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </nav>
-                </div>
-
-                {/* Language Switcher */}
-                <div className="border-t border-border/30 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lottie
-                      animationData={languageAnimation}
-                      width={16}
-                      height={16}
-                      loop={false}
-                      autoplay={true}
-                    />
-                    <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">{tLang('title')}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    {LOCALES.map((l) => (
-                      <Link
-                        key={l}
-                        href={getLanguageLink(l)}
-                        className={cn(
-                          'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                          l === locale
-                            ? 'bg-accent-primary text-white shadow-md'
-                            : 'bg-bg-hover text-text-secondary hover:text-text-primary hover:bg-bg-hover/80'
-                        )}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {l === locale && (
-                          <svg
-                            className="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                        <span>{tLang(l)}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </header>
   );
 }

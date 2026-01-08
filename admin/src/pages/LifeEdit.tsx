@@ -79,14 +79,12 @@ export default function LifeEdit() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       const res = await uploadApi.upload(file);
       setCoverImage(res.data.url);
     } catch (err) {
       setError('图片上传失败');
     } finally {
-      // 重置 input，允许再次选择同一文件
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
