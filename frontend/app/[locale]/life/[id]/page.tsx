@@ -4,15 +4,13 @@
 
 import CommentSection from '@/components/comment/CommentSection';
 import LifeViewCounter from '@/components/post/LifeViewCounter';
+import MarkdownPreview from '@/components/post/MarkdownPreview';
 import PostMeta from '@/components/post/PostMeta';
 import { BackButton } from '@/components/ui';
 import { LifeRecord, publicApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkGfm from 'remark-gfm';
 
 export async function generateMetadata({
   params,
@@ -90,11 +88,7 @@ export default async function LifeDetailPage({
         </div>
 
         {/* 内容 */}
-        <div className="prose prose-invert prose-lg max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-            {record.content}
-          </ReactMarkdown>
-        </div>
+        <MarkdownPreview content={record.content} className="prose prose-invert prose-lg max-w-none" />
 
         {/* 分割线 */}
         <hr className="border-border my-4" />

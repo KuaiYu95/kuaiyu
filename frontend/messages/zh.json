@@ -109,7 +109,8 @@
     "backPrev": "返回上一页"
   },
   "footer": {
-    "copyright": "© {year} {name}. All rights reserved."
+    "copyright": "© {year} {name}. All rights reserved.",
+    "siteDescription": "一个关于技术与生活的个人博客"
   },
   "language": {
     "title": "语言",

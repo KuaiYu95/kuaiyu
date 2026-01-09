@@ -3,6 +3,7 @@
 // ===========================================
 
 import CommentSection from '@/components/comment/CommentSection';
+import MarkdownPreview from '@/components/post/MarkdownPreview';
 import PostMeta from '@/components/post/PostMeta';
 import PostViewCounter from '@/components/post/PostViewCounter';
 import { BackButton, Tag } from '@/components/ui';
@@ -11,9 +12,6 @@ import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkGfm from 'remark-gfm';
 
 export async function generateMetadata({
   params,
@@ -103,11 +101,7 @@ export default async function BlogDetailPage({
         </div>
 
         {/* 文章内容 */}
-        <div className="prose prose-invert prose-lg max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-            {post.content}
-          </ReactMarkdown>
-        </div>
+        <MarkdownPreview content={post.content || ''} />
 
         {/* 分割线 */}
         <hr className="border-border my-4" />

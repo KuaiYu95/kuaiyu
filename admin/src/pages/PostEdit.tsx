@@ -126,7 +126,7 @@ export default function PostEdit() {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: { xs: 1, sm: 2 }, flexShrink: 0 }}>
-          <Stack direction={'row'} alignItems={'center'}>
+          <Stack direction={'row'} alignItems={'center'} flex={1} gap={2} sx={{ mr: 2 }}>
             <Button
               startIcon={<ArrowBackIcon size={14} />}
               onClick={() => navigate(ROUTES.POSTS)}
@@ -143,6 +143,7 @@ export default function PostEdit() {
                 disableUnderline: true,
               }}
               sx={{
+                flex: 1,
                 fontSize: { xs: '1rem', sm: '1.125rem' },
                 fontWeight: 'bold',
                 '& .MuiInputBase-input': {

@@ -125,7 +125,6 @@ export interface SiteConfig {
   site_logo: string;
   site_name: string;
   site_icp: string;
-  site_description: string;
 }
 
 // 归档类型

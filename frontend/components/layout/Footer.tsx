@@ -2,6 +2,7 @@
 
 import SafeImage from '@/components/ui/SafeImage';
 import { SiteConfig } from '@/lib/api';
+import { DEFAULT_CONFIG } from '@/lib/config';
 import { useTranslations } from 'next-intl';
 
 // ===========================================
@@ -41,7 +42,7 @@ export default function Footer({ config, locale }: FooterProps) {
                 {config?.site_name}
               </h3>
               <p className="text-xs text-text-secondary max-w-xs">
-                {config?.site_description}
+                {t('siteDescription')}
               </p>
             </div>
           </div>
@@ -64,7 +65,7 @@ export default function Footer({ config, locale }: FooterProps) {
               rel="noopener noreferrer"
               className="text-text-secondary hover:text-text-primary"
             >
-              浙ICP备2021035401号
+              {DEFAULT_CONFIG.site_icp}
             </a>
           </p>
         </div>

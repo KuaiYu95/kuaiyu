@@ -109,7 +109,8 @@
     "backPrev": "Go Back"
   },
   "footer": {
-    "copyright": "© {year} {name}. All rights reserved."
+    "copyright": "© {year} {name}. All rights reserved.",
+    "siteDescription": "A personal blog about technology and life"
   },
   "language": {
     "title": "Language",

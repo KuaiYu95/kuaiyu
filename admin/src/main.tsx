@@ -112,6 +112,7 @@ const darkTheme = createTheme({
       },
       styleOverrides: {
         root: {
+          minWidth: 'auto',
           textTransform: 'none',
           fontWeight: 500,
           borderRadius: 8,
