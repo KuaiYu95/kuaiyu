@@ -1,7 +1,7 @@
 'use client';
 
-import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 
 // ===========================================
 // Card 组件
@@ -27,7 +27,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-bg-secondary rounded-lg border border-border',
+          'rounded-lg',
           'transition-all duration-300',
           hoverable && 'hover:-translate-y-1 hover:border-border-hover hover:shadow-lg hover:shadow-black/20',
           paddings[padding],

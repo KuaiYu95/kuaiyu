@@ -54,7 +54,7 @@ export default function Loading({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-bg-primary/80 backdrop-blur-sm z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-bg-secondary/50 backdrop-blur-sm z-50">
         {content}
       </div>
     );

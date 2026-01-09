@@ -72,7 +72,7 @@ export default async function CategoriesPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tags.map((tag) => (
             <Link key={tag.id} href={`/${locale}/blog?tag=${tag.slug}`}>
-              <Card className="group hover:border-primary-500/50 transition-all duration-300 flex items-center justify-between">
+              <Card className="group hover:border-primary-500/50 transition-all duration-300 flex items-center justify-between bg-bg-secondary/50 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                   <div
                     className="w-3 h-3 rounded-full"
