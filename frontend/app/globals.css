@@ -28,11 +28,37 @@ body {
   line-height: 1.6;
   color: #e5e5e5;
   background-color: #141414;
+  /* 移动端默认使用 bgimg.webp */
+  background-image: url('/bgimg.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+/* PC 端使用 bgimg-pc.webp */
+@media (min-width: 768px) {
+  body {
+    background-image: url('/bgimg-pc.webp');
+  }
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(20, 20, 20, 0.7);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ===========================================

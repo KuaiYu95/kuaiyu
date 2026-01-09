@@ -20,7 +20,7 @@ export default function Footer({ config, locale }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-border bg-bg-secondary mt-auto pt-8">
+    <footer className="w-full border-t border-border bg-bg-secondary/50 backdrop-blur-sm mt-auto pt-8">
       <div className="container-content py-12">
         <div className="flex flex-col items-center md:items-start md:flex-row gap-8">
           {/* 左侧信息 */}

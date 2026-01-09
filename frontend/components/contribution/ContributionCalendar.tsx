@@ -142,7 +142,7 @@ export default function ContributionCalendar({
 
   // 获取样式
   const getStyle = (day: ContributionDay | null): React.CSSProperties => {
-    if (!day || day.count === 0) return { backgroundColor: '#1a1a1a' };
+    if (!day || day.count === 0) return {};
 
     const opacity = 0.2 + Math.min(day.count, 4) * 0.05;
     const colors = {
@@ -248,12 +248,22 @@ export default function ContributionCalendar({
               const dateStr = isEmpty ? null : day.date.toISOString().split('T')[0];
               const isSelected = selectedDay?.date === day.contribution?.date;
 
+              const hasData = day.contribution && day.contribution.count > 0;
+              const noData = !isEmpty && (!day.contribution || day.contribution.count === 0);
+
               return (
                 <div
                   key={`${weekIndex}-${dayIndex}`}
-                  className={`rounded-sm transition-all duration-200 ${isEmpty ? 'opacity-0' : (day.contribution && day.contribution.count > 0) ? 'hover:opacity-80 cursor-pointer' : 'hover:opacity-80'
+                  className={`transition-all duration-200 ${isEmpty
+                    ? 'opacity-0 rounded-sm'
+                    : hasData
+                      ? 'rounded-sm hover:opacity-80 cursor-pointer'
+                      : noData
+                        ? 'bg-bg-primary/80 backdrop-blur-lg border border-border/100 hover:opacity-80'
+                        : 'rounded-sm'
                     }`}
                   style={{
+                    cursor: 'pointer',
                     ...(isEmpty ? {} : getStyle(day.contribution)),
                     width: `${squareSize}px`,
                     height: `${squareSize}px`,

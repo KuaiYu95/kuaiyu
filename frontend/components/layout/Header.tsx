@@ -74,7 +74,7 @@ export default function Header({ locale, config }: HeaderProps) {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-border',
         isScrolled
-          ? 'bg-bg-primary/80 backdrop-blur-lg shadow-sm'
+          ? 'bg-bg-secondary/50 backdrop-blur-sm shadow-sm'
           : 'bg-transparent'
       )}
     >
@@ -85,18 +85,6 @@ export default function Header({ locale, config }: HeaderProps) {
             href={`/${locale}`}
             className="flex items-center gap-2 text-xl font-bold text-text-accent hover:text-accent-primary transition-colors"
           >
-            {/* {config?.site_logo ? (
-              <div className="relative w-8 h-8">
-                <SafeImage
-                  src={config.site_logo}
-                  alt={config.site_name || 'Logo'}
-                  fill
-                  loading="eager"
-                  sizes="32px"
-                  className="object-contain"
-                />
-              </div>
-            ) : null} */}
             <span>{config?.site_name || 'Yu.kuai'}</span>
           </Link>
 
@@ -153,7 +141,6 @@ export default function Header({ locale, config }: HeaderProps) {
               <AnimatePresence>
                 {isLangMenuOpen && (
                   <>
-                    {/* Backdrop */}
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -161,8 +148,6 @@ export default function Header({ locale, config }: HeaderProps) {
                       className="fixed inset-0 -z-10"
                       onClick={() => setIsLangMenuOpen(false)}
                     />
-
-                    {/* Dropdown Menu */}
                     <motion.div
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -205,7 +190,6 @@ export default function Header({ locale, config }: HeaderProps) {
               </AnimatePresence>
             </div>
           </div>
-
         </div>
       </nav>
     </header>

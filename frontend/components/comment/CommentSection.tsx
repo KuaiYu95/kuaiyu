@@ -275,7 +275,7 @@ export default function CommentSection({
           />
 
           {replyToCommentId === comment.id && (
-            <form onSubmit={handleSubmit} className="mt-4 p-4 bg-bg-secondary rounded-lg border border-border">
+            <form onSubmit={handleSubmit} className="mt-4 p-4 bg-bg-secondary/50 backdrop-blur-sm rounded-lg border border-border">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <input
                   type="text"
@@ -347,7 +347,7 @@ export default function CommentSection({
         </div>
       )}
 
-      <Card className="mb-8" hoverable={false}>
+      <Card className="mb-8 bg-bg-secondary/50 backdrop-blur-sm" hoverable={false}>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-2 md:mb-4">
             <input
